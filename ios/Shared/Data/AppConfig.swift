@@ -20,7 +20,7 @@ enum AppConfig {
     static let overrideKey = "trendsURLOverride"
     static let infoPlistURLKey = "SPTrendsURL"
     static let infoPlistAppGroupKey = "SPAppGroupID"
-    static let defaultAppGroupID = "group.com.seoulpulse.app"
+    static let defaultAppGroupID = "group.com.taejunoh.seoulpulse"
     static let widgetKind = "SeoulPulseTrendsWidget"
 
     static var appGroupID: String {

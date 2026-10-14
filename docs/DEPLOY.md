@@ -92,22 +92,37 @@ The feed URL resolves as: Settings override, then Info.plist `SPTrendsURL`, then
   Remove the `NSAppTransportSecurity` block from both targets in `project.yml` for release to keep the plist
   clean, or leave it, since it is harmless. Do not ship an `http://` feed URL for a non-local host.
 
-## 4. TestFlight (brief)
+## 4. TestFlight
 
-Requires a paid Apple Developer Program membership.
+Requires a paid Apple Developer Program membership. The project is already configured for team `3BMF4LM6TM`
+(automatic signing) with bundle IDs `com.taejunoh.seoulpulse` (app) and `com.taejunoh.seoulpulse.widget` (widget)
+and App Group `group.com.taejunoh.seoulpulse`. Version is `MARKETING_VERSION` 1.0.0 / `CURRENT_PROJECT_VERSION` 1
+in `ios/project.yml`; bump the build number before every upload (App Store Connect rejects duplicates).
 
-1. In the developer portal, register the App IDs `com.seoulpulse.app` and `com.seoulpulse.app.widget` (or your own
-   unique IDs; bundle IDs are global, so the defaults may be taken) and an App Group (default
-   `group.com.seoulpulse.app`), then add that group to both App IDs.
-2. If you change any of those IDs, change them consistently in `ios/project.yml`: `bundleIdPrefix`, both
-   `PRODUCT_BUNDLE_IDENTIFIER`s, the `com.apple.security.application-groups` entries for both targets, and
-   `SPAppGroupID` in both Info.plist blocks. Then run `xcodegen generate`.
-3. Set `DEVELOPMENT_TEAM` in `project.yml` (currently `""`) to your Team ID and regenerate. Simulator builds keep
-   signing ad hoc via the `CODE_SIGN_IDENTITY[sdk=iphonesimulator*]` setting.
-4. Create the app record in App Store Connect, bump `MARKETING_VERSION` / `CURRENT_PROJECT_VERSION` as needed,
-   then in Xcode choose a generic iOS device, Product, Archive, and Distribute App, App Store Connect.
-5. Add testers in TestFlight. App Review will want a privacy answer (the app collects no personal data) and
-   fan-made / not-affiliated wording; see the legal reminders below.
+Manual prerequisites (one-time):
+
+1. Xcode is signed in to the team account (Xcode, Settings, Accounts).
+2. Create the app record in App Store Connect with bundle ID `com.taejunoh.seoulpulse`. Automatic signing
+   (`-allowProvisioningUpdates`) registers the App IDs and the App Group in the developer portal on first archive.
+
+Then run:
+
+```sh
+ios/scripts/testflight.sh
+```
+
+It runs `xcodegen generate`, archives the Release build for `generic/platform=iOS` to
+`ios/build/SeoulPulse.xcarchive`, and exports with `ios/ExportOptions.plist` (`app-store-connect`,
+`destination: upload`), which uploads the build to App Store Connect. Once processing finishes, add testers in
+TestFlight. App Review will want a privacy answer (the app collects no personal data; both targets ship a
+`PrivacyInfo.xcprivacy` declaring no tracking and only the UserDefaults required-reason API `1C8F.1`) and
+fan-made / not-affiliated wording; see the legal reminders below. `ITSAppUsesNonExemptEncryption` is `false` in both
+Info.plists, so there is no export-compliance prompt.
+
+If you change any of the IDs, change them consistently in `ios/project.yml`: `bundleIdPrefix`, both
+`PRODUCT_BUNDLE_IDENTIFIER`s, the `com.apple.security.application-groups` entries for both targets, `SPAppGroupID`
+in both Info.plist blocks, and `AppConfig.defaultAppGroupID`. Simulator builds keep signing ad hoc via the
+`CODE_SIGN_IDENTITY[sdk=iphonesimulator*]` setting.
 
 ## 5. Alternative hosting
 

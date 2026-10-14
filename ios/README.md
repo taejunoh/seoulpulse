@@ -14,11 +14,21 @@ xcodebuild -project SeoulPulse.xcodeproj -scheme SeoulPulse \
 xcodebuild ... -collect-test-diagnostics never test
 
 xcrun simctl install booted build/DD/Build/Products/Debug-iphonesimulator/SeoulPulse.app
-xcrun simctl launch booted com.seoulpulse.app
+xcrun simctl launch booted com.taejunoh.seoulpulse
 xcrun simctl openurl booted seoulpulse://item/aespa     # also: seoulpulse://settings, seoulpulse://widget-gallery
 ```
 
-The build signs ad hoc for the simulator (`CODE_SIGN_IDENTITY[sdk=iphonesimulator*] = "-"`, no team). The App Group entitlement is honored there, so the app and widget share one cache.
+Bundle IDs are `com.taejunoh.seoulpulse` (app) and `com.taejunoh.seoulpulse.widget`; App Group `group.com.taejunoh.seoulpulse`; team `3BMF4LM6TM`, automatic signing. The build signs ad hoc for the simulator (`CODE_SIGN_IDENTITY[sdk=iphonesimulator*] = "-"`, no signing needed). The App Group entitlement is honored there, so the app and widget share one cache.
+
+## TestFlight
+
+Prerequisites: Xcode signed in to the team account, and an App Store Connect app record for `com.taejunoh.seoulpulse`. Bump `CURRENT_PROJECT_VERSION` in `project.yml`, then:
+
+```sh
+ios/scripts/testflight.sh   # xcodegen, Release archive to build/SeoulPulse.xcarchive, export + upload via ExportOptions.plist
+```
+
+See `../docs/DEPLOY.md` section 4. Both targets carry a `PrivacyInfo.xcprivacy` (no tracking, no collected data, UserDefaults `1C8F.1`).
 
 ## Data flow
 

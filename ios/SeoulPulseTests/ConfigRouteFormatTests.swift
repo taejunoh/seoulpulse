@@ -50,7 +50,7 @@ final class AppConfigTests: XCTestCase {
     func testAppInfoPlistShipsDefaultURL() {
         XCTAssertEqual(Bundle.main.object(forInfoDictionaryKey: "SPTrendsURL") as? String,
                        "https://taejunoh.com/seoulpulse/trends.json")
-        XCTAssertEqual(Bundle.main.object(forInfoDictionaryKey: "SPAppGroupID") as? String, "group.com.seoulpulse.app")
+        XCTAssertEqual(Bundle.main.object(forInfoDictionaryKey: "SPAppGroupID") as? String, "group.com.taejunoh.seoulpulse")
     }
 
     func testSetOverrideValidatesTrimsAndClears() {

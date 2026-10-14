@@ -26,10 +26,12 @@
 		3F0B7EBD163E1D2C9EECB7CA /* SmallTrendsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7C86F661B14A8A7FBEB4A349 /* SmallTrendsView.swift */; };
 		41716664824035801B8C9ACC /* LargeTrendsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 74324CEB3703547A7B843019 /* LargeTrendsView.swift */; };
 		44BC783E0F062B391D1E246F /* AppConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = F26006B59A4D6A80A206BFD0 /* AppConfig.swift */; };
+		47B6E44EF7A7241D2D2D1C74 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = C00B9764A700CCF5B9899027 /* PrivacyInfo.xcprivacy */; };
 		491108DBE53136B19673DD0E /* Format.swift in Sources */ = {isa = PBXBuildFile; fileRef = A8C5296C81723894B58F99C6 /* Format.swift */; };
 		4A253A48A9E380F47D359789 /* SeoulPulseWidget.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = E9D1AC0A2B786FDFF8FF5F5A /* SeoulPulseWidget.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		4A2A73187F7E4547BAFF90E5 /* SeoulPulseApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0B560EDA12D2E27F8A25DAB6 /* SeoulPulseApp.swift */; };
 		4C16C462580D547B44F17A8D /* DecodingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9594C280616B99B01E3ABDCB /* DecodingTests.swift */; };
+		634DDF77190236434AA98640 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 4950A94B4FBFEFE34FE878E0 /* PrivacyInfo.xcprivacy */; };
 		6655E9CD75830C98785CBCDD /* Route.swift in Sources */ = {isa = PBXBuildFile; fileRef = A9A5CFB200FB457B0BDEACF9 /* Route.swift */; };
 		70EEEB10D2FB4D5B2BC6E853 /* TrendStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E6C4C2CB3B72B46D7FFA99E2 /* TrendStoreTests.swift */; };
 		75F01B4580C079E7E95C4DD9 /* RankChangeBadge.swift in Sources */ = {isa = PBXBuildFile; fileRef = 14779E0618427EBE90E67B9D /* RankChangeBadge.swift */; };
@@ -106,6 +108,7 @@
 		3B886DEB7594DD8BAA1B5327 /* TrendStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrendStore.swift; sourceTree = "<group>"; };
 		3BA5574144FA32A0347C6FE4 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		4746E8912217A98542118392 /* KRFirstBadge.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KRFirstBadge.swift; sourceTree = "<group>"; };
+		4950A94B4FBFEFE34FE878E0 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		591C8425FCA30B615FC56E47 /* ThumbnailImage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThumbnailImage.swift; sourceTree = "<group>"; };
 		66358F8CF9F156649A22B0B9 /* Theme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Theme.swift; sourceTree = "<group>"; };
 		74324CEB3703547A7B843019 /* LargeTrendsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LargeTrendsView.swift; sourceTree = "<group>"; };
@@ -121,6 +124,7 @@
 		AB9CE5D7F0945CD5BE6AB096 /* Trends.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Trends.swift; sourceTree = "<group>"; };
 		AD25D477A5CA32D41EEEEE36 /* SeoulPulse.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = SeoulPulse.entitlements; sourceTree = "<group>"; };
 		AE8414D04CAAF16AC37E53BB /* HomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeView.swift; sourceTree = "<group>"; };
+		C00B9764A700CCF5B9899027 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		D302E74BB876629F6844C4BA /* WidgetSnapshotTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WidgetSnapshotTests.swift; sourceTree = "<group>"; };
 		D332A7D8676F50BA085873A2 /* TrendsModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrendsModel.swift; sourceTree = "<group>"; };
 		DCEFCFEED5CCB75B601CA8A2 /* FlowLayout.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlowLayout.swift; sourceTree = "<group>"; };
@@ -215,6 +219,7 @@
 			children = (
 				3BA5574144FA32A0347C6FE4 /* Assets.xcassets */,
 				811980D927EC2548A665C293 /* Info.plist */,
+				C00B9764A700CCF5B9899027 /* PrivacyInfo.xcprivacy */,
 				AD25D477A5CA32D41EEEEE36 /* SeoulPulse.entitlements */,
 				0B560EDA12D2E27F8A25DAB6 /* SeoulPulseApp.swift */,
 				6E133CBEE01AEEC293FDE29E /* Model */,
@@ -257,6 +262,7 @@
 			isa = PBXGroup;
 			children = (
 				08C7521EBFAFB465A584777E /* Info.plist */,
+				4950A94B4FBFEFE34FE878E0 /* PrivacyInfo.xcprivacy */,
 				9955BE99583537DD65CE8C84 /* SeoulPulseWidget.entitlements */,
 				7645FA0882B886086294C1A4 /* SeoulPulseWidget.swift */,
 			);
@@ -352,15 +358,15 @@
 				LastUpgradeCheck = 1430;
 				TargetAttributes = {
 					4C6F73F3C2D32347BF3660E2 = {
-						DevelopmentTeam = "";
+						DevelopmentTeam = 3BMF4LM6TM;
 						ProvisioningStyle = Automatic;
 					};
 					C6D138D92D5FEE0412DDC187 = {
-						DevelopmentTeam = "";
+						DevelopmentTeam = 3BMF4LM6TM;
 						ProvisioningStyle = Automatic;
 					};
 					D24153F3F0923A366107EC1F = {
-						DevelopmentTeam = "";
+						DevelopmentTeam = 3BMF4LM6TM;
 						ProvisioningStyle = Automatic;
 					};
 				};
@@ -391,6 +397,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				634DDF77190236434AA98640 /* PrivacyInfo.xcprivacy in Resources */,
 				DBBEA0E1021D5E5699EC7B31 /* sample-trends.json in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -400,6 +407,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				3E1C94AD7DEB50AC83EDEB3A /* Assets.xcassets in Resources */,
+				47B6E44EF7A7241D2D2D1C74 /* PrivacyInfo.xcprivacy in Resources */,
 				C2C6247EA199754AC004F4A7 /* sample-trends.json in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -527,7 +535,7 @@
 				COPY_PHASE_STRIP = NO;
 				CURRENT_PROJECT_VERSION = 1;
 				DEBUG_INFORMATION_FORMAT = dwarf;
-				DEVELOPMENT_TEAM = "";
+				DEVELOPMENT_TEAM = 3BMF4LM6TM;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu11;
@@ -545,7 +553,7 @@
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
-				MARKETING_VERSION = 0.1.0;
+				MARKETING_VERSION = 1.0.0;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
@@ -595,7 +603,7 @@
 				COPY_PHASE_STRIP = NO;
 				CURRENT_PROJECT_VERSION = 1;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
-				DEVELOPMENT_TEAM = "";
+				DEVELOPMENT_TEAM = 3BMF4LM6TM;
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu11;
@@ -607,7 +615,7 @@
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
-				MARKETING_VERSION = 0.1.0;
+				MARKETING_VERSION = 1.0.0;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -628,7 +636,7 @@
 					"@executable_path/Frameworks",
 					"@loader_path/Frameworks",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.seoulpulse.app.tests;
+				PRODUCT_BUNDLE_IDENTIFIER = com.taejunoh.seoulpulse.tests;
 				SDKROOT = iphoneos;
 				TARGETED_DEVICE_FAMILY = 1;
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/SeoulPulse.app/SeoulPulse";
@@ -645,7 +653,7 @@
 					"@executable_path/Frameworks",
 					"@executable_path/../../Frameworks",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.seoulpulse.app.widget;
+				PRODUCT_BUNDLE_IDENTIFIER = com.taejunoh.seoulpulse.widget;
 				SDKROOT = iphoneos;
 				TARGETED_DEVICE_FAMILY = 1;
 			};
@@ -661,7 +669,7 @@
 					"@executable_path/Frameworks",
 					"@executable_path/../../Frameworks",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.seoulpulse.app.widget;
+				PRODUCT_BUNDLE_IDENTIFIER = com.taejunoh.seoulpulse.widget;
 				SDKROOT = iphoneos;
 				TARGETED_DEVICE_FAMILY = 1;
 			};
@@ -679,7 +687,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.seoulpulse.app;
+				PRODUCT_BUNDLE_IDENTIFIER = com.taejunoh.seoulpulse;
 				SDKROOT = iphoneos;
 				TARGETED_DEVICE_FAMILY = 1;
 			};
@@ -695,7 +703,7 @@
 					"@executable_path/Frameworks",
 					"@loader_path/Frameworks",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.seoulpulse.app.tests;
+				PRODUCT_BUNDLE_IDENTIFIER = com.taejunoh.seoulpulse.tests;
 				SDKROOT = iphoneos;
 				TARGETED_DEVICE_FAMILY = 1;
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/SeoulPulse.app/SeoulPulse";
@@ -714,7 +722,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.seoulpulse.app;
+				PRODUCT_BUNDLE_IDENTIFIER = com.taejunoh.seoulpulse;
 				SDKROOT = iphoneos;
 				TARGETED_DEVICE_FAMILY = 1;
 			};

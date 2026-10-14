@@ -30,7 +30,7 @@ enum TrendFetchError: LocalizedError, Equatable {
 struct TrendStore: Sendable {
     static let cacheFileName = "trends-cache.json"
     static let sampleResourceName = "sample-trends"
-    static let logger = Logger(subsystem: "com.seoulpulse.app", category: "TrendStore")
+    static let logger = Logger(subsystem: "com.taejunoh.seoulpulse", category: "TrendStore")
 
     var urlProvider: @Sendable () -> URL = { AppConfig.trendsURL }
     var cacheDirectory: @Sendable () -> URL = { AppConfig.sharedContainerDirectory() }

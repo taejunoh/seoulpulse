@@ -20,6 +20,8 @@
 	<string>$(MARKETING_VERSION)</string>
 	<key>CFBundleVersion</key>
 	<string>$(CURRENT_PROJECT_VERSION)</string>
+	<key>ITSAppUsesNonExemptEncryption</key>
+	<false/>
 	<key>NSAppTransportSecurity</key>
 	<dict>
 		<key>NSAllowsLocalNetworking</key>
@@ -31,7 +33,7 @@
 		<string>com.apple.widgetkit-extension</string>
 	</dict>
 	<key>SPAppGroupID</key>
-	<string>group.com.seoulpulse.app</string>
+	<string>group.com.taejunoh.seoulpulse</string>
 	<key>SPTrendsURL</key>
 	<string>https://taejunoh.com/seoulpulse/trends.json</string>
 </dict>

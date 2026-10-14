@@ -411,20 +411,20 @@ Excerpt from `docs/trends.example.json`. The sample data uses `[Sample]` headlin
 ### 8.1 Targets & IDs (iOS 18.0 minimum; Swift language mode 5; SwiftUI)
 | target | type | bundle id | sources |
 |---|---|---|---|
-| `SeoulPulse` | application | `com.seoulpulse.app` | `SeoulPulse/`, `Shared/` |
-| `SeoulPulseWidget` | app-extension (WidgetKit) | `com.seoulpulse.app.widget` | `SeoulPulseWidget/`, `Shared/` |
-| `SeoulPulseTests` | bundle.unit-test (host: app) | `com.seoulpulse.app.tests` | `SeoulPulseTests/` |
+| `SeoulPulse` | application | `com.taejunoh.seoulpulse` | `SeoulPulse/`, `Shared/` |
+| `SeoulPulseWidget` | app-extension (WidgetKit) | `com.taejunoh.seoulpulse.widget` | `SeoulPulseWidget/`, `Shared/` |
+| `SeoulPulseTests` | bundle.unit-test (host: app) | `com.taejunoh.seoulpulse.tests` | `SeoulPulseTests/` |
 
-- App Group `group.com.seoulpulse.app`, set in both entitlements. URL scheme `seoulpulse`.
-- Signing: `CODE_SIGN_STYLE: Automatic`, `DEVELOPMENT_TEAM: ""`, and `CODE_SIGN_IDENTITY[sdk=iphonesimulator*]: "-"`. The simulator honors App Group entitlements under ad-hoc signing.
+- App Group `group.com.taejunoh.seoulpulse`, set in both entitlements. URL scheme `seoulpulse`.
+- Signing: `CODE_SIGN_STYLE: Automatic`, `DEVELOPMENT_TEAM: 3BMF4LM6TM`, and `CODE_SIGN_IDENTITY[sdk=iphonesimulator*]: "-"`. The simulator honors App Group entitlements under ad-hoc signing.
 - If `containerURL(forSecurityApplicationGroupIdentifier:)` returns nil, fall back to each process's own Caches directory.
 
 `ios/project.yml` (normative shape):
 ```yaml
 name: SeoulPulse
-options: {bundleIdPrefix: com.seoulpulse, deploymentTarget: {iOS: "18.0"}, createIntermediateGroups: true}
-settings: {base: {SWIFT_VERSION: "5.0", MARKETING_VERSION: "0.1.0", CURRENT_PROJECT_VERSION: "1",
-  CODE_SIGN_STYLE: Automatic, DEVELOPMENT_TEAM: "", "CODE_SIGN_IDENTITY[sdk=iphonesimulator*]": "-"}}
+options: {bundleIdPrefix: com.taejunoh, deploymentTarget: {iOS: "18.0"}, createIntermediateGroups: true}
+settings: {base: {SWIFT_VERSION: "5.0", MARKETING_VERSION: "1.0.0", CURRENT_PROJECT_VERSION: "1",
+  CODE_SIGN_STYLE: Automatic, DEVELOPMENT_TEAM: 3BMF4LM6TM, "CODE_SIGN_IDENTITY[sdk=iphonesimulator*]": "-"}}
 targets:
   SeoulPulse:
     type: application
@@ -432,36 +432,36 @@ targets:
     sources: [SeoulPulse, Shared]          # Shared/Resources/sample-trends.json becomes a resource
     dependencies: [{target: SeoulPulseWidget, embed: true}]
     entitlements: {path: SeoulPulse/SeoulPulse.entitlements,
-                   properties: {com.apple.security.application-groups: [group.com.seoulpulse.app]}}
+                   properties: {com.apple.security.application-groups: [group.com.taejunoh.seoulpulse]}}
     info:
       path: SeoulPulse/Info.plist
       properties:
         CFBundleDisplayName: SeoulPulse
         SPTrendsURL: http://localhost:8787/trends.json
-        SPAppGroupID: group.com.seoulpulse.app
-        CFBundleURLTypes: [{CFBundleURLName: com.seoulpulse.app, CFBundleURLSchemes: [seoulpulse]}]
+        SPAppGroupID: group.com.taejunoh.seoulpulse
+        CFBundleURLTypes: [{CFBundleURLName: com.taejunoh.seoulpulse, CFBundleURLSchemes: [seoulpulse]}]
         NSAppTransportSecurity: {NSAllowsLocalNetworking: true}
         UILaunchScreen: {}
         UIUserInterfaceStyle: Dark
-    settings: {base: {PRODUCT_BUNDLE_IDENTIFIER: com.seoulpulse.app}}
+    settings: {base: {PRODUCT_BUNDLE_IDENTIFIER: com.taejunoh.seoulpulse}}
   SeoulPulseWidget:
     type: app-extension
     platform: iOS
     sources: [SeoulPulseWidget, Shared]
     entitlements: {path: SeoulPulseWidget/SeoulPulseWidget.entitlements,
-                   properties: {com.apple.security.application-groups: [group.com.seoulpulse.app]}}
+                   properties: {com.apple.security.application-groups: [group.com.taejunoh.seoulpulse]}}
     info:
       path: SeoulPulseWidget/Info.plist
       properties: {CFBundleDisplayName: SeoulPulse, NSExtension: {NSExtensionPointIdentifier: com.apple.widgetkit-extension},
-                   SPTrendsURL: http://localhost:8787/trends.json, SPAppGroupID: group.com.seoulpulse.app,
+                   SPTrendsURL: http://localhost:8787/trends.json, SPAppGroupID: group.com.taejunoh.seoulpulse,
                    NSAppTransportSecurity: {NSAllowsLocalNetworking: true}}
-    settings: {base: {PRODUCT_BUNDLE_IDENTIFIER: com.seoulpulse.app.widget}}
+    settings: {base: {PRODUCT_BUNDLE_IDENTIFIER: com.taejunoh.seoulpulse.widget}}
   SeoulPulseTests:
     type: bundle.unit-test
     platform: iOS
     sources: [SeoulPulseTests]
     dependencies: [{target: SeoulPulse}]
-    settings: {base: {PRODUCT_BUNDLE_IDENTIFIER: com.seoulpulse.app.tests}}
+    settings: {base: {PRODUCT_BUNDLE_IDENTIFIER: com.taejunoh.seoulpulse.tests}}
 schemes:
   SeoulPulse:
     build: {targets: {SeoulPulse: all, SeoulPulseWidget: all}}
@@ -635,7 +635,7 @@ Korea-first K-pop Trends — TOP 5 (Oct 14, 18:00 KST)
   - (e) `compact()` table: 999→"999", 7584→"7.6K", 126667→"127K", 1250000→"1.2M".
   - (f) **Widget snapshot test:** `ImageRenderer` renders each family view from the sample at 170×170, 364×170, 364×382, and 172×76 pt, scale 3. Assert a non-nil image with the expected pixel size. Write the PNGs to `$SP_SNAPSHOT_DIR` and add each as an `XCTAttachment`.
 - Simulator check:
-  1. `xcrun simctl install booted …/SeoulPulse.app`, then `xcrun simctl launch booted com.seoulpulse.app`.
+  1. `xcrun simctl install booted …/SeoulPulse.app`, then `xcrun simctl launch booted com.taejunoh.seoulpulse`.
   2. `xcrun simctl openurl booted seoulpulse://item/aespa` → screenshot. Repeat for `seoulpulse://widget-gallery`.
   3. With `seoulpulse serve` running, the Home origin must be "network". With the server stopped and the app relaunched, the origin must be "cache".
 
