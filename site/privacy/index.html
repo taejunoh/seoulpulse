@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="dark">
+<meta name="theme-color" content="#0a0a12">
+<title>Privacy Policy | SeoulPulse</title>
+<meta name="description" content="SeoulPulse privacy policy: no accounts, no personal data collected, no analytics, advertising or tracking.">
+<link rel="canonical" href="https://taejunoh.com/seoulpulse/privacy/">
+<style>
+:root{--ink:#0a0a12;--surface:#15151f;--surface2:#1e1e2c;--hair:#2a2a3a;--t1:#f5f5fa;--t2:#a1a1b5;--t3:#6b6b80;--pink:#ff2e88;--violet:#7c5cff;--grad:linear-gradient(135deg,#ff2e88,#7c5cff)}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--ink);color:var(--t1);font:16px/1.6 -apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI",Roboto,Helvetica,Arial,sans-serif}
+main{max-width:720px;margin:0 auto;padding:32px 16px 64px}
+header.top{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:28px}
+.brand{font-weight:800;font-size:1.15rem;letter-spacing:.2px;text-decoration:none;background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
+nav.links{display:flex;flex-wrap:wrap;gap:4px 16px;font-size:.9rem}
+a{color:#ff6fae;text-underline-offset:3px}
+a:hover{color:#b8a4ff}
+a:focus-visible{outline:2px solid var(--violet);outline-offset:2px;border-radius:4px}
+h1{font-size:2rem;line-height:1.2;margin:0 0 6px}
+h1 .accent{background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
+h2{font-size:1.15rem;margin:32px 0 8px;padding-top:4px}
+p,li{color:var(--t2)}
+p{margin:0 0 12px}
+ul{padding-left:20px;margin:0 0 12px}
+li{margin-bottom:6px}
+strong{color:var(--t1)}
+.meta{color:var(--t3);font-size:.9rem;margin:0 0 24px}
+.lede{font-size:1.1rem;color:var(--t2)}
+.card{background:var(--surface);border:1px solid var(--hair);border-radius:16px;padding:16px 18px;margin:16px 0}
+.card p:last-child,.card ul:last-child{margin-bottom:0}
+.btns{display:flex;flex-wrap:wrap;gap:10px;margin:20px 0}
+.btn{display:inline-block;padding:10px 18px;border-radius:999px;background:var(--surface2);border:1px solid var(--hair);color:var(--t1);text-decoration:none;font-weight:600;font-size:.95rem}
+.btn.primary{background:var(--grad);border-color:transparent;color:#fff}
+.btn:hover{color:#fff;filter:brightness(1.12)}
+details{background:var(--surface);border:1px solid var(--hair);border-radius:14px;padding:0 16px;margin:10px 0}
+summary{cursor:pointer;padding:14px 0;font-weight:600;color:var(--t1);list-style:none}
+summary::-webkit-details-marker{display:none}
+summary::after{content:"+";float:right;color:var(--pink);font-weight:700}
+details[open] summary::after{content:"\2212"}
+details[open]{padding-bottom:6px}
+code{background:var(--surface2);border-radius:6px;padding:1px 6px;font-size:.88em;color:var(--t1);word-break:break-all}
+footer{margin-top:48px;padding-top:16px;border-top:1px solid var(--hair);color:var(--t3);font-size:.85rem}
+@media (max-width:480px){h1{font-size:1.65rem}main{padding-top:24px}}
+</style>
+</head>
+<body>
+<main>
+<header class="top">
+<a class="brand" href="/seoulpulse/">SeoulPulse</a>
+<nav class="links" aria-label="Site">
+<a href="/seoulpulse/privacy/">Privacy</a>
+<a href="/seoulpulse/support/">Support</a>
+<a href="https://github.com/taejunoh/seoulpulse">GitHub</a>
+</nav>
+</header>
+
+<h1>Privacy <span class="accent">Policy</span></h1>
+<p class="meta">Effective date: 2026-10-14</p>
+<p class="lede">SeoulPulse does not collect, store on a server, or share any personal data. It has no accounts, no analytics, no advertising and no tracking.</p>
+
+<h2>What the app does</h2>
+<p>The SeoulPulse iOS app and its home screen widget download one public JSON file, <code>https://taejunoh.com/seoulpulse/trends.json</code>, and display the K-pop ranking inside it. The file is the same for everyone; nothing about you is sent to produce it.</p>
+
+<h2>Data we collect</h2>
+<p><strong>None.</strong> The app has no sign-in or account system and does not ask for your name, email, location, contacts, photos, or any other personal information. It contains no analytics, advertising, crash-reporting or tracking SDKs, and it does not use the advertising identifier. Apple's privacy manifest in the app declares no tracking and no collected data types.</p>
+
+<h2>Data stored on your device</h2>
+<ul>
+<li>A cached copy of the most recent feed, so the app and widget can show content when you are offline.</li>
+<li>Optionally, a custom feed URL, only if you enter one in Settings (intended for developers).</li>
+</ul>
+<p>Both are kept locally in an App Group container that the app and its widget share. They never leave your device through SeoulPulse, and deleting the app removes them.</p>
+
+<h2>Network requests and server logs</h2>
+<p>To load the feed, your device makes a standard HTTPS request to taejunoh.com, which is hosted on <strong>GitHub Pages</strong>. Like any web server, the host may record technical details of the request, such as your IP address and user agent, in its standard logs. SeoulPulse does not receive, read or use those logs. See the <a href="https://docs.github.com/en/site-policy/privacy-policies/github-general-privacy-statement">GitHub Privacy Statement</a>.</p>
+<p>The app also loads video thumbnail images directly from YouTube's image servers (<code>i.ytimg.com</code>) for the videos shown in an act's detail view. That request goes from your device to Google and is subject to Google's privacy policy.</p>
+
+<h2>External links</h2>
+<p>Tapping a video, headline, Wikipedia article or other link opens it in your browser or the relevant app (for example YouTube, Wikipedia, Yonhap, Soompi or Koreaboo). Those sites are independent and governed by their own privacy policies; we do not control them and receive nothing from your visit.</p>
+
+<h2>Third parties</h2>
+<p>We do not sell, rent or share data with third parties, because we do not collect any. The only third parties involved are the ones described above: GitHub (hosting the feed) and, for thumbnails and links, the sites you choose to open.</p>
+
+<h2>Children</h2>
+<p>SeoulPulse does not knowingly collect any information from anyone, including children under 13. The app has no accounts, no communication features and no purchases.</p>
+
+<h2>Not affiliated</h2>
+<p>SeoulPulse is a fan-made project. It is not affiliated with any artist, label, or outlet. Headlines are shown as published and link to their original sources.</p>
+
+<h2>Changes to this policy</h2>
+<p>If this policy changes, the updated version will be posted on this page with a new effective date. Material changes will also be noted in the project's <a href="https://github.com/taejunoh/seoulpulse">GitHub repository</a>.</p>
+
+<h2>Contact</h2>
+<p>Questions about privacy? Open an issue at <a href="https://github.com/taejunoh/seoulpulse/issues">github.com/taejunoh/seoulpulse/issues</a>. The code is open source, so you can verify what the app does.</p>
+
+<footer>
+<p>SeoulPulse is a fan-made project. Not affiliated with any artist, label, or outlet; headlines link to their original sources.</p>
+</footer>
+</main>
+</body>
+</html>

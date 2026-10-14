@@ -10,6 +10,10 @@ set, and the app has never been signed. The default path is GitHub Actions + Git
 - Repository variable `SP_CONTACT` = `https://github.com/taejunoh/seoulpulse`.
 - Schedule: cron every 30 minutes (`.github/workflows/pipeline.yml`).
 - The iOS app's built-in default feed URL is the Pages URL above.
+- Static pages from `site/` (landing, privacy policy, support) are deployed alongside the feed:
+  <https://taejunoh.com/seoulpulse/>, <https://taejunoh.com/seoulpulse/privacy/>,
+  <https://taejunoh.com/seoulpulse/support/>.
+- `.github/workflows/social-draft.yml` opens a daily GitHub issue with X/Threads drafts (see section 7).
 
 ## 1. Push to GitHub
 
@@ -55,7 +59,9 @@ Enable Pages: Settings, then Pages, then Source = **GitHub Actions** (the workfl
    Actions cache (`actions/cache/restore`, key `sp-state-<run_id>`, falling back to the newest `sp-state-*`).
    Restoring `public/` is what lets the pipeline keep the last good `trends.json` when every source fails.
 2. `uv sync --frozen`, then `uv run seoulpulse run` with `SP_CONTACT` and `YOUTUBE_API_KEY` in the environment.
-3. Saves the same two paths back to the cache (`if: always()`), then uploads `public/` as the Pages artifact.
+3. Saves the same two paths back to the cache (`if: always()`), copies the committed `site/` pages into `public/`
+   (`cp -R site/. public/`, so the privacy and support pages deploy with every run), then uploads `public/` as the
+   Pages artifact.
 4. A second job, `deploy-pages`, publishes the artifact to the `github-pages` environment.
 
 First deploy: Actions tab, then **pipeline**, then **Run workflow** (`workflow_dispatch`). When it finishes, the
@@ -119,6 +125,23 @@ TestFlight. App Review will want a privacy answer (the app collects no personal 
 fan-made / not-affiliated wording; see the legal reminders below. `ITSAppUsesNonExemptEncryption` is `false` in both
 Info.plists, so there is no export-compliance prompt.
 
+### App Store Connect URLs
+
+Paste these into the app record (App Information and the TestFlight test information; external TestFlight and App
+Review require both):
+
+| Field | URL |
+|---|---|
+| Privacy Policy URL | `https://taejunoh.com/seoulpulse/privacy/` |
+| Support URL (and TestFlight feedback / marketing URL if asked) | `https://taejunoh.com/seoulpulse/support/` |
+
+The pages live in `site/` (plain HTML with inline CSS, no scripts or trackers). Edit them there and the next
+`pipeline` run deploys the change; to publish immediately, run the workflow from the Actions tab. The policy states
+the app collects no data (matching `PrivacyInfo.xcprivacy`), so in App Store Connect's App Privacy questionnaire
+answer "Data Not Collected". If you ever add analytics, accounts or another network call, update `site/privacy/`,
+the privacy manifests and that questionnaire together. The app's Settings screen links to both pages
+(`AppConfig.privacyPolicyURL` and `AppConfig.supportURL`).
+
 If you change any of the IDs, change them consistently in `ios/project.yml`: `bundleIdPrefix`, both
 `PRODUCT_BUNDLE_IDENTIFIER`s, the `com.apple.security.application-groups` entries for both targets, `SPAppGroupID`
 in both Info.plist blocks, and `AppConfig.defaultAppGroupID`. Simulator builds keep signing ad hoc via the
@@ -154,3 +177,18 @@ in both Info.plist blocks, and `AppConfig.defaultAppGroupID`. Simulator builds k
   translate, summarize or send article bodies / RSS descriptions to an LLM. Keep the "fan-made, not affiliated"
   wording. Yonhap's feed carries a reuse and AI-use notice (`docs/SPEC.md` section 12). Social posting stays manual
   (`uv run seoulpulse social` prints drafts only).
+
+## 7. Daily social draft (manual posting)
+
+`.github/workflows/social-draft.yml` runs daily at `0 13 * * *` UTC (9am US Eastern during daylight time; 8am in
+winter) and on demand (`workflow_dispatch`). It needs no secrets and only `contents: read` and `issues: write`.
+
+1. Downloads the live feed from `https://taejunoh.com/seoulpulse/trends.json`. If the download fails it prints a
+   notice and exits successfully without creating an issue.
+2. Runs `uv run seoulpulse social --format both` against that file.
+3. Creates the `social-draft` label if missing, closes any open `social-draft` issues, and opens a new issue titled
+   `Social draft · YYYY-MM-DD` with the X and Threads drafts in code blocks, the feed's `generated_at`, a warning
+   if `cold_start` is true, and the note "Post manually. Never automated."
+
+Copy the text from the issue and post it yourself. Nothing is ever posted to a social network automatically. Like the
+pipeline, the schedule is disabled by GitHub after 60 days without repo activity on public repos.

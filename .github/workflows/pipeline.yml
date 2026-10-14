@@ -71,6 +71,9 @@ jobs:
             public
           key: sp-state-${{ github.run_id }}-${{ github.run_attempt }}
 
+      - name: Add static site pages (landing, privacy, support)
+        run: cp -R site/. public/
+
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
         with:

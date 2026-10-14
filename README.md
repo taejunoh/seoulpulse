@@ -8,6 +8,9 @@ and WidgetKit extension read that file. No server, no accounts, no API keys requ
 **Live feed:** <https://taejunoh.com/seoulpulse/trends.json> (refreshed every 30 minutes). The iOS app defaults to
 this URL; for development, point Settings at a local server such as `http://localhost:8787/trends.json`.
 
+**Site:** <https://taejunoh.com/seoulpulse/> · [Privacy Policy](https://taejunoh.com/seoulpulse/privacy/) ·
+[Support](https://taejunoh.com/seoulpulse/support/) · [Issues](https://github.com/taejunoh/seoulpulse/issues)
+
 ## Architecture
 
 ```
@@ -56,9 +59,10 @@ which one it is showing. To serve the sample payload without running the pipelin
 |---|---|
 | `backend/` | Python package `seoulpulse` (fetchers, SQLite store, scoring, publish, CLI), seed rosters in `backend/data/`, tests |
 | `ios/` | xcodegen spec `project.yml`, app, widget extension, shared code, unit and snapshot tests |
+| `site/` | committed static pages (landing, `privacy/`, `support/`); `pipeline.yml` copies them into `public/` on every deploy |
 | `public/` | output directory; `trends.json` is written here (gitignored except `.gitkeep`) |
 | `docs/` | `SPEC.md`, the JSON contract `trends.schema.json`, a valid `trends.example.json`, `DEPLOY.md` |
-| `.github/workflows/` | `pipeline.yml` (cron run and GitHub Pages deploy), `backend-ci.yml` (tests on push and PR) |
+| `.github/workflows/` | `pipeline.yml` (cron run and GitHub Pages deploy), `backend-ci.yml` (tests on push and PR), `social-draft.yml` (daily draft issue) |
 
 ## Data sources and legal stance
 
@@ -103,9 +107,15 @@ uv run seoulpulse social --top 3 --format x
 
 The command only prints text. Posting is manual; the project never posts anything. See `docs/SPEC.md` section 9.
 
+**Daily draft issue.** `.github/workflows/social-draft.yml` runs at 13:00 UTC (9am US Eastern), downloads the live
+feed, runs `seoulpulse social`, and opens a GitHub issue titled `Social draft · YYYY-MM-DD` (label `social-draft`)
+with the X and Threads drafts in copyable code blocks. It closes the previous open draft first and adds a warning
+while the feed is still calibrating (`cold_start`). Copy the text and post it yourself; nothing is posted
+automatically. Trigger it on demand from the Actions tab (`workflow_dispatch`).
+
 ## More
 
 - `docs/SPEC.md`: product and engineering spec (scoring, storage, JSON contract, iOS design)
-- `docs/DEPLOY.md`: going live with GitHub Pages, TestFlight, alternative hosting
+- `docs/DEPLOY.md`: going live with GitHub Pages, TestFlight, App Store Connect URLs, alternative hosting
 - `backend/README.md`: CLI reference, scheduling, run state
 - `ios/README.md`: build, test, data flow, deep links

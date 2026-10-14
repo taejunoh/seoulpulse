@@ -1,0 +1,100 @@
+# Daily social draft: renders X and Threads drafts from the live feed and opens a GitHub issue to copy from.
+# Posting is manual. This workflow never posts to any social network and needs no secrets beyond the built-in token.
+name: social-draft
+
+on:
+  schedule:
+    - cron: "0 13 * * *" # 13:00 UTC = 9am US Eastern (8am during standard time)
+  workflow_dispatch:
+
+concurrency: social-draft
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  draft:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: astral-sh/setup-uv@v6
+        with:
+          working-directory: backend
+
+      - name: Install
+        working-directory: backend
+        run: uv sync --frozen
+
+      - name: Download live feed
+        id: feed
+        run: |
+          if curl -fsSL --retry 3 --retry-delay 5 https://taejunoh.com/seoulpulse/trends.json -o "$RUNNER_TEMP/trends.json"; then
+            echo "ok=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "ok=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::Could not download the live feed; skipping today's social draft."
+          fi
+
+      - name: Render drafts
+        if: steps.feed.outputs.ok == 'true'
+        working-directory: backend
+        run: uv run seoulpulse social --input "$RUNNER_TEMP/trends.json" --format both > "$RUNNER_TEMP/drafts.txt"
+
+      - name: Build issue body
+        if: steps.feed.outputs.ok == 'true'
+        run: |
+          set -euo pipefail
+          # drafts.txt holds "=== X (..) ===" and "=== Threads (..) ===" blocks; split them.
+          awk -v dir="$RUNNER_TEMP" '
+            /^=== X /       { out = dir "/x.txt"; printf "" > out; next }
+            /^=== Threads / { out = dir "/threads.txt"; printf "" > out; next }
+            out != ""       { print > out }
+          ' "$RUNNER_TEMP/drafts.txt"
+          # $(...) strips trailing newlines
+          for f in x threads; do
+            printf '%s\n' "$(cat "$RUNNER_TEMP/$f.txt")" > "$RUNNER_TEMP/$f.trim"
+          done
+          GENERATED_AT="$(jq -r '.generated_at' "$RUNNER_TEMP/trends.json")"
+          COLD_START="$(jq -r '.cold_start // false' "$RUNNER_TEMP/trends.json")"
+          {
+            if [ "$COLD_START" = "true" ]; then
+              echo "> :warning: Rankings are still calibrating (the feed reports \`cold_start: true\`). Double-check before posting."
+              echo
+            fi
+            echo "Feed generated at: \`$GENERATED_AT\`"
+            echo
+            echo "### X"
+            echo
+            echo '```text'
+            cat "$RUNNER_TEMP/x.trim"
+            echo '```'
+            echo
+            echo "### Threads"
+            echo
+            echo '```text'
+            cat "$RUNNER_TEMP/threads.trim"
+            echo '```'
+            echo
+            echo "_Post manually. Never automated._"
+          } > "$RUNNER_TEMP/body.md"
+          echo "--- issue body ---"
+          cat "$RUNNER_TEMP/body.md"
+
+      - name: Publish draft issue
+        if: steps.feed.outputs.ok == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+          gh label create social-draft --color 7C5CFF --description "Daily social post draft (manual posting)" || true
+          for n in $(gh issue list --label social-draft --state open --json number --jq '.[].number'); do
+            gh issue close "$n" --comment "Superseded by a newer draft."
+          done
+          gh issue create \
+            --label social-draft \
+            --title "Social draft · $(date -u +%F)" \
+            --body-file "$RUNNER_TEMP/body.md"

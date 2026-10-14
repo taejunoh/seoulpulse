@@ -3,6 +3,7 @@ import WidgetKit
 
 struct SettingsView: View {
     @Environment(TrendsModel.self) private var model
+    @Environment(\.openURL) private var openURL
 
     @State private var draft: String = AppConfig.overrideString ?? ""
     @State private var effective = AppConfig.resolveTrendsURL()
@@ -41,6 +42,7 @@ struct SettingsView: View {
             .listRowBackground(Theme.surface)
             sourcesSection
             aboutSection
+            legalSection
         }
         .scrollContentBackground(.hidden)
         .background(Theme.ink.ignoresSafeArea())
@@ -193,6 +195,35 @@ struct SettingsView: View {
                 .padding(.vertical, 4)
         }
         .listRowBackground(Theme.surface)
+    }
+
+    private var legalSection: some View {
+        Section("Legal") {
+            legalRow("Privacy Policy", icon: "hand.raised.fill", url: AppConfig.privacyPolicyURL)
+            legalRow("Support", icon: "questionmark.circle.fill", url: AppConfig.supportURL)
+        }
+        .listRowBackground(Theme.surface)
+    }
+
+    private func legalRow(_ title: String, icon: String, url: URL) -> some View {
+        Button {
+            openURL(url)
+        } label: {
+            HStack(spacing: 12) {
+                Image(systemName: icon)
+                    .font(.subheadline)
+                    .foregroundStyle(Theme.pulsePink)
+                    .frame(width: 22)
+                Text(title)
+                    .foregroundStyle(Theme.textPrimary)
+                Spacer()
+                Image(systemName: "arrow.up.right")
+                    .font(.caption.weight(.bold))
+                    .foregroundStyle(Theme.textTertiary)
+            }
+            .contentShape(Rectangle())
+        }
+        .accessibilityHint("Opens in Safari")
     }
 
     // MARK: Actions
