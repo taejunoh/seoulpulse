@@ -1,4 +1,4 @@
-"""Tiny static server for public/ on 127.0.0.1 with `Cache-Control: no-cache` (spec §1, §11)."""
+"""Tiny static server for public/ (127.0.0.1 by default) with `Cache-Control: no-cache` (spec §1, §11)."""
 
 from __future__ import annotations
 
@@ -40,18 +40,20 @@ def make_server(public_dir: Path, port: int = 8787, host: str = "127.0.0.1") -> 
     return ThreadingHTTPServer((host, port), handler)
 
 
-def serve_forever(public_dir: Path, port: int = 8787) -> None:
-    server = make_server(public_dir, port)
-    log.info("serving %s at http://127.0.0.1:%d/trends.json", public_dir, port)
+def serve_forever(public_dir: Path, port: int = 8787, host: str = "127.0.0.1") -> None:
+    server = make_server(public_dir, port, host)
+    log.info("serving %s at http://%s:%d/trends.json", public_dir, host, port)
     try:
         server.serve_forever()
     finally:
         server.server_close()
 
 
-def serve_in_thread(public_dir: Path, port: int = 8787) -> tuple[ThreadingHTTPServer, threading.Thread]:
-    server = make_server(public_dir, port)
+def serve_in_thread(
+    public_dir: Path, port: int = 8787, host: str = "127.0.0.1"
+) -> tuple[ThreadingHTTPServer, threading.Thread]:
+    server = make_server(public_dir, port, host)
     t = threading.Thread(target=server.serve_forever, name="serve", daemon=True)
     t.start()
-    log.info("serving %s at http://127.0.0.1:%d/trends.json", public_dir, port)
+    log.info("serving %s at http://%s:%d/trends.json", public_dir, host, port)
     return server, t

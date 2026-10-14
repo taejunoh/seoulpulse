@@ -60,7 +60,7 @@ def cmd_serve(args: argparse.Namespace) -> int:
     if args.seed_example and seed_example(config.public_dir, config.docs_dir / "trends.example.json"):
         log.info("seeded %s from docs/trends.example.json", config.trends_path)
     try:
-        serve_forever(config.public_dir, args.port)
+        serve_forever(config.public_dir, args.port, args.host)
     except KeyboardInterrupt:
         pass
     return 0
@@ -71,7 +71,7 @@ def cmd_dev(args: argparse.Namespace) -> int:
     from .serve import serve_in_thread
 
     config = load_config()
-    serve_in_thread(config.public_dir, args.port)
+    serve_in_thread(config.public_dir, args.port, args.host)
     try:
         run_loop(config, args.interval or config.interval_sec, run=lambda: run_once(config))
     except KeyboardInterrupt:
@@ -122,12 +122,14 @@ def build_parser() -> argparse.ArgumentParser:
     r.add_argument("--interval", type=int, help="loop interval in seconds (default SP_INTERVAL_SEC)")
     r.set_defaults(func=cmd_run)
 
-    s = sub.add_parser("serve", help="serve public/ on 127.0.0.1")
+    s = sub.add_parser("serve", help="serve public/ (127.0.0.1 by default)")
+    s.add_argument("--host", default="127.0.0.1", help="bind address (0.0.0.0 to reach it from a phone on the LAN)")
     s.add_argument("--port", type=int, default=8787)
     s.add_argument("--seed-example", action="store_true", help="copy docs/trends.example.json if trends.json is missing")
     s.set_defaults(func=cmd_serve)
 
     d = sub.add_parser("dev", help="serve (thread) + run --loop")
+    d.add_argument("--host", default="127.0.0.1", help="bind address (0.0.0.0 to reach it from a phone on the LAN)")
     d.add_argument("--port", type=int, default=8787)
     d.add_argument("--interval", type=int)
     d.set_defaults(func=cmd_dev)

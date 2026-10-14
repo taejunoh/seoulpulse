@@ -8,6 +8,7 @@ from datetime import date, timedelta
 import pytest
 
 from seoulpulse.fetchers.base import ApiSnapshot, Headline, VideoObs, WikiDay
+from seoulpulse import cli, serve
 from seoulpulse.serve import make_server, seed_example
 from seoulpulse.store import Store
 
@@ -42,6 +43,47 @@ def test_server_sends_no_cache_and_json(tmp_path):
     finally:
         server.shutdown()
         server.server_close()
+
+
+def test_make_server_binds_requested_host(tmp_path):
+    server = make_server(tmp_path / "public", port=0)
+    try:
+        assert server.server_address[0] == "127.0.0.1"  # default stays loopback-only
+    finally:
+        server.server_close()
+    server = make_server(tmp_path / "public", port=0, host="localhost")
+    try:
+        assert server.server_address[0] == "127.0.0.1"
+    finally:
+        server.server_close()
+
+
+def test_cli_host_option_defaults_and_is_plumbed(tmp_path, monkeypatch):
+    parser = cli.build_parser()
+    assert parser.parse_args(["serve"]).host == "127.0.0.1"
+    assert parser.parse_args(["dev"]).host == "127.0.0.1"
+    assert parser.parse_args(["serve", "--host", "0.0.0.0"]).host == "0.0.0.0"
+    assert parser.parse_args(["dev", "--host", "0.0.0.0"]).host == "0.0.0.0"
+
+    calls = {}
+    monkeypatch.setattr(
+        serve, "serve_forever", lambda public_dir, port=8787, host="127.0.0.1": calls.update(serve=(port, host))
+    )
+    monkeypatch.setattr(
+        serve, "serve_in_thread", lambda public_dir, port=8787, host="127.0.0.1": calls.update(dev=(port, host))
+    )
+    import seoulpulse.pipeline as pipeline
+
+    monkeypatch.setattr(pipeline, "run_loop", lambda *a, **k: None)
+    monkeypatch.setenv("SP_DB_PATH", str(tmp_path / "t.db"))
+    monkeypatch.setenv("SP_PUBLIC_DIR", str(tmp_path / "public"))
+
+    assert cli.main(["serve", "--port", "0", "--host", "0.0.0.0"]) == 0
+    assert calls["serve"] == (0, "0.0.0.0")
+    assert cli.main(["dev", "--port", "0", "--host", "0.0.0.0"]) == 0
+    assert calls["dev"] == (0, "0.0.0.0")
+    assert cli.main(["serve", "--port", "0"]) == 0
+    assert calls["serve"] == (0, "127.0.0.1")
 
 
 def test_retention_rules(tmp_path):

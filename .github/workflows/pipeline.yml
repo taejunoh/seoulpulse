@@ -1,6 +1,7 @@
 # Runs the keyless SeoulPulse pipeline every 30 minutes and publishes public/trends.json to GitHub Pages.
 # Repository settings: Pages source = "GitHub Actions"; variable SP_CONTACT (contact URL or email for the
 # Wikimedia User-Agent); optional secret YOUTUBE_API_KEY.
+# Optional LLM why-lines: variable SP_WHY_LLM=1 plus secret ANTHROPIC_API_KEY (variable SP_LLM_MODEL overrides the model).
 name: pipeline
 
 on:
@@ -39,13 +40,23 @@ jobs:
 
       - name: Install
         working-directory: backend
-        run: uv sync --frozen
+        env:
+          SP_WHY_LLM: ${{ vars.SP_WHY_LLM || '0' }}
+        run: |
+          if [ "$SP_WHY_LLM" = "1" ]; then
+            uv sync --frozen --extra llm
+          else
+            uv sync --frozen
+          fi
 
       - name: Run pipeline
         working-directory: backend
         env:
           SP_CONTACT: ${{ vars.SP_CONTACT }}
           YOUTUBE_API_KEY: ${{ secrets.YOUTUBE_API_KEY }}
+          SP_WHY_LLM: ${{ vars.SP_WHY_LLM || '0' }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          SP_LLM_MODEL: ${{ vars.SP_LLM_MODEL || 'claude-haiku-5-5' }}
         run: uv run seoulpulse run
 
       - name: Save pipeline state
