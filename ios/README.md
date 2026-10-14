@@ -22,11 +22,13 @@ Bundle IDs are `com.taejunoh.seoulpulse` (app) and `com.taejunoh.seoulpulse.widg
 
 ## TestFlight
 
-Prerequisites: Xcode signed in to the team account, and an App Store Connect app record for `com.taejunoh.seoulpulse`. Bump `CURRENT_PROJECT_VERSION` in `project.yml`, then:
+Prerequisite: Xcode signed in to the team account. The App Store Connect app record exists ("SeoulPulse", Apple ID 6822836898, bundle ID `com.taejunoh.seoulpulse`), and the internal group "Internal" gets every processed build automatically.
 
 ```sh
 ios/scripts/testflight.sh   # xcodegen, Release archive to build/SeoulPulse.xcarchive, export + upload via ExportOptions.plist
 ```
+
+Build numbers are automatic: the script passes `CURRENT_PROJECT_VERSION=$(date -u +%Y%m%d%H%M)` (UTC timestamp) to `xcodebuild archive`, for the app and widget alike, so there is nothing to bump in `project.yml`. Override with `BUILD_NUMBER=202610141800 ios/scripts/testflight.sh` (integers separated by periods, higher than any previous build). The marketing version is `MARKETING_VERSION` in `project.yml`. The export step retries once after 10 s, because cloud-managed distribution signing sometimes fails the first attempt with "no identity found".
 
 See `../docs/DEPLOY.md` section 4. Both targets carry a `PrivacyInfo.xcprivacy` (no tracking, no collected data, UserDefaults `1C8F.1`).
 

@@ -108,14 +108,31 @@ The feed URL resolves as: Settings override, then Info.plist `SPTrendsURL`, then
 
 Requires a paid Apple Developer Program membership. The project is already configured for team `3BMF4LM6TM`
 (automatic signing) with bundle IDs `com.taejunoh.seoulpulse` (app) and `com.taejunoh.seoulpulse.widget` (widget)
-and App Group `group.com.taejunoh.seoulpulse`. Version is `MARKETING_VERSION` 1.0.0 / `CURRENT_PROJECT_VERSION` 1
-in `ios/project.yml`; bump the build number before every upload (App Store Connect rejects duplicates).
+and App Group `group.com.taejunoh.seoulpulse`.
 
-Manual prerequisites (one-time):
+**Current state.** The app record exists in App Store Connect: app "SeoulPulse", Apple ID 6822836898, bundle ID
+`com.taejunoh.seoulpulse`. Build 1.0.0 (1) was the first upload. There is an internal TestFlight group named
+"Internal" with automatic distribution, so every processed build goes to its testers without further steps.
 
-1. Xcode is signed in to the team account (Xcode, Settings, Accounts).
-2. Create the app record in App Store Connect with bundle ID `com.taejunoh.seoulpulse`. Automatic signing
-   (`-allowProvisioningUpdates`) registers the App IDs and the App Group in the developer portal on first archive.
+**Versions.** The marketing version is `MARKETING_VERSION` (1.0.0) in `ios/project.yml`; edit it there for a new
+release. The build number is automatic: `ios/scripts/testflight.sh` passes
+`CURRENT_PROJECT_VERSION=$(date -u +%Y%m%d%H%M)` (a UTC timestamp such as `202610141730`) to `xcodebuild archive`.
+A command-line build setting applies to all targets, so the app and the widget share the same `CFBundleVersion`
+(both Info.plists use `$(CURRENT_PROJECT_VERSION)`), and the number always rises, which App Store Connect requires.
+`CURRENT_PROJECT_VERSION: "1"` in `project.yml` is only the fallback for non-TestFlight builds; do not bump it. To
+force a number (for example to re-upload within the same minute, or to use a dotted `1.2.3` style), set
+`BUILD_NUMBER`:
+
+```sh
+BUILD_NUMBER=202610141800 ios/scripts/testflight.sh
+```
+
+`BUILD_NUMBER` must be integers separated by periods, and higher than any build already uploaded for that marketing
+version.
+
+Manual prerequisite (one-time): Xcode is signed in to the team account (Xcode, Settings, Accounts). Automatic
+signing (`-allowProvisioningUpdates`) registers the App IDs and the App Group in the developer portal on first
+archive.
 
 Then run:
 
@@ -123,10 +140,13 @@ Then run:
 ios/scripts/testflight.sh
 ```
 
-It runs `xcodegen generate`, archives the Release build for `generic/platform=iOS` to
-`ios/build/SeoulPulse.xcarchive`, and exports with `ios/ExportOptions.plist` (`app-store-connect`,
-`destination: upload`), which uploads the build to App Store Connect. Once processing finishes, add testers in
-TestFlight. App Review will want a privacy answer (the app collects no personal data; both targets ship a
+It prints the version and build being uploaded, runs `xcodegen generate`, archives the Release build for
+`generic/platform=iOS` to `ios/build/SeoulPulse.xcarchive`, and exports with `ios/ExportOptions.plist`
+(`app-store-connect`, `destination: upload`), which uploads the build to App Store Connect. Cloud-managed
+distribution signing sometimes fails the first export with `exportArchive codesign command failed ... no identity
+found` and works moments later, so the script retries the export once after 10 seconds and only then fails. Once
+processing finishes (a few minutes), the build shows up for the "Internal" group automatically. App Review (needed
+only for external testing) will want a privacy answer (the app collects no personal data; both targets ship a
 `PrivacyInfo.xcprivacy` declaring no tracking and only the UserDefaults required-reason API `1C8F.1`) and
 fan-made / not-affiliated wording; see the legal reminders below. `ITSAppUsesNonExemptEncryption` is `false` in both
 Info.plists, so there is no export-compliance prompt.
