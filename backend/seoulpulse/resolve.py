@@ -170,9 +170,6 @@ def validate_seed(config: Config, *, online: bool = False, transport: httpx.Base
     for msg in [*seed.issues, *seed.warnings]:   # unresolved channel ids are errors here
         report(msg)
     if online:
-        if not config.contact_configured:
-            out("note: SP_CONTACT is unset; Wikimedia allows ~10 requests/min for unidentified clients, "
-                "so --online can take ~30 minutes")
         with HttpClient(config.user_agent, transport=transport, sleep=sleep) as http:
             channels = seed.resolved_channels()
             for ch in channels:

@@ -3,6 +3,14 @@
 Step-by-step for publishing SeoulPulse. Nothing here has been run for you: no repo exists yet, no secrets are
 set, and the app has never been signed. The default path is GitHub Actions + GitHub Pages (free, no server).
 
+## Current deployment
+
+- Repo: `taejunoh/seoulpulse` (public).
+- Hosting: GitHub Pages via Actions, serving <https://taejunoh.com/seoulpulse/trends.json>.
+- Repository variable `SP_CONTACT` = `https://github.com/taejunoh/seoulpulse`.
+- Schedule: cron every 30 minutes (`.github/workflows/pipeline.yml`).
+- The iOS app's built-in default feed URL is the Pages URL above.
+
 ## 1. Push to GitHub
 
 ```sh
@@ -72,7 +80,7 @@ Caveats:
 
 ## 3. Point the iOS app at the published URL
 
-The feed URL resolves as: Settings override, then Info.plist `SPTrendsURL`, then `http://localhost:8787/trends.json`.
+The feed URL resolves as: Settings override, then Info.plist `SPTrendsURL`, then the built-in default `https://taejunoh.com/seoulpulse/trends.json`.
 
 - **Quick test, no rebuild:** in the app, open Settings and enter the Pages URL as the override. It is stored in the
   App Group defaults, so the widget uses it too (this requires the App Group to work, i.e. a real signed build).

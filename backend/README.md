@@ -33,7 +33,7 @@ Exit codes for `run`: `0` means ok or partial, `1` means a config error or crash
 
 | Variable | Default | Notes |
 |---|---|---|
-| `SP_CONTACT` | generic project string | Contact URL or email for the User-Agent `SeoulPulse/0.1 (+…)`. **Set it.** Without a URL or email, Wikimedia treats requests as unidentified and limits them to about 10/min instead of 200/min. Wikipedia backfill then spreads over several runs, and its status reads `error`/`degraded` until it catches up. |
+| `SP_CONTACT` | `https://github.com/taejunoh/seoulpulse` | Contact URL or email for the User-Agent `SeoulPulse/0.1 (+…)`. The default identifies this project's repo; forks and other deployments should set their own. Without a URL or email, Wikimedia treats requests as unidentified and limits them to about 10/min instead of 200/min. Wikipedia backfill then spreads over several runs, and its status reads `error`/`degraded` until it catches up. |
 | `SP_DB_PATH` | `var/seoulpulse.db` | SQLite (WAL). Relative paths resolve against `backend/`. |
 | `SP_PUBLIC_DIR` | `../public` | where `trends.json` is written |
 | `SP_INTERVAL_SEC` | `1800` | loop interval and `next_update_hint` |

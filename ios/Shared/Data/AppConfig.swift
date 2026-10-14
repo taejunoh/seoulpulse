@@ -16,7 +16,7 @@ enum TrendsURLSource: String, Sendable {
 }
 
 enum AppConfig {
-    static let defaultTrendsURLString = "http://localhost:8787/trends.json"
+    static let defaultTrendsURLString = "https://taejunoh.com/seoulpulse/trends.json"
     static let overrideKey = "trendsURLOverride"
     static let infoPlistURLKey = "SPTrendsURL"
     static let infoPlistAppGroupKey = "SPAppGroupID"

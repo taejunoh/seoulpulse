@@ -33,6 +33,6 @@
 	<key>SPAppGroupID</key>
 	<string>group.com.seoulpulse.app</string>
 	<key>SPTrendsURL</key>
-	<string>http://localhost:8787/trends.json</string>
+	<string>https://taejunoh.com/seoulpulse/trends.json</string>
 </dict>
 </plist>

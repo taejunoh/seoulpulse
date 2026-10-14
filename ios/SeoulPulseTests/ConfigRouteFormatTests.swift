@@ -42,14 +42,14 @@ final class AppConfigTests: XCTestCase {
         for info in [nil, [:], ["SPTrendsURL": "nope"], ["SPTrendsURL": 42]] as [[String: Any]?] {
             let r = AppConfig.resolveTrendsURL(defaults: defaults, info: info)
             XCTAssertEqual(r.source, .builtIn)
-            XCTAssertEqual(r.url.absoluteString, "http://localhost:8787/trends.json")
+            XCTAssertEqual(r.url.absoluteString, "https://taejunoh.com/seoulpulse/trends.json")
         }
         XCTAssertEqual(AppConfig.resolveTrendsURL(defaults: nil, info: nil).source, .builtIn)
     }
 
     func testAppInfoPlistShipsDefaultURL() {
         XCTAssertEqual(Bundle.main.object(forInfoDictionaryKey: "SPTrendsURL") as? String,
-                       "http://localhost:8787/trends.json")
+                       "https://taejunoh.com/seoulpulse/trends.json")
         XCTAssertEqual(Bundle.main.object(forInfoDictionaryKey: "SPAppGroupID") as? String, "group.com.seoulpulse.app")
     }
 

@@ -26,7 +26,7 @@ targets:
         CFBundleDisplayName: SeoulPulse
         CFBundleShortVersionString: $(MARKETING_VERSION)
         CFBundleVersion: $(CURRENT_PROJECT_VERSION)
-        SPTrendsURL: http://localhost:8787/trends.json
+        SPTrendsURL: https://taejunoh.com/seoulpulse/trends.json
         SPAppGroupID: group.com.seoulpulse.app
         CFBundleURLTypes: [{CFBundleURLName: com.seoulpulse.app, CFBundleURLSchemes: [seoulpulse]}]
         NSAppTransportSecurity: {NSAllowsLocalNetworking: true}
@@ -53,7 +53,7 @@ targets:
         CFBundleShortVersionString: $(MARKETING_VERSION)
         CFBundleVersion: $(CURRENT_PROJECT_VERSION)
         NSExtension: {NSExtensionPointIdentifier: com.apple.widgetkit-extension}
-        SPTrendsURL: http://localhost:8787/trends.json
+        SPTrendsURL: https://taejunoh.com/seoulpulse/trends.json
         SPAppGroupID: group.com.seoulpulse.app
         NSAppTransportSecurity: {NSAllowsLocalNetworking: true}
     settings:

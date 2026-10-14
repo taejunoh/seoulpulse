@@ -24,7 +24,7 @@ The build signs ad hoc for the simulator (`CODE_SIGN_IDENTITY[sdk=iphonesimulato
 
 `TrendStore.load()` tries the network, then the App Group cache (`trends-cache.json`), then the bundled `Shared/Resources/sample-trends.json` (a byte-identical copy of `docs/trends.example.json`; a test enforces this). It never throws. Every screen labels its origin: **Live**, **Offline** (cache) or **Sample data**.
 
-The feed URL resolves in this order: Settings override (App Group defaults key `trendsURLOverride`) → Info.plist `SPTrendsURL` → `http://localhost:8787/trends.json`. ATS allows local networking (`NSAllowsLocalNetworking` in `project.yml`). On a physical iPhone, start the backend with `uv run seoulpulse dev --host 0.0.0.0` (the default `127.0.0.1` is not reachable from the phone), then set `http://<Mac LAN IP>:8787/trends.json` in Settings.
+The feed URL resolves in this order: Settings override (App Group defaults key `trendsURLOverride`) → Info.plist `SPTrendsURL` → built-in default `https://taejunoh.com/seoulpulse/trends.json` (the Info.plist value is the same). ATS allows local networking (`NSAllowsLocalNetworking` in `project.yml`). On a physical iPhone, start the backend with `uv run seoulpulse dev --host 0.0.0.0` (the default `127.0.0.1` is not reachable from the phone), then set `http://<Mac LAN IP>:8787/trends.json` in Settings. To develop against a local backend on the simulator, set `http://localhost:8787/trends.json` in Settings.
 
 ## Layout
 

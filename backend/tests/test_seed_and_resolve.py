@@ -86,9 +86,10 @@ def test_resolve_noop_when_lock_is_complete(tmp_path):
     assert "already resolved" in lines[0]
 
 
-def test_default_contact_is_generic():
+def test_default_contact_is_project_repo():
     cfg = load_config({}, warn=False)
-    assert cfg.contact == DEFAULT_CONTACT and not cfg.contact_configured
+    assert cfg.contact == DEFAULT_CONTACT == "https://github.com/taejunoh/seoulpulse"
+    assert not cfg.contact_configured
     assert "@" not in cfg.user_agent
     assert cfg.user_agent.startswith("SeoulPulse/0.1 (+")
     cfg2 = load_config({"SP_CONTACT": "https://example.invalid/ops"}, warn=False)

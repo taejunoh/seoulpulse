@@ -13,9 +13,9 @@ log = logging.getLogger("seoulpulse.config")
 BACKEND_DIR = Path(__file__).resolve().parent.parent
 REPO_DIR = BACKEND_DIR.parent
 
-# Used in the User-Agent when SP_CONTACT is unset. Generic on purpose: it names the project and
-# tells operators how to fix it. Never put a personal address here.
-DEFAULT_CONTACT = "SeoulPulse open-source K-pop trends pipeline; operator: set SP_CONTACT"
+# Used in the User-Agent when SP_CONTACT is unset: the public project repo, so Wikimedia sees an
+# identified client. Never put a personal address here. SP_CONTACT still overrides it.
+DEFAULT_CONTACT = "https://github.com/taejunoh/seoulpulse"
 
 DEFAULT_LLM_MODEL = "claude-haiku-5-5"
 
@@ -93,10 +93,7 @@ def load_config(env: Mapping[str, str] | None = None, *, warn: bool = True) -> C
     configured = bool(contact)
     if not configured:
         if warn:
-            log.warning(
-                "SP_CONTACT is unset; Wikimedia throttles anonymous User-Agents. "
-                "Set SP_CONTACT to a contact URL or email."
-            )
+            log.info("SP_CONTACT is unset; using the default contact %s", DEFAULT_CONTACT)
         contact = DEFAULT_CONTACT
     return Config(
         backend_dir=BACKEND_DIR,

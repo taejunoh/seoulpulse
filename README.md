@@ -5,6 +5,9 @@ channel feeds, Wikipedia pageviews and Yonhap/Soompi/Koreaboo headlines, scores 
 Korea moves before English-language coverage), and writes one static file, `public/trends.json`. The iOS app
 and WidgetKit extension read that file. No server, no accounts, no API keys required.
 
+**Live feed:** <https://taejunoh.com/seoulpulse/trends.json> (refreshed every 30 minutes). The iOS app defaults to
+this URL; for development, point Settings at a local server such as `http://localhost:8787/trends.json`.
+
 ## Architecture
 
 ```
@@ -41,8 +44,9 @@ xcodegen generate
 open SeoulPulse.xcodeproj      # run the SeoulPulse scheme on a simulator
 ```
 
-Or build from the command line, as in `ios/README.md`. The simulator reads `http://localhost:8787/trends.json`
-by default. With no backend running, the app falls back to its cache, then to bundled sample data, and labels
+Or build from the command line, as in `ios/README.md`. The app reads the live feed
+`https://taejunoh.com/seoulpulse/trends.json` by default; to develop against a local backend, set
+`http://localhost:8787/trends.json` in Settings. If the feed is unreachable, the app falls back to its cache, then to bundled sample data, and labels
 which one it is showing. To serve the sample payload without running the pipeline:
 `uv run seoulpulse serve --seed-example`.
 
@@ -75,7 +79,7 @@ All optional; read in `backend/seoulpulse/config.py`. Relative paths resolve aga
 
 | Variable | Default | Notes |
 |---|---|---|
-| `SP_CONTACT` | generic project string | Contact URL or email placed in the User-Agent. **Set it.** Wikimedia throttles anonymous User-Agents to about 10 requests/min instead of 200, which slows the Wikipedia backfill and can leave its status at `error`/`degraded` for several runs. |
+| `SP_CONTACT` | `https://github.com/taejunoh/seoulpulse` | Contact URL or email placed in the User-Agent. The default identifies this project's repo; forks and other deployments should set their own. Wikimedia throttles anonymous User-Agents to about 10 requests/min instead of 200, which slows the Wikipedia backfill and can leave its status at `error`/`degraded` for several runs. |
 | `YOUTUBE_API_KEY` | unset | Tracks view counts after videos leave the 15-item RSS window. |
 | `SP_WHY_LLM` | `0` | `1` enables LLM-written "why" lines for the top 10. Also needs `ANTHROPIC_API_KEY` and `uv sync --extra llm`. In GitHub Actions, set the `SP_WHY_LLM` variable to `1` and add the `ANTHROPIC_API_KEY` secret (see `docs/DEPLOY.md`). The LLM never sees headlines. |
 | `ANTHROPIC_API_KEY` | unset | Used only when `SP_WHY_LLM=1`. |
