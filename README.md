@@ -84,7 +84,8 @@ All optional; read in `backend/seoulpulse/config.py`. Relative paths resolve aga
 | Variable | Default | Notes |
 |---|---|---|
 | `SP_CONTACT` | `https://github.com/taejunoh/seoulpulse` | Contact URL or email placed in the User-Agent. The default identifies this project's repo; forks and other deployments should set their own. Wikimedia throttles anonymous User-Agents to about 10 requests/min instead of 200, which slows the Wikipedia backfill and can leave its status at `error`/`degraded` for several runs. |
-| `YOUTUBE_API_KEY` | unset | Tracks view counts after videos leave the 15-item RSS window. |
+| `YOUTUBE_API_KEY` | unset | Optional YouTube Data API pass: finds uploads beyond RSS's latest 15, exact view counts, keeps tracking videos after they leave the feed. Budget `SP_YOUTUBE_DAILY_UNITS` (9000/day). See backend/README.md. |
+| `NAVER_CLIENT_ID` / `NAVER_CLIENT_SECRET` | unset | Optional Naver DataLab "Korean search spike" signal (both required; new keys via NAVER API HUB). `SP_NAVER_ENDPOINT` = auto/hub/developers. |
 | `SP_WHY_LLM` | `0` | `1` enables LLM-written "why" lines for the top 10. Also needs `ANTHROPIC_API_KEY` and `uv sync --extra llm`. In GitHub Actions, set the `SP_WHY_LLM` variable to `1` and add the `ANTHROPIC_API_KEY` secret (see `docs/DEPLOY.md`). The LLM never sees headlines. |
 | `ANTHROPIC_API_KEY` | unset | Used only when `SP_WHY_LLM=1`. |
 | `SP_LLM_MODEL` | `claude-haiku-5-5` | Model for the "why" lines. |

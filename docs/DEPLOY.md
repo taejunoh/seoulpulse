@@ -41,11 +41,17 @@ Settings, then Secrets and variables, then Actions:
 | Kind | Name | Required | Used for |
 |---|---|---|---|
 | Variable (`vars`) | `SP_CONTACT` | in practice, yes | Contact URL or email in the User-Agent. Without it Wikimedia limits the pipeline to about 10 requests/min. Use your repo or site URL if you do not want to publish an email. |
-| Secret | `YOUTUBE_API_KEY` | no | Tracks view counts past the 15-item RSS window. |
+| Secret | `YOUTUBE_API_KEY` | no | YouTube Data API v3: uploads beyond RSS's 15, exact view counts, tracking after videos leave the feed. ≤200 units/run, ≤9,000/day. |
+| Variable | `SP_YOUTUBE_DAILY_UNITS` | no | Daily unit budget for that key (default 9000 of the free 10,000). |
+| Secret | `NAVER_CLIENT_ID` | no | Naver DataLab "Korean search spike" (needs both). New keys only via NAVER API HUB (Naver Cloud). |
+| Secret | `NAVER_CLIENT_SECRET` | no | See above. ~17 calls/day, capped at 300/day. |
+| Variable | `SP_NAVER_ENDPOINT` | no | `auto` (default), `hub`, or `developers` (legacy keys, until 2027-06-30). |
 
 ```sh
 gh variable set SP_CONTACT --body "https://github.com/<you>/seoulpulse"
-gh secret set YOUTUBE_API_KEY            # optional; prompts for the value
+gh secret set YOUTUBE_API_KEY --repo taejunoh/seoulpulse       # optional; prompts for the value
+gh secret set NAVER_CLIENT_ID --repo taejunoh/seoulpulse       # optional; set both Naver secrets or neither
+gh secret set NAVER_CLIENT_SECRET --repo taejunoh/seoulpulse
 ```
 
 `SP_CONTACT` is a repository **variable**, not a secret: the workflow reads `${{ vars.SP_CONTACT }}`.
@@ -58,7 +64,7 @@ Enable Pages: Settings, then Pages, then Source = **GitHub Actions** (the workfl
 1. Restores `backend/var` (the SQLite history used for velocity, rank change and baselines) and `public/` from the
    Actions cache (`actions/cache/restore`, key `sp-state-<run_id>`, falling back to the newest `sp-state-*`).
    Restoring `public/` is what lets the pipeline keep the last good `trends.json` when every source fails.
-2. `uv sync --frozen`, then `uv run seoulpulse run` with `SP_CONTACT` and `YOUTUBE_API_KEY` in the environment.
+2. `uv sync --frozen`, then `uv run seoulpulse run` with `SP_CONTACT` and the optional YouTube/Naver secrets and variables from the table above in the environment (empty values count as unset).
 3. Saves the same two paths back to the cache (`if: always()`), copies the committed `site/` pages into `public/`
    (`cp -R site/. public/`, so the privacy and support pages deploy with every run), then uploads `public/` as the
    Pages artifact.

@@ -137,6 +137,33 @@ final class DecodingTests: XCTestCase {
 
     // MARK: (b) Tolerance
 
+    func testSearchSignalAbsentInExamplePayload() throws {
+        let snap = try TestSupport.sampleSnapshot()
+        XCTAssertTrue(snap.items.allSatisfy { $0.signals.search == nil }, "keyless payloads carry no search signal")
+    }
+
+    func testNaverSourceAndSearchSignalDecode() throws {
+        let data = try TestSupport.mutatedSample { root in
+            var items = root["items"] as! [[String: Any]]
+            var signals = items[0]["signals"] as! [String: Any]
+            signals["search"] = 0.42
+            items[0]["signals"] = signals
+            root["items"] = items
+            var sources = root["sources"] as! [[String: Any]]
+            sources.append(["id": "naver", "name": "Naver DataLab", "status": "ok",
+                            "last_success_at": "2026-10-14T08:30:00Z", "detail": ""])
+            root["sources"] = sources
+        }
+        let snap = try TrendsSnapshot.decode(data)
+        XCTAssertEqual(snap.sources.count, 6)
+        let naver = try XCTUnwrap(snap.sources.last)
+        XCTAssertEqual(naver.id, "naver")
+        XCTAssertEqual(naver.name, "Naver DataLab")
+        XCTAssertEqual(naver.status, .ok)
+        XCTAssertEqual(try XCTUnwrap(snap.items[0].signals.search), 0.42, accuracy: 1e-9)
+        XCTAssertNil(snap.items[1].signals.search)
+    }
+
     func testUnknownKeysAndUnknownEnumValues() throws {
         let data = try TestSupport.mutatedSample { root in
             root["schema_version"] = 2

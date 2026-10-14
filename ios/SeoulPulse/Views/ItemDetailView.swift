@@ -175,11 +175,15 @@ private struct SignalBars: View {
     @Environment(\.dynamicTypeSize) private var typeSize
 
     private var rows: [(label: String, value: Double, centered: Bool)] {
-        [("YouTube", signals.youtube, false),
-         ("Acceleration", signals.accel, true),
-         ("New release", signals.newRelease, false),
-         ("Wikipedia", signals.wiki, false),
-         ("Headlines", signals.news, false)]
+        var rows: [(label: String, value: Double, centered: Bool)] = [
+            ("YouTube", signals.youtube, false),
+            ("Acceleration", signals.accel, true),
+            ("New release", signals.newRelease, false),
+            ("Wikipedia", signals.wiki, false),
+            ("Headlines", signals.news, false)]
+        // Only present when the backend has Naver DataLab configured; keyless payloads look unchanged.
+        if let search = signals.search { rows.append(("Korean search", search, false)) }
+        return rows
     }
 
     var body: some View {

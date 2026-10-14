@@ -238,12 +238,16 @@ struct TrendSignals: Decodable, Equatable, Sendable {
     var newRelease: Double = 0
     var wiki: Double = 0
     var news: Double = 0
+    /// Korean search spike (Naver DataLab). Optional: present only when the backend has Naver configured.
+    var search: Double?
 
-    init(youtube: Double = 0, accel: Double = 0, newRelease: Double = 0, wiki: Double = 0, news: Double = 0) {
+    init(youtube: Double = 0, accel: Double = 0, newRelease: Double = 0, wiki: Double = 0, news: Double = 0,
+         search: Double? = nil) {
         self.youtube = youtube; self.accel = accel; self.newRelease = newRelease; self.wiki = wiki; self.news = news
+        self.search = search
     }
 
-    private enum CodingKeys: String, CodingKey { case youtube, accel, newRelease, wiki, news }
+    private enum CodingKeys: String, CodingKey { case youtube, accel, newRelease, wiki, news, search }
 
     init(from decoder: Decoder) throws {
         let c = try decoder.container(keyedBy: CodingKeys.self)
@@ -252,6 +256,7 @@ struct TrendSignals: Decodable, Equatable, Sendable {
         newRelease = (try? c.decodeIfPresent(Double.self, forKey: .newRelease)) ?? 0
         wiki = (try? c.decodeIfPresent(Double.self, forKey: .wiki)) ?? 0
         news = (try? c.decodeIfPresent(Double.self, forKey: .news)) ?? 0
+        search = (try? c.decodeIfPresent(Double.self, forKey: .search)) ?? nil
     }
 }
 

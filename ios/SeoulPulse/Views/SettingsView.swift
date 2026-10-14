@@ -179,7 +179,7 @@ struct SettingsView: View {
         } header: {
             Text("Data sources")
         } footer: {
-            Text("Status from the snapshot generated \(Format.kstDateTime(model.snapshot.generatedAt)). Every source is keyless and public.")
+            Text("Status from the snapshot generated \(Format.kstDateTime(model.snapshot.generatedAt)). Public sources only: YouTube, Wikipedia, and news headlines (plus Naver search trends when enabled).")
         }
         .listRowBackground(Theme.surface)
     }
