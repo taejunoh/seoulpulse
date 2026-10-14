@@ -1,0 +1,36 @@
+[project]
+name = "seoulpulse"
+version = "0.1.0"
+description = "Korea-first K-pop trends: a keyless pipeline that writes one static trends.json"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "httpx>=0.27",
+    "pyyaml>=6.0.2",
+    "defusedxml>=0.7.1",
+]
+
+[project.optional-dependencies]
+llm = ["anthropic"]
+
+[project.scripts]
+seoulpulse = "seoulpulse.cli:main"
+
+[dependency-groups]
+dev = [
+    "pytest>=8",
+    "jsonschema>=4.23",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["seoulpulse"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+markers = [
+    "allow_loopback: permit real sockets to 127.0.0.1 only (local static server test)",
+]

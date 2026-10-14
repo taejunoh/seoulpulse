@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feed xmlns:yt="http://www.youtube.com/xml/schemas/2015" xmlns:media="http://search.yahoo.com/mrss/" xmlns="http://www.w3.org/2005/Atom">
+ <link rel="self" href="http://www.youtube.com/feeds/videos.xml?channel_id=UC3IZKseVpdzPSBaWxBxundA"/>
+ <id>yt:channel:3IZKseVpdzPSBaWxBxundA</id>
+ <yt:channelId>3IZKseVpdzPSBaWxBxundA</yt:channelId>
+ <title>HYBE LABELS</title>
+ <link rel="alternate" href="https://www.youtube.com/channel/UC3IZKseVpdzPSBaWxBxundA"/>
+ <author>
+  <name>HYBE LABELS</name>
+  <uri>https://www.youtube.com/channel/UC3IZKseVpdzPSBaWxBxundA</uri>
+ </author>
+ <published>2008-06-04T08:23:22+00:00</published>
+ <entry>
+  <id>yt:video:FIXTURE0001</id>
+  <yt:videoId>FIXTURE0001</yt:videoId>
+  <yt:channelId>UC3IZKseVpdzPSBaWxBxundA</yt:channelId>
+  <title>LE SSERAFIM (르세라핌) &apos;Test Pattern&apos; Official MV</title>
+  <link rel="alternate" href="https://www.youtube.com/watch?v=FIXTURE0001"/>
+  <author>
+   <name>HYBE LABELS</name>
+   <uri>https://www.youtube.com/channel/UC3IZKseVpdzPSBaWxBxundA</uri>
+  </author>
+  <published>2026-10-13T09:00:02+00:00</published>
+  <updated>2026-10-14T07:45:11+00:00</updated>
+  <media:group>
+   <media:title>LE SSERAFIM (르세라핌) &apos;Test Pattern&apos; Official MV</media:title>
+   <media:content url="https://www.youtube.com/v/FIXTURE0001?version=3" type="application/x-shockwave-flash" width="640" height="390"/>
+   <media:thumbnail url="https://i3.ytimg.com/vi/FIXTURE0001/hqdefault.jpg" width="480" height="360"/>
+   <media:description>FIXTURE-SECRET-DESCRIPTION should never be stored</media:description>
+   <media:community>
+    <media:starRating count="7297" average="5.00" min="1" max="5"/>
+    <media:statistics views="1234567"/>
+   </media:community>
+  </media:group>
+ </entry>
+ <entry>
+  <id>yt:video:FIXTURE0002</id>
+  <yt:videoId>FIXTURE0002</yt:videoId>
+  <yt:channelId>UC3IZKseVpdzPSBaWxBxundA</yt:channelId>
+  <title>LE SSERAFIM (르세라핌) &apos;Test Pattern&apos; Official MV #shorts</title>
+  <link rel="alternate" href="https://www.youtube.com/shorts/FIXTURE0002"/>
+  <author>
+   <name>HYBE LABELS</name>
+   <uri>https://www.youtube.com/channel/UC3IZKseVpdzPSBaWxBxundA</uri>
+  </author>
+  <published>2026-10-13T09:05:00+00:00</published>
+  <updated>2026-10-13T09:05:10+00:00</updated>
+  <media:group>
+   <media:title>LE SSERAFIM (르세라핌) &apos;Test Pattern&apos; Official MV #shorts</media:title>
+   <media:content url="https://www.youtube.com/v/FIXTURE0002?version=3" type="application/x-shockwave-flash" width="640" height="390"/>
+   <media:thumbnail url="https://i3.ytimg.com/vi/FIXTURE0002/hqdefault.jpg" width="480" height="360"/>
+   <media:description></media:description>
+   <media:community>
+    <media:starRating count="120" average="5.00" min="1" max="5"/>
+    <media:statistics views="45000"/>
+   </media:community>
+  </media:group>
+ </entry>
+ <entry>
+  <id>yt:video:FIXTURE0003</id>
+  <yt:videoId>FIXTURE0003</yt:videoId>
+  <yt:channelId>UC3IZKseVpdzPSBaWxBxundA</yt:channelId>
+  <title>TWS (투어스) &apos;Placeholder&apos; Official Teaser</title>
+  <link rel="alternate" href="https://www.youtube.com/watch?v=FIXTURE0003"/>
+  <author>
+   <name>HYBE LABELS</name>
+   <uri>https://www.youtube.com/channel/UC3IZKseVpdzPSBaWxBxundA</uri>
+  </author>
+  <published>2026-10-14T03:00:00+00:00</published>
+  <updated>2026-10-14T03:00:00+00:00</updated>
+  <media:group>
+   <media:title>TWS (투어스) &apos;Placeholder&apos; Official Teaser</media:title>
+   <media:content url="https://www.youtube.com/v/FIXTURE0003?version=3" type="application/x-shockwave-flash" width="640" height="390"/>
+   <media:thumbnail url="https://i3.ytimg.com/vi/FIXTURE0003/hqdefault.jpg" width="480" height="360"/>
+   <media:description></media:description>
+   <media:community>
+    <media:starRating count="0" average="0.00" min="1" max="5"/>
+   </media:community>
+  </media:group>
+ </entry>
+ <entry>
+  <id>yt:video:FIXTURE0004</id>
+  <yt:videoId>FIXTURE0004</yt:videoId>
+  <yt:channelId>UC3IZKseVpdzPSBaWxBxundA</yt:channelId>
+  <title>정한X조슈아 (SEVENTEEN) ‘SAMPLE TRACK&apos; Performance Film</title>
+  <link rel="alternate" href="https://www.youtube.com/watch?v=FIXTURE0004"/>
+  <author>
+   <name>HYBE LABELS</name>
+   <uri>https://www.youtube.com/channel/UC3IZKseVpdzPSBaWxBxundA</uri>
+  </author>
+  <published>2026-10-12T15:00:02+00:00</published>
+  <updated>2026-10-14T06:00:00+00:00</updated>
+  <media:group>
+   <media:title>정한X조슈아 (SEVENTEEN) ‘SAMPLE TRACK&apos; Performance Film</media:title>
+   <media:content url="https://www.youtube.com/v/FIXTURE0004?version=3" type="application/x-shockwave-flash" width="640" height="390"/>
+   <media:thumbnail url="https://i3.ytimg.com/vi/FIXTURE0004/hqdefault.jpg" width="480" height="360"/>
+   <media:description></media:description>
+   <media:community>
+    <media:starRating count="900" average="5.00" min="1" max="5"/>
+    <media:statistics views="203362"/>
+   </media:community>
+  </media:group>
+ </entry>
+</feed>

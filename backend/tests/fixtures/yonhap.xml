@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" xmlns:content="http://purl.org/rss/1.0/modules/content/"  xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:media="http://search.yahoo.com/mrss/" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:sy="http://purl.org/rss/1.0/modules/syndication/">
+	<channel>
+		<title><![CDATA[연합뉴스 연예 최신기사]]></title>
+		<link>https://www.yna.co.kr/entertainment/all</link>
+		<atom:link href="https://www.yna.co.kr/rss/entertainment.xml" rel="self" type="application/rss+xml" />
+		<description><![CDATA[픽스처 채널 설명]]></description>
+		<language>ko-KR</language>
+		<lastBuildDate>Wed, 14 Oct 2026 17:17:39 +0900</lastBuildDate>
+		<item>
+			<title><![CDATA[[픽스처] 뉴진스가 샘플 신곡으로 컴백…'테스트 패턴' 공개]]></title>
+			<link>https://www.yna.co.kr/view/AKR20261014000000001</link>
+			<guid isPermaLink="true">https://www.yna.co.kr/view/AKR20261014000000001</guid>
+			<pubDate>Wed, 14 Oct 2026 17:17:39 +0900</pubDate>
+			<dc:creator>픽스처기자</dc:creator>
+			<description><![CDATA[(서울=연합뉴스) YONHAP-BODY-SENTINEL 픽스처 본문은 저장되면 안 된다.]]></description>
+			<media:content url="https://img.yna.co.kr/etc/inner/KR/2026/10/14/fixture.jpg" type="image/jpeg"></media:content>
+		</item>
+		<item>
+			<title><![CDATA[[픽스처] 에스파·아이브, 샘플 시상식 동반 참석]]></title>
+			<link>https://www.yna.co.kr/view/AKR20261014000000002</link>
+			<guid isPermaLink="true">https://www.yna.co.kr/view/AKR20261014000000002</guid>
+			<pubDate>Wed, 14 Oct 2026 16:50:51 +0900</pubDate>
+			<description><![CDATA[YONHAP-BODY-SENTINEL 두번째]]></description>
+		</item>
+		<item>
+			<title><![CDATA[[픽스처] 배우 한지민, 샘플 드라마 출연 확정]]></title>
+			<link>https://www.yna.co.kr/view/AKR20261014000000003</link>
+			<guid isPermaLink="true">https://www.yna.co.kr/view/AKR20261014000000003</guid>
+			<pubDate>Wed, 14 Oct 2026 15:00:00 +0900</pubDate>
+			<description><![CDATA[YONHAP-BODY-SENTINEL 세번째]]></description>
+		</item>
+		<item>
+			<title><![CDATA[[픽스처] 로제떡볶이 브랜드, 샘플 매장 오픈]]></title>
+			<link>https://www.yna.co.kr/view/AKR20261014000000004</link>
+			<guid isPermaLink="true">https://www.yna.co.kr/view/AKR20261014000000004</guid>
+			<pubDate>Wed, 14 Oct 2026 14:00:00 +0900</pubDate>
+			<description><![CDATA[YONHAP-BODY-SENTINEL 네번째]]></description>
+		</item>
+	</channel>
+</rss>

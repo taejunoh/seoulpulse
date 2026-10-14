@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?><rss version="2.0"
+	xmlns:content="http://purl.org/rss/1.0/modules/content/"
+	xmlns:dc="http://purl.org/dc/elements/1.1/"
+	xmlns:atom="http://www.w3.org/2005/Atom"
+	>
+
+<channel>
+	<title>Koreaboo</title>
+	<atom:link href="https://www.koreaboo.com/feed/" rel="self" type="application/rss+xml" />
+	<link>https://www.koreaboo.com</link>
+	<description>fixture feed</description>
+	<lastBuildDate>Wed, 14 Oct 2026 08:10:19 +0000</lastBuildDate>
+	<item>
+		<title>[Fixture] EXO Member&#8217;s Sample Comment Goes Viral</title>
+		<link>https://www.koreaboo.com/news/fixture-exo-sample-comment/</link>
+		<dc:creator><![CDATA[Koreaboo]]></dc:creator>
+		<pubDate>Wed, 14 Oct 2026 08:10:19 +0000</pubDate>
+		<category><![CDATA[News]]></category>
+		<guid isPermaLink="false">https://www.koreaboo.com/?p=2000001</guid>
+		<description><![CDATA[KOREABOO-BODY-SENTINEL teaser.]]></description>
+		<content:encoded><![CDATA[KOREABOO-CONTENT-SENTINEL full article text that must never be read.]]></content:encoded>
+	</item>
+	<item>
+		<title><![CDATA[[Fixture] IVE Shares Five Sample Moments From Tour]]></title>
+		<link>https://www.koreaboo.com/news/fixture-ive-five-moments/</link>
+		<pubDate>Wed, 14 Oct 2026 15:37:51 +0900</pubDate>
+		<guid isPermaLink="false">https://www.koreaboo.com/?p=2000002</guid>
+		<description><![CDATA[KOREABOO-BODY-SENTINEL two]]></description>
+		<content:encoded><![CDATA[KOREABOO-CONTENT-SENTINEL two]]></content:encoded>
+	</item>
+	<item>
+		<title>[Fixture] Item From The Future</title>
+		<link>https://www.koreaboo.com/news/fixture-future/</link>
+		<pubDate>Thu, 15 Oct 2026 08:00:00 +0000</pubDate>
+		<guid isPermaLink="false">https://www.koreaboo.com/?p=2000003</guid>
+		<description>KOREABOO-BODY-SENTINEL three</description>
+	</item>
+</channel>
+</rss>

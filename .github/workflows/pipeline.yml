@@ -1,0 +1,73 @@
+# Runs the keyless SeoulPulse pipeline every 30 minutes and publishes public/trends.json to GitHub Pages.
+# Repository settings: Pages source = "GitHub Actions"; variable SP_CONTACT (contact URL or email for the
+# Wikimedia User-Agent); optional secret YOUTUBE_API_KEY.
+name: pipeline
+
+on:
+  schedule:
+    - cron: "*/30 * * * *"
+  workflow_dispatch:
+
+concurrency: pipeline
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: astral-sh/setup-uv@v6
+        with:
+          working-directory: backend
+
+      # SQLite state (history for velocity, rank change and baselines) persists between runs via the cache.
+      # public/ is cached too, so "keep the last good trends.json" works when every source fails.
+      - name: Restore pipeline state
+        uses: actions/cache/restore@v4
+        with:
+          path: |
+            backend/var
+            public
+          key: sp-state-${{ github.run_id }}
+          restore-keys: sp-state-
+
+      - name: Install
+        working-directory: backend
+        run: uv sync --frozen
+
+      - name: Run pipeline
+        working-directory: backend
+        env:
+          SP_CONTACT: ${{ vars.SP_CONTACT }}
+          YOUTUBE_API_KEY: ${{ secrets.YOUTUBE_API_KEY }}
+        run: uv run seoulpulse run
+
+      - name: Save pipeline state
+        if: always()
+        uses: actions/cache/save@v4
+        with:
+          path: |
+            backend/var
+            public
+          key: sp-state-${{ github.run_id }}
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: public
+
+  deploy-pages:
+    needs: run
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

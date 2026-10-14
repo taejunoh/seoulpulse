@@ -1,0 +1,25 @@
+name: backend-ci
+
+on:
+  push:
+    paths: ["backend/**", "docs/**", ".github/workflows/backend-ci.yml"]
+  pull_request:
+    paths: ["backend/**", "docs/**", ".github/workflows/backend-ci.yml"]
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+        with:
+          working-directory: backend
+      - run: uv sync --frozen
+      - run: uv run pytest -q
