@@ -1,0 +1,638 @@
+{
+  "schema_version": 1,
+  "generated_at": "2026-10-14T09:00:00Z",
+  "next_update_hint": "2026-10-14T09:30:00Z",
+  "rank_change_basis_at": "2026-10-14T03:00:00Z",
+  "cold_start": false,
+  "items": [
+    {
+      "id": "kiss-of-life",
+      "rank": 1,
+      "prev_rank": null,
+      "change": "new",
+      "change_amount": 0,
+      "name": "KISS OF LIFE",
+      "name_ko": "키스오브라이프",
+      "score": 67.0,
+      "korea_first": true,
+      "why": "\"Lucky Seven\" views up 4.0x vs. normal decay",
+      "why_source": "template",
+      "image_url": "https://i.ytimg.com/vi/SAMPLE0001A/hqdefault.jpg",
+      "metrics": {
+        "yt_views_per_hour": 20000,
+        "yt_views_per_hour_estimated": false,
+        "yt_accel": 4.0,
+        "wiki_day": "2026-10-13",
+        "wiki_ko_views": 1300,
+        "wiki_ko_ratio": 3.25,
+        "wiki_en_views": 1560,
+        "wiki_en_ratio": 1.04,
+        "headlines_24h": 1,
+        "headlines_ko_24h": 1
+      },
+      "signals": {
+        "youtube": 0.814,
+        "accel": 1.0,
+        "new_release": 0.0,
+        "wiki": 0.683,
+        "news": 0.26
+      },
+      "top_video": {
+        "video_id": "SAMPLE0001A",
+        "title": "KISS OF LIFE (키스오브라이프) 'Lucky Seven' Official MV",
+        "url": "https://www.youtube.com/watch?v=SAMPLE0001A",
+        "kind": "mv",
+        "published_at": "2026-10-05T09:00:00Z",
+        "views": 1620000,
+        "channel_name": "KISS OF LIFE"
+      },
+      "headlines": [
+        {
+          "title": "[Sample] 키스오브라이프 '럭키 세븐' 역주행…음원차트 재진입",
+          "url": "https://www.yna.co.kr/entertainment/all",
+          "source_id": "yonhap",
+          "source_name": "Yonhap",
+          "lang": "ko",
+          "published_at": "2026-10-14T05:00:00Z"
+        }
+      ],
+      "links": {
+        "youtube_channel": "https://www.youtube.com/channel/UCvEEeBssb4XxIfWWIB8IjMw",
+        "wikipedia_en": "https://en.wikipedia.org/wiki/Kiss_of_Life_(group)",
+        "wikipedia_ko": null
+      }
+    },
+    {
+      "id": "aespa",
+      "rank": 2,
+      "prev_rank": 4,
+      "change": "up",
+      "change_amount": 2,
+      "name": "aespa",
+      "name_ko": "에스파",
+      "score": 63.1,
+      "korea_first": true,
+      "why": "New MV \"Neon Tide\" at 127K views/hr",
+      "why_source": "template",
+      "image_url": "https://i.ytimg.com/vi/SAMPLE0002A/hqdefault.jpg",
+      "metrics": {
+        "yt_views_per_hour": 126667,
+        "yt_views_per_hour_estimated": false,
+        "yt_accel": 0.96,
+        "wiki_day": "2026-10-13",
+        "wiki_ko_views": 9000,
+        "wiki_ko_ratio": 3.0,
+        "wiki_en_views": 13600,
+        "wiki_en_ratio": 1.7,
+        "headlines_24h": 3,
+        "headlines_ko_24h": 2
+      },
+      "signals": {
+        "youtube": 0.797,
+        "accel": -0.03,
+        "new_release": 0.625,
+        "wiki": 0.74,
+        "news": 0.366
+      },
+      "top_video": {
+        "video_id": "SAMPLE0002A",
+        "title": "aespa 에스파 'Neon Tide' MV",
+        "url": "https://www.youtube.com/watch?v=SAMPLE0002A",
+        "kind": "mv",
+        "published_at": "2026-10-13T15:00:00Z",
+        "views": 4580000,
+        "channel_name": "SMTOWN"
+      },
+      "headlines": [
+        {
+          "title": "[Sample] aespa's \"Neon Tide\" MV Passes 4 Million Views",
+          "url": "https://www.soompi.com/",
+          "source_id": "soompi",
+          "source_name": "Soompi",
+          "lang": "en",
+          "published_at": "2026-10-14T06:00:00Z"
+        },
+        {
+          "title": "[Sample] 에스파, 신곡 '네온 타이드' 뮤직비디오 공개",
+          "url": "https://www.yna.co.kr/entertainment/all",
+          "source_id": "yonhap",
+          "source_name": "Yonhap",
+          "lang": "ko",
+          "published_at": "2026-10-14T04:00:00Z"
+        },
+        {
+          "title": "[Sample] 에스파, 오늘 정규 2집 발매",
+          "url": "https://www.yna.co.kr/entertainment/all",
+          "source_id": "yonhap",
+          "source_name": "Yonhap",
+          "lang": "ko",
+          "published_at": "2026-10-13T13:00:00Z"
+        }
+      ],
+      "links": {
+        "youtube_channel": "https://www.youtube.com/channel/UC9GtSLeksfK4yuJ_g1lgQbg",
+        "wikipedia_en": "https://en.wikipedia.org/wiki/Aespa",
+        "wikipedia_ko": "https://ko.wikipedia.org/wiki/Aespa"
+      }
+    },
+    {
+      "id": "lim-young-woong",
+      "rank": 3,
+      "prev_rank": 3,
+      "change": "same",
+      "change_amount": 0,
+      "name": "Lim Young-woong",
+      "name_ko": "임영웅",
+      "score": 41.8,
+      "korea_first": true,
+      "why": "2 Korean headlines, no English coverage yet",
+      "why_source": "template",
+      "image_url": "https://i.ytimg.com/vi/SAMPLE0003A/hqdefault.jpg",
+      "metrics": {
+        "yt_views_per_hour": 9100,
+        "yt_views_per_hour_estimated": false,
+        "yt_accel": 1.12,
+        "wiki_day": "2026-10-13",
+        "wiki_ko_views": 21000,
+        "wiki_ko_ratio": 1.38,
+        "wiki_en_views": 900,
+        "wiki_en_ratio": 0.98,
+        "headlines_24h": 2,
+        "headlines_ko_24h": 2
+      },
+      "signals": {
+        "youtube": 0.401,
+        "accel": 0.041,
+        "new_release": 0.0,
+        "wiki": 0.214,
+        "news": 0.433
+      },
+      "top_video": {
+        "video_id": "SAMPLE0003A",
+        "title": "[MV] 임영웅 - 가을 편지 (Autumn Letter)",
+        "url": "https://www.youtube.com/watch?v=SAMPLE0003A",
+        "kind": "mv",
+        "published_at": "2026-10-02T09:00:00Z",
+        "views": 2310000,
+        "channel_name": "임영웅"
+      },
+      "headlines": [
+        {
+          "title": "[Sample] 임영웅, 전국투어 추가 공연 전석 매진",
+          "url": "https://www.yna.co.kr/entertainment/all",
+          "source_id": "yonhap",
+          "source_name": "Yonhap",
+          "lang": "ko",
+          "published_at": "2026-10-14T02:00:00Z"
+        },
+        {
+          "title": "[Sample] 임영웅 '가을 편지' 멜론 일간 1위",
+          "url": "https://www.yna.co.kr/entertainment/all",
+          "source_id": "yonhap",
+          "source_name": "Yonhap",
+          "lang": "ko",
+          "published_at": "2026-10-13T23:30:00Z"
+        }
+      ],
+      "links": {
+        "youtube_channel": null,
+        "wikipedia_en": "https://en.wikipedia.org/wiki/Lim_Young-woong",
+        "wikipedia_ko": "https://ko.wikipedia.org/wiki/%EC%9E%84%EC%98%81%EC%9B%85"
+      }
+    },
+    {
+      "id": "seventeen",
+      "rank": 4,
+      "prev_rank": 2,
+      "change": "down",
+      "change_amount": 2,
+      "name": "SEVENTEEN",
+      "name_ko": "세븐틴",
+      "score": 20.2,
+      "korea_first": false,
+      "why": "6 headlines in 24h (1 Korean)",
+      "why_source": "template",
+      "image_url": "https://i.ytimg.com/vi/SAMPLE0004A/hqdefault.jpg",
+      "metrics": {
+        "yt_views_per_hour": 7584,
+        "yt_views_per_hour_estimated": true,
+        "yt_accel": null,
+        "wiki_day": "2026-10-13",
+        "wiki_ko_views": 5200,
+        "wiki_ko_ratio": 1.04,
+        "wiki_en_views": 23000,
+        "wiki_en_ratio": 1.15,
+        "headlines_24h": 6,
+        "headlines_ko_24h": 1
+      },
+      "signals": {
+        "youtube": 0.354,
+        "accel": 0.0,
+        "new_release": 0.0,
+        "wiki": 0.042,
+        "news": 0.465
+      },
+      "top_video": {
+        "video_id": "SAMPLE0004A",
+        "title": "SEVENTEEN (세븐틴) 'Afterglow' Performance Film",
+        "url": "https://www.youtube.com/watch?v=SAMPLE0004A",
+        "kind": "perf",
+        "published_at": "2026-10-12T09:00:00Z",
+        "views": 900000,
+        "channel_name": "HYBE LABELS"
+      },
+      "headlines": [
+        {
+          "title": "[Sample] 세븐틴, 월드투어 서울 공연 성료",
+          "url": "https://www.yna.co.kr/entertainment/all",
+          "source_id": "yonhap",
+          "source_name": "Yonhap",
+          "lang": "ko",
+          "published_at": "2026-10-14T08:00:00Z"
+        },
+        {
+          "title": "[Sample] SEVENTEEN Wraps Seoul Leg Of World Tour",
+          "url": "https://www.soompi.com/",
+          "source_id": "soompi",
+          "source_name": "Soompi",
+          "lang": "en",
+          "published_at": "2026-10-14T07:00:00Z"
+        },
+        {
+          "title": "[Sample] SEVENTEEN's Encore Moment Goes Viral",
+          "url": "https://www.koreaboo.com/",
+          "source_id": "koreaboo",
+          "source_name": "Koreaboo",
+          "lang": "en",
+          "published_at": "2026-10-14T01:00:00Z"
+        }
+      ],
+      "links": {
+        "youtube_channel": "https://www.youtube.com/channel/UCfkXDY7vwkcJ8ddFGz8KusA",
+        "wikipedia_en": "https://en.wikipedia.org/wiki/Seventeen_(South_Korean_band)",
+        "wikipedia_ko": "https://ko.wikipedia.org/wiki/%EC%84%B8%EB%B8%90%ED%8B%B4_(%EC%9D%8C%EC%95%85_%EA%B7%B8%EB%A3%B9)"
+      }
+    },
+    {
+      "id": "le-sserafim",
+      "rank": 5,
+      "prev_rank": 7,
+      "change": "up",
+      "change_amount": 2,
+      "name": "LE SSERAFIM",
+      "name_ko": "르세라핌",
+      "score": 19.6,
+      "korea_first": false,
+      "why": "English Wikipedia views 2.1x the 2-week avg",
+      "why_source": "template",
+      "image_url": "https://i.ytimg.com/vi/SAMPLE0005A/hqdefault.jpg",
+      "metrics": {
+        "yt_views_per_hour": 5200,
+        "yt_views_per_hour_estimated": false,
+        "yt_accel": 1.05,
+        "wiki_day": "2026-10-13",
+        "wiki_ko_views": 6100,
+        "wiki_ko_ratio": 1.1,
+        "wiki_en_views": 31000,
+        "wiki_en_ratio": 2.1,
+        "headlines_24h": 1,
+        "headlines_ko_24h": 0
+      },
+      "signals": {
+        "youtube": 0.31,
+        "accel": 0.018,
+        "new_release": 0.0,
+        "wiki": 0.24,
+        "news": 0.12
+      },
+      "top_video": {
+        "video_id": "SAMPLE0005A",
+        "title": "LE SSERAFIM (르세라핌) 'Paper Crown' OFFICIAL MV",
+        "url": "https://www.youtube.com/watch?v=SAMPLE0005A",
+        "kind": "mv",
+        "published_at": "2026-09-30T09:00:00Z",
+        "views": 38200000,
+        "channel_name": "HYBE LABELS"
+      },
+      "headlines": [
+        {
+          "title": "[Sample] LE SSERAFIM Announces North American Tour Dates",
+          "url": "https://www.soompi.com/",
+          "source_id": "soompi",
+          "source_name": "Soompi",
+          "lang": "en",
+          "published_at": "2026-10-14T03:00:00Z"
+        }
+      ],
+      "links": {
+        "youtube_channel": "https://www.youtube.com/channel/UCs-QBT4qkj_YiQw1ZntDO3g",
+        "wikipedia_en": "https://en.wikipedia.org/wiki/Le_Sserafim",
+        "wikipedia_ko": "https://ko.wikipedia.org/wiki/LE_SSERAFIM"
+      }
+    },
+    {
+      "id": "illit",
+      "rank": 6,
+      "prev_rank": null,
+      "change": "new",
+      "change_amount": 0,
+      "name": "ILLIT",
+      "name_ko": "아일릿",
+      "score": 17.3,
+      "korea_first": false,
+      "why": "New teaser \"Glass Heart\": comeback incoming",
+      "why_source": "template",
+      "image_url": "https://i.ytimg.com/vi/SAMPLE0006A/hqdefault.jpg",
+      "metrics": {
+        "yt_views_per_hour": 11800,
+        "yt_views_per_hour_estimated": false,
+        "yt_accel": null,
+        "wiki_day": "2026-10-13",
+        "wiki_ko_views": 2900,
+        "wiki_ko_ratio": 1.21,
+        "wiki_en_views": 4100,
+        "wiki_en_ratio": 1.08,
+        "headlines_24h": 1,
+        "headlines_ko_24h": 1
+      },
+      "signals": {
+        "youtube": 0.272,
+        "accel": 0.0,
+        "new_release": 0.311,
+        "wiki": 0.05,
+        "news": 0.11
+      },
+      "top_video": {
+        "video_id": "SAMPLE0006A",
+        "title": "ILLIT (아일릿) 'Glass Heart' Official Teaser",
+        "url": "https://www.youtube.com/watch?v=SAMPLE0006A",
+        "kind": "teaser",
+        "published_at": "2026-10-13T15:00:00Z",
+        "views": 412000,
+        "channel_name": "HYBE LABELS"
+      },
+      "headlines": [
+        {
+          "title": "[Sample] 아일릿, 11월 컴백 확정…티저 공개",
+          "url": "https://www.yna.co.kr/entertainment/all",
+          "source_id": "yonhap",
+          "source_name": "Yonhap",
+          "lang": "ko",
+          "published_at": "2026-10-13T16:00:00Z"
+        }
+      ],
+      "links": {
+        "youtube_channel": "https://www.youtube.com/channel/UCEpFoWeCMCo5z3EvWaz6hQQ",
+        "wikipedia_en": "https://en.wikipedia.org/wiki/Illit",
+        "wikipedia_ko": "https://ko.wikipedia.org/wiki/ILLIT"
+      }
+    },
+    {
+      "id": "stray-kids",
+      "rank": 7,
+      "prev_rank": 5,
+      "change": "down",
+      "change_amount": 2,
+      "name": "Stray Kids",
+      "name_ko": "스트레이 키즈",
+      "score": 15.9,
+      "korea_first": false,
+      "why": "\"Thunderline\" steady at 48K views/hr",
+      "why_source": "template",
+      "image_url": "https://i.ytimg.com/vi/SAMPLE0007A/hqdefault.jpg",
+      "metrics": {
+        "yt_views_per_hour": 48000,
+        "yt_views_per_hour_estimated": false,
+        "yt_accel": 0.92,
+        "wiki_day": "2026-10-13",
+        "wiki_ko_views": 7000,
+        "wiki_ko_ratio": 0.97,
+        "wiki_en_views": 26000,
+        "wiki_en_ratio": 1.02,
+        "headlines_24h": 1,
+        "headlines_ko_24h": 0
+      },
+      "signals": {
+        "youtube": 0.455,
+        "accel": -0.06,
+        "new_release": 0.0,
+        "wiki": 0.0,
+        "news": 0.1
+      },
+      "top_video": {
+        "video_id": "SAMPLE0007A",
+        "title": "Stray Kids \"Thunderline\" M/V",
+        "url": "https://www.youtube.com/watch?v=SAMPLE0007A",
+        "kind": "mv",
+        "published_at": "2026-10-03T09:00:00Z",
+        "views": 61500000,
+        "channel_name": "JYP Entertainment"
+      },
+      "headlines": [
+        {
+          "title": "[Sample] Stray Kids' \"Thunderline\" Hits New Milestone",
+          "url": "https://www.koreaboo.com/",
+          "source_id": "koreaboo",
+          "source_name": "Koreaboo",
+          "lang": "en",
+          "published_at": "2026-10-13T20:00:00Z"
+        }
+      ],
+      "links": {
+        "youtube_channel": "https://www.youtube.com/channel/UC9rMiEjNaCSsebs31MRDCRA",
+        "wikipedia_en": "https://en.wikipedia.org/wiki/Stray_Kids",
+        "wikipedia_ko": "https://ko.wikipedia.org/wiki/Stray_Kids"
+      }
+    },
+    {
+      "id": "tws",
+      "rank": 8,
+      "prev_rank": null,
+      "change": "new",
+      "change_amount": 0,
+      "name": "TWS",
+      "name_ko": "투어스",
+      "score": 14.2,
+      "korea_first": true,
+      "why": "Korean Wikipedia views 2.4x normal, EN quiet",
+      "why_source": "template",
+      "image_url": null,
+      "metrics": {
+        "yt_views_per_hour": 1900,
+        "yt_views_per_hour_estimated": false,
+        "yt_accel": null,
+        "wiki_day": "2026-10-13",
+        "wiki_ko_views": 4800,
+        "wiki_ko_ratio": 2.4,
+        "wiki_en_views": 2100,
+        "wiki_en_ratio": 1.06,
+        "headlines_24h": 0,
+        "headlines_ko_24h": 0
+      },
+      "signals": {
+        "youtube": 0.12,
+        "accel": 0.0,
+        "new_release": 0.0,
+        "wiki": 0.34,
+        "news": 0.0
+      },
+      "top_video": null,
+      "headlines": [],
+      "links": {
+        "youtube_channel": "https://www.youtube.com/channel/UC8C6QOPDVYwmuaSBZksefdg",
+        "wikipedia_en": "https://en.wikipedia.org/wiki/TWS_(group)",
+        "wikipedia_ko": "https://ko.wikipedia.org/wiki/TWS_(%EC%9D%8C%EC%95%85_%EA%B7%B8%EB%A3%B9)"
+      }
+    },
+    {
+      "id": "blackpink",
+      "rank": 9,
+      "prev_rank": 6,
+      "change": "down",
+      "change_amount": 3,
+      "name": "BLACKPINK",
+      "name_ko": "블랙핑크",
+      "score": 13.8,
+      "korea_first": false,
+      "why": "4 headlines in 24h (2 Korean)",
+      "why_source": "template",
+      "image_url": "https://i.ytimg.com/vi/SAMPLE0009A/hqdefault.jpg",
+      "metrics": {
+        "yt_views_per_hour": 6600,
+        "yt_views_per_hour_estimated": false,
+        "yt_accel": 0.88,
+        "wiki_day": "2026-10-13",
+        "wiki_ko_views": 15000,
+        "wiki_ko_ratio": 1.0,
+        "wiki_en_views": 52000,
+        "wiki_en_ratio": 1.01,
+        "headlines_24h": 4,
+        "headlines_ko_24h": 2
+      },
+      "signals": {
+        "youtube": 0.33,
+        "accel": -0.09,
+        "new_release": 0.0,
+        "wiki": 0.0,
+        "news": 0.29
+      },
+      "top_video": {
+        "video_id": "SAMPLE0009A",
+        "title": "BLACKPINK - 'Starfall' M/V",
+        "url": "https://www.youtube.com/watch?v=SAMPLE0009A",
+        "kind": "mv",
+        "published_at": "2026-09-12T09:00:00Z",
+        "views": 212000000,
+        "channel_name": "BLACKPINK"
+      },
+      "headlines": [
+        {
+          "title": "[Sample] 블랙핑크, 월드투어 앙코르 공연 발표",
+          "url": "https://www.yna.co.kr/entertainment/all",
+          "source_id": "yonhap",
+          "source_name": "Yonhap",
+          "lang": "ko",
+          "published_at": "2026-10-14T06:30:00Z"
+        },
+        {
+          "title": "[Sample] BLACKPINK Confirms Encore Concerts",
+          "url": "https://www.soompi.com/",
+          "source_id": "soompi",
+          "source_name": "Soompi",
+          "lang": "en",
+          "published_at": "2026-10-14T07:30:00Z"
+        }
+      ],
+      "links": {
+        "youtube_channel": "https://www.youtube.com/channel/UCOmHUn--16B90oW2L6FRR3A",
+        "wikipedia_en": "https://en.wikipedia.org/wiki/Blackpink",
+        "wikipedia_ko": "https://ko.wikipedia.org/wiki/BLACKPINK"
+      }
+    },
+    {
+      "id": "katseye",
+      "rank": 10,
+      "prev_rank": 10,
+      "change": "same",
+      "change_amount": 0,
+      "name": "KATSEYE",
+      "name_ko": "캣츠아이",
+      "score": 12.5,
+      "korea_first": false,
+      "why": "\"Pulse Check\" steady at 31K views/hr",
+      "why_source": "template",
+      "image_url": "https://i.ytimg.com/vi/SAMPLE0010A/hqdefault.jpg",
+      "metrics": {
+        "yt_views_per_hour": 31000,
+        "yt_views_per_hour_estimated": true,
+        "yt_accel": null,
+        "wiki_day": "2026-10-13",
+        "wiki_ko_views": 800,
+        "wiki_ko_ratio": 1.02,
+        "wiki_en_views": 19000,
+        "wiki_en_ratio": 1.05,
+        "headlines_24h": 0,
+        "headlines_ko_24h": 0
+      },
+      "signals": {
+        "youtube": 0.357,
+        "accel": 0.0,
+        "new_release": 0.0,
+        "wiki": 0.0,
+        "news": 0.0
+      },
+      "top_video": {
+        "video_id": "SAMPLE0010A",
+        "title": "KATSEYE (캣츠아이) 'Pulse Check' Official MV",
+        "url": "https://www.youtube.com/watch?v=SAMPLE0010A",
+        "kind": "mv",
+        "published_at": "2026-09-26T09:00:00Z",
+        "views": 24800000,
+        "channel_name": "HYBE LABELS"
+      },
+      "headlines": [],
+      "links": {
+        "youtube_channel": "https://www.youtube.com/channel/UC2ff-9LhZKnDnw9XWHUOc_A",
+        "wikipedia_en": "https://en.wikipedia.org/wiki/Katseye",
+        "wikipedia_ko": null
+      }
+    }
+  ],
+  "sources": [
+    {
+      "id": "youtube",
+      "name": "YouTube",
+      "status": "ok",
+      "last_success_at": "2026-10-14T09:00:00Z",
+      "detail": "RSS 86/87 channels"
+    },
+    {
+      "id": "wikipedia",
+      "name": "Wikipedia",
+      "status": "ok",
+      "last_success_at": "2026-10-14T09:00:00Z",
+      "detail": "168/170 articles current (day 2026-10-13)"
+    },
+    {
+      "id": "yonhap",
+      "name": "Yonhap",
+      "status": "ok",
+      "last_success_at": "2026-10-14T09:00:00Z",
+      "detail": "120 items, 4 new"
+    },
+    {
+      "id": "soompi",
+      "name": "Soompi",
+      "status": "ok",
+      "last_success_at": "2026-10-14T09:00:00Z",
+      "detail": "60 items, 2 new"
+    },
+    {
+      "id": "koreaboo",
+      "name": "Koreaboo",
+      "status": "error",
+      "last_success_at": "2026-10-14T08:30:00Z",
+      "detail": "timeout after 2 retries"
+    }
+  ]
+}
