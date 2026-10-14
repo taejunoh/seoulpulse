@@ -56,11 +56,15 @@ struct TrendRow: View {
     var rankWidth: CGFloat = 16
     var krMarker: KRMarker = .dot
     var dimRank: Bool = false
-    /// Small/medium widgets give a name ~70 pt; SF's condensed width keeps "KISS OF LIFE" whole there.
+    /// Small/medium widgets give a name ~85 pt; SF's condensed width keeps "Xdinary Heroes" whole there.
     var condensedName: Bool = false
+    /// Reserve the 6 pt KR-first dot column (keeps badges aligned). Callers turn it off when no visible
+    /// row is KR-first, which hands those 10 pt back to the name. WidgetKit truncates long names here
+    /// where an in-process renderer would apply `minimumScaleFactor`, so the width really matters.
+    var reservesDotColumn: Bool = true
 
     var body: some View {
-        HStack(alignment: .center, spacing: condensedName ? 6 : 7) {
+        HStack(alignment: .center, spacing: condensedName ? 5 : 7) {
             RankNumeral(rank: item.rank, size: rankSize, dimmed: dimRank)
                 .frame(width: rankWidth, alignment: .leading)
             switch style {
@@ -78,24 +82,26 @@ struct TrendRow: View {
             }
         }
         .accessibilityElement(children: .combine)
+        .layoutProbe("row-\(item.rank)")
     }
 
     private var firstLine: some View {
-        HStack(alignment: .center, spacing: 4) {
+        HStack(alignment: .center, spacing: 3) {
             Text(item.name)
                 .font(condensedName ? Theme.nameFont.width(.condensed) : Theme.nameFont)
                 .foregroundStyle(Theme.textPrimary)
                 .lineLimit(1)
                 .minimumScaleFactor(0.8)
+                .allowsTightening(true)
                 .layoutPriority(1)
             if krMarker == .badge && item.koreaFirst {
                 KRFirstBadge()
-                    .padding(.leading, 2)
+                    .padding(.leading, 3)
             }
             Spacer(minLength: 0)
             HStack(spacing: 4) {
                 RankChangeBadge(change: item.change, amount: item.changeAmount)
-                if krMarker == .dot {
+                if krMarker == .dot && reservesDotColumn {
                     KRFirstDot(visible: item.koreaFirst)
                 }
             }
@@ -108,7 +114,7 @@ struct TrendRow: View {
 enum WidgetClockStyle: Sendable {
     /// Live relative time that ticks on its own inside a widget. Uses the iOS 18 `DateReference` format
     /// limited to one unit ("5 min ago") rather than `Text(date, style: .relative)`, which renders
-    /// "4 min, 50 sec" and crowds the small/large headers.
+    /// "4 min, 50 sec" and crowds the headers.
     case live
     /// Static "8m ago" computed from the supplied `now` (deterministic snapshots, gallery).
     case fixed
@@ -118,43 +124,79 @@ extension EnvironmentValues {
     @Entry var widgetClockStyle: WidgetClockStyle = .live
 }
 
-/// Footer state (SPEC §8.3): "Sample data" for `.sample`, "Offline" for `.cache`, "Stale" (amber) when
-/// generated more than 3 h ago, otherwise just the relative update time.
+/// Footer/header state (SPEC §8.3): "Sample data" for `.sample`, "Offline" for `.cache`, "Stale" (amber)
+/// when generated more than 3 h ago, otherwise just the relative update time.
+///
+/// WidgetKit lays out live date text as if it were as wide as whatever width it is offered (it reserves
+/// room for the text to change). An `HStack { Wordmark; Spacer; status }` therefore collapses the spacer,
+/// and anything that asks for the status's *ideal* width (`fixedSize`, measuring containers) gets an
+/// unbounded answer and overflows the margins. So the status is one `Text`, always given the remaining
+/// width, aligning its own content with `multilineTextAlignment`. The layout is then identical whether
+/// the time text is greedy (WidgetKit) or not (ImageRenderer snapshots, the in-app gallery).
 struct WidgetStatusLine: View {
     let snapshot: TrendsSnapshot
     let origin: TrendOrigin
     let now: Date
+    var alignment: TextAlignment = .leading
     @Environment(\.widgetClockStyle) private var clock
+    @Environment(\.widgetKitTextEmulation) private var emulateWidgetKit
 
-    var body: some View {
-        HStack(spacing: 3) {
-            switch origin {
-            case .sample:
-                Text("Sample data")
-            case .cache, .network:
-                if snapshot.isStale(now: now) {
-                    Text("Stale").foregroundStyle(Theme.warn).fontWeight(.semibold)
-                    Text("·")
-                } else if origin == .cache {
-                    Text("Offline").fontWeight(.semibold)
-                    Text("·")
-                }
-                timeText
-            }
+    @ViewBuilder var body: some View {
+        let frameAlignment: Alignment = alignment == .trailing ? .trailing : .leading
+        let styled = statusText.font(.caption2).foregroundStyle(Theme.textTertiary)
+        if emulateWidgetKit {
+            // Test harness: behave like WidgetKit's live time text. The box claims every point it is
+            // offered and reports an unbounded ideal width; the glyphs sit at the text alignment inside
+            // it ("status-text"). A header that measures the status, or forgets to align it, fails the
+            // layout tests under this emulation exactly as it fails on the Home Screen.
+            styled
+                .lineLimit(1)
+                .fixedSize()
+                .layoutProbe("status-text")
+                .frame(minWidth: 0, idealWidth: 4096, maxWidth: .infinity, alignment: frameAlignment)
+                .layoutProbe("status")
+        } else {
+            styled
+                .lineLimit(1)
+                .minimumScaleFactor(0.8)
+                .multilineTextAlignment(alignment)
+                .frame(maxWidth: .infinity, alignment: frameAlignment)
+                .layoutProbe("status")
         }
-        .font(.caption2)
-        .foregroundStyle(Theme.textTertiary)
-        .lineLimit(1)
-        .minimumScaleFactor(0.8)
     }
 
-    @ViewBuilder private var timeText: some View {
+    /// True when the status reads as just a short time ("8 minutes ago" / "Sample data"), i.e. there is
+    /// room for the large widget's subtitle next to it.
+    static func isShort(snapshot: TrendsSnapshot, origin: TrendOrigin, now: Date) -> Bool {
+        switch origin {
+        case .sample: return true
+        case .cache: return false
+        case .network: return !snapshot.isStale(now: now)
+        }
+    }
+
+    private var statusText: Text {
+        switch origin {
+        case .sample:
+            return Text("Sample data")
+        case .cache, .network:
+            if snapshot.isStale(now: now) {
+                return Text("\(Text("Stale").fontWeight(.semibold).foregroundStyle(Theme.warn)) · \(timeText)")
+            }
+            if origin == .cache {
+                return Text("\(Text("Offline").fontWeight(.semibold)) · \(timeText)")
+            }
+            return timeText
+        }
+    }
+
+    private var timeText: Text {
         let date = min(snapshot.generatedAt, now)
         switch clock {
         case .live:
-            Text(.currentDate, format: .reference(to: date, allowedFields: [.minute, .hour, .day], maxFieldCount: 1))
+            return Text(.currentDate, format: .reference(to: date, allowedFields: [.minute, .hour, .day], maxFieldCount: 1))
         case .fixed:
-            Text(Format.relative(date, now: now))
+            return Text(Format.relative(date, now: now))
         }
     }
 }
@@ -180,5 +222,48 @@ struct WidgetEmptyMessage: View {
                 .foregroundStyle(Theme.textTertiary)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
+        .layoutProbe("empty")
     }
+}
+
+// MARK: - Layout probe (tests only)
+
+/// Collects the frames of tagged widget elements, in the widget's coordinate space, so tests can assert
+/// "inside the content margins" and "header pieces don't overlap". Absent in production (nil), where
+/// `layoutProbe` is a no-op.
+final class WidgetLayoutRecorder: @unchecked Sendable {
+    static let coordinateSpace = "widget"
+    private(set) var frames: [String: CGRect] = [:]
+
+    func record(_ id: String, _ frame: CGRect) -> Color {
+        frames[id] = frame
+        return .clear
+    }
+}
+
+extension EnvironmentValues {
+    @Entry var widgetLayoutRecorder: WidgetLayoutRecorder? = nil
+    /// Tests only: make `WidgetStatusLine` lay out the way WidgetKit lays out live date text.
+    @Entry var widgetKitTextEmulation: Bool = false
+}
+
+private struct LayoutProbe: ViewModifier {
+    let id: String
+    @Environment(\.widgetLayoutRecorder) private var recorder
+
+    func body(content: Content) -> some View {
+        if let recorder {
+            content.background(
+                GeometryReader { proxy in
+                    recorder.record(id, proxy.frame(in: .named(WidgetLayoutRecorder.coordinateSpace)))
+                }
+            )
+        } else {
+            content
+        }
+    }
+}
+
+extension View {
+    func layoutProbe(_ id: String) -> some View { modifier(LayoutProbe(id: id)) }
 }

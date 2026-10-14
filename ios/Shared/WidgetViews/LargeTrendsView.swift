@@ -17,7 +17,7 @@ struct LargeTrendsView: View {
 
     var body: some View {
         GeometryReader { geo in
-            // Scale the budget to the real height: fills the 350 pt of a Pro Max large widget, shrinks on an SE.
+            // Scale the budget to the real height: fills a Pro Max large widget, shrinks on an SE.
             let s = min(1.12, geo.size.height / Self.budget)
             VStack(alignment: .leading, spacing: 0) {
                 header
@@ -44,28 +44,22 @@ struct LargeTrendsView: View {
         .dynamicTypeSize(...DynamicTypeSize.xLarge)
     }
 
-    /// Wordmark + subtitle + status. When a long status ("Offline · 6 minutes ago") leaves no room, the
-    /// subtitle is dropped whole rather than truncated to "Korea-fi…".
+    /// Wordmark, then (when the status is short) the subtitle, then the status, which takes the rest of
+    /// the row and right-aligns itself. Plain HStack, no measuring containers and no `fixedSize` on the
+    /// status: WidgetKit's live time text reports an unbounded ideal width (see WidgetStatusLine).
     private var header: some View {
-        ViewThatFits(in: .horizontal) {
-            headerRow(showsSubtitle: true)
-            headerRow(showsSubtitle: false)
-        }
-    }
-
-    private func headerRow(showsSubtitle: Bool) -> some View {
         HStack(alignment: .center, spacing: 8) {
             Wordmark()
-            if showsSubtitle {
+                .layoutProbe("wordmark")
+            if WidgetStatusLine.isShort(snapshot: snapshot, origin: origin, now: now) {
                 Text("Korea-first K-pop")
                     .font(.caption2.weight(.semibold))
                     .foregroundStyle(Theme.textTertiary)
                     .lineLimit(1)
                     .fixedSize()
+                    .layoutProbe("subtitle")
             }
-            Spacer(minLength: 6)
-            WidgetStatusLine(snapshot: snapshot, origin: origin, now: now)
-                .fixedSize()
+            WidgetStatusLine(snapshot: snapshot, origin: origin, now: now, alignment: .trailing)
         }
     }
 

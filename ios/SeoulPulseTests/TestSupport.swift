@@ -35,6 +35,29 @@ enum TestSupport {
         return try JSONSerialization.data(withJSONObject: root)
     }
 
+    /// The sample with the longest real-world names seen from the live pipeline, plus KR-first flags on
+    /// rows that also carry a NEW capsule (the widest trailing cluster), to stress widget rows/headers.
+    static func longNamesSnapshot() throws -> TrendsSnapshot {
+        let names: [(String, String?, Bool)] = [
+            ("Xdinary Heroes", "엑스디너리 히어로즈", true), ("TOMORROW X TOGETHER", "투모로우바이투게더", false),
+            ("ALLDAY PROJECT", "올데이 프로젝트", true), ("BABYMONSTER", "베이비몬스터", false),
+            ("Lim Young-woong", "임영웅", true), ("NCT DREAM", "엔시티 드림", true),
+            ("KISS OF LIFE", "키스오브라이프", false), ("Stray Kids", "스트레이 키즈", false),
+            ("LE SSERAFIM", "르세라핌", true), ("ROSÉ", "로제", false),
+        ]
+        let data = try mutatedSample { root in
+            var items = root["items"] as! [[String: Any]]
+            for i in items.indices where i < names.count {
+                items[i]["name"] = names[i].0
+                items[i]["name_ko"] = names[i].1 ?? NSNull()
+                items[i]["korea_first"] = names[i].2
+                if i == 0 || i == 2 { items[i]["change"] = "new"; items[i]["prev_rank"] = NSNull(); items[i]["change_amount"] = 0 }
+            }
+            root["items"] = items
+        }
+        return try TrendsSnapshot.decode(data)
+    }
+
     static func date(_ iso: String) -> Date {
         ISO8601DateFormatter().date(from: iso)!
     }

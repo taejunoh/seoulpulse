@@ -10,10 +10,12 @@ struct MediumTrendsView: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
-            HStack(alignment: .center) {
+            // No Spacer here: the status takes the remaining width itself and right-aligns its text
+            // (see WidgetStatusLine for why).
+            HStack(alignment: .center, spacing: 8) {
                 Wordmark()
-                Spacer(minLength: 8)
-                WidgetStatusLine(snapshot: snapshot, origin: origin, now: now)
+                    .layoutProbe("wordmark")
+                WidgetStatusLine(snapshot: snapshot, origin: origin, now: now, alignment: .trailing)
             }
             Spacer(minLength: 8)
             if snapshot.items.isEmpty {
@@ -37,10 +39,12 @@ struct MediumTrendsView: View {
     }
 
     private func column(_ items: [TrendItem]) -> some View {
-        VStack(alignment: .leading, spacing: 12) {
+        let dots = items.contains(where: \.koreaFirst)
+        return VStack(alignment: .leading, spacing: 12) {
             ForEach(items) { item in
                 Link(destination: Route.itemURL(item.id)) {
-                    TrendRow(item: item, rankSize: 20, rankWidth: 13, condensedName: true)
+                    TrendRow(item: item, rankSize: 20, rankWidth: 13, condensedName: true,
+                             reservesDotColumn: dots)
                 }
             }
         }

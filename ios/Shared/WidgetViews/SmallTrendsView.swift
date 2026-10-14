@@ -8,20 +8,24 @@ struct SmallTrendsView: View {
     let now: Date
 
     var body: some View {
+        let items = Array(snapshot.items.prefix(3))
+        let dots = items.contains(where: \.koreaFirst)
         VStack(alignment: .leading, spacing: 0) {
             Wordmark()
+                .layoutProbe("wordmark")
             Spacer(minLength: 6)
-            if snapshot.items.isEmpty {
+            if items.isEmpty {
                 WidgetEmptyMessage(compact: true)
             } else {
                 VStack(alignment: .leading, spacing: 8) {
-                    ForEach(snapshot.items.prefix(3)) { item in
-                        TrendRow(item: item, rankSize: 20, rankWidth: 13, condensedName: true)
+                    ForEach(items) { item in
+                        TrendRow(item: item, rankSize: 20, rankWidth: 13, condensedName: true,
+                                 reservesDotColumn: dots)
                     }
                 }
             }
             Spacer(minLength: 6)
-            WidgetStatusLine(snapshot: snapshot, origin: origin, now: now)
+            WidgetStatusLine(snapshot: snapshot, origin: origin, now: now, alignment: .leading)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
         .dynamicTypeSize(...DynamicTypeSize.xLarge)

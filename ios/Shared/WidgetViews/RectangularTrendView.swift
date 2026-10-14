@@ -29,11 +29,13 @@ struct RectangularTrendView: View {
                                                                                amount: item.changeAmount))
                 }
                 .accessibilityElement(children: .combine)
+                .layoutProbe("rect-title")
                 Text(item.why)
                     .font(.caption)
                     .foregroundStyle(.secondary)
                     .lineLimit(2)
                     .minimumScaleFactor(0.8)
+                    .layoutProbe("rect-why")
             } else {
                 Text("SeoulPulse").font(.headline).widgetAccentable()
                 Text("No trends yet").font(.caption).foregroundStyle(.secondary)
