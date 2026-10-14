@@ -32,6 +32,8 @@ LLM_SYSTEM = (
     "No quotes from headlines, no hashtags, no emoji."
 )
 _HANGUL_RE = re.compile(r"[ᄀ-ᇿ㄰-㆏가-힣]")
+# Rules whose text carries a Naver-derived number. Their lines are never sent to the optional LLM (spec §6).
+SEARCH_RULES = frozenset({"R3S", "R5S"})
 
 
 def _strip_point_zero(s: str) -> str:
@@ -94,6 +96,11 @@ def template_why(s: ArtistScore, now: datetime) -> tuple[str, str]:
         t = f"Korean Wikipedia views {s.wiki_ko.ratio:.1f}x normal, EN quiet"
         if _fits(t):
             return t, "R3"
+    # R3S KO_SEARCH (Naver configured only)
+    if s.ko_lead_search and s.search is not None and s.search.ratio is not None:
+        t = f"Korean searches {s.search.ratio:.1f}x normal, EN quiet"
+        if _fits(t):
+            return t, "R3S"
     # R4 KO_NEWS
     if s.ko_lead_news:
         n_ko = s.news.headlines_ko_24h
@@ -115,6 +122,12 @@ def template_why(s: ArtistScore, now: datetime) -> tuple[str, str]:
         t = f"{label} Wikipedia views {ratio:.1f}x the 2-week avg"
         if _fits(t):
             return t, "R5"
+    # R5S SEARCH (Naver configured only)
+    if (s.search is not None and not s.search.missing and s.search.z is not None and s.search.z >= 2.0
+            and s.search.ratio is not None):
+        t = f"Korean searches {s.search.ratio:.1f}x normal"
+        if _fits(t):
+            return t, "R5S"
     # R6 NEWS
     if s.news.headlines_24h >= 2:
         n, n_ko = s.news.headlines_24h, s.news.headlines_ko_24h
@@ -154,12 +167,16 @@ def llm_enabled(config: Config) -> bool:
 
 
 def llm_input(s: ArtistScore, template: str, metrics: dict[str, Any]) -> dict[str, Any]:
-    """Metrics and signals only. Headline titles are never sent."""
+    """Metrics and signals only. Headline titles and Naver-derived values are never sent.
+
+    Naver DataLab data stays out of every LLM input: the search signal is not listed, `korea_first` is the
+    keyless lead (news/wiki), and items whose template line quotes a search ratio are not rewritten at all.
+    """
     return {
         "artist": s.artist.name,
         "template_line": template,
-        "korea_first": s.korea_first,
-        "metrics": metrics,
+        "korea_first": s.korea_first_keyless,
+        "metrics": {k: v for k, v in metrics.items() if not k.startswith("search")},
         "signals": {"youtube": round(s.s_yt, 3), "accel": round(s.s_accel, 3), "new_release": round(s.s_new, 3),
                     "wiki": round(s.s_wiki, 3), "news": round(s.news.s_news, 3)},
         "top_video_kind": s.top.video.kind if s.top else None,
@@ -209,6 +226,8 @@ def apply_llm_whys(
         call = _call_llm
     calls = 0
     for s in ranked[:LLM_TOP]:
+        if s.extra.get("why_rule") in SEARCH_RULES:
+            continue                                   # the line quotes Naver-derived numbers: keep template
         payload = llm_input(s, s.why, metrics_by_id.get(s.id, {}))
         key = hashlib.sha256(json.dumps(payload, ensure_ascii=False, sort_keys=True).encode()).hexdigest()
         cached = store.why_cache_get(key, now - LLM_CACHE_TTL)

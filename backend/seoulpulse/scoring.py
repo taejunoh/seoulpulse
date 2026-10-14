@@ -7,9 +7,12 @@ import statistics
 from collections.abc import Iterable, Mapping, Sequence
 from dataclasses import dataclass, field
 from datetime import date, datetime, timedelta
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
-from .timeutil import hours, iso
+from .timeutil import hours, iso, kst_date
+
+if TYPE_CHECKING:
+    from .fetchers.base import SearchRow
 
 # ---------------------------------------------------------------------------- constants (§5.1)
 P = 0.8
@@ -30,6 +33,14 @@ KO_LEAD_H = 6.0
 W_YT, W_ACCEL, W_NEW, W_WIKI, W_NEWS = 0.35, 0.15, 0.15, 0.20, 0.15
 KF_BONUS = 6.0
 MIN_SCORE = 3.0
+# Korean search spike (Naver DataLab, §5.3). Used only when the source is configured; otherwise every term
+# below is absent and all scores are exactly the keyless ones.
+W_SEARCH = 0.10          # additive: 100·W_SEARCH·S_search on top of the five keyless terms
+SEARCH_Z_FULL = 6.0      # S_search = clamp(z_search / 6, 0, 1)
+SEARCH_SIGMA_FLOOR = 0.25  # σ_eff = max(σ, 0.25·μ): a 2x day can score at most z = 4
+SEARCH_MIN_MU = 0.01     # baseline mean in Naver's batch-relative units; below it rounding noise dominates
+SEARCH_STALE_D = 2       # D must be ≥ target − 2 days (target = yesterday in KST)
+SEARCH_KF_Z = 2.0        # ko_lead_search: z_search ≥ 2 while English Wikipedia is quiet (z_en < 1 or missing)
 
 
 def clamp(x: float, lo: float, hi: float) -> float:
@@ -255,6 +266,81 @@ def wiki_signal(ko: WikiLang, en: WikiLang) -> tuple[float, float]:
 
 
 @dataclass(frozen=True)
+class SearchSpike:
+    """Spike of one Naver keyword group's daily series. Computed at fetch time; only day/z/ratio are stored."""
+
+    missing: bool
+    reason: str = ""
+    day: date | None = None
+    x: float | None = None
+    mu: float | None = None
+    sigma: float | None = None
+    sigma_eff: float | None = None
+    z: float | None = None
+    ratio: float | None = None
+    baseline_n: int = 0
+
+
+def search_spike(series: Mapping[date, float], target: date) -> SearchSpike:
+    """z-score of the latest day D vs the 14 days before it (spec §5.3, like the wiki signal).
+
+    `series` is one keyword group's `ratio` per KST day from a single DataLab response. Naver scales every
+    response so its maximum is 100, but z and x/μ are scale-free, so they compare across runs and batches.
+    """
+    if not series:
+        return SearchSpike(True, "no data")
+    D = max(series)
+    if D < target - timedelta(days=SEARCH_STALE_D):
+        return SearchSpike(True, "stale", day=D)
+    base = [series[D - timedelta(days=k)] for k in range(1, 15) if (D - timedelta(days=k)) in series]
+    if len(base) < 7:
+        return SearchSpike(True, "short baseline", day=D, baseline_n=len(base))
+    mu = statistics.fmean(base)
+    if mu < SEARCH_MIN_MU:
+        return SearchSpike(True, "low volume", day=D, baseline_n=len(base))
+    sigma = statistics.pstdev(base)
+    sigma_eff = max(sigma, SEARCH_SIGMA_FLOOR * mu)
+    x = float(series[D])
+    z = clamp((x - mu) / sigma_eff, -3.0, 10.0)
+    return SearchSpike(False, "", day=D, x=x, mu=mu, sigma=sigma, sigma_eff=sigma_eff, z=z, ratio=x / mu,
+                       baseline_n=len(base))
+
+
+@dataclass(frozen=True)
+class SearchSignal:
+    """The scoring-time view of a stored SearchRow (derived values only)."""
+
+    missing: bool
+    reason: str = ""
+    day: date | None = None
+    z: float | None = None
+    ratio: float | None = None
+    s_search: float = 0.0
+
+    def as_dict(self) -> dict[str, Any]:
+        return {"missing": self.missing, "reason": self.reason, "day": self.day.isoformat() if self.day else None,
+                "z": self.z, "ratio": self.ratio, "S_search": self.s_search}
+
+
+def search_signal(row: SearchRow | None, now: datetime) -> SearchSignal:
+    if row is None:
+        return SearchSignal(True, "no data")
+    if row.day is None or row.z is None:
+        return SearchSignal(True, row.reason or "no data", day=row.day)
+    target = kst_date(now) - timedelta(days=1)
+    if row.day < target - timedelta(days=SEARCH_STALE_D):
+        return SearchSignal(True, "stale", day=row.day)
+    return SearchSignal(False, "", day=row.day, z=row.z, ratio=row.ratio,
+                        s_search=clamp(max(row.z, 0.0) / SEARCH_Z_FULL, 0.0, 1.0))
+
+
+def ko_lead_search(search: SearchSignal | None, en: WikiLang) -> bool:
+    if search is None or search.missing or search.z is None or search.z < SEARCH_KF_Z:
+        return False
+    return en.missing or en.z is None or en.z < 1.0
+
+
+@dataclass(frozen=True)
 class NewsCalc:
     raw: float
     hist_days: int
@@ -360,6 +446,9 @@ class ArtistScore:
     raw_score: float
     score: float
     eligible: bool
+    search: SearchSignal | None = None      # None when the Naver source is not configured
+    s_search: float = 0.0
+    ko_lead_search: bool = False
     rank: int | None = None
     prev_rank: int | None = None
     change: str = "new"
@@ -377,6 +466,11 @@ class ArtistScore:
         return 1.0 if self.korea_first else 0.0
 
     @property
+    def korea_first_keyless(self) -> bool:
+        """korea_first without the Naver-derived lead (what the optional LLM may be told, spec §6)."""
+        return self.ko_lead_news or self.ko_lead_wiki
+
+    @property
     def wiki_day(self) -> date | None:
         days = [w.day for w in (self.wiki_ko, self.wiki_en) if not w.missing and w.day]
         return max(days) if days else None
@@ -392,14 +486,18 @@ class ArtistScore:
             "wiki": {"ko": self.wiki_ko.as_dict(), "en": self.wiki_en.as_dict()},
             "news": self.news.as_dict(),
             "why": self.why, "why_source": self.why_source,
+            **({"S_search": self.s_search, "ko_lead_search": self.ko_lead_search,
+                "search": self.search.as_dict()} if self.search is not None else {}),
         }
 
 
 def combine(s_yt: float, s_accel: float, g: float, s_new: float, s_wiki: float, s_news: float,
-            korea_first: bool) -> float:
+            korea_first: bool, s_search: float = 0.0) -> float:
+    # With s_search = 0 the extra term adds exactly 0.0, so keyless scores are bit-identical.
     return clamp(
         100 * (W_YT * s_yt + W_ACCEL * s_accel * g + W_NEW * s_new * (0.5 + 0.5 * g)
-               + W_WIKI * s_wiki + W_NEWS * s_news) + KF_BONUS * (1.0 if korea_first else 0.0),
+               + W_WIKI * s_wiki + W_NEWS * s_news + W_SEARCH * s_search)
+        + KF_BONUS * (1.0 if korea_first else 0.0),
         0.0, 100.0,
     )
 
@@ -411,6 +509,7 @@ def score_artist(
     mentions: Sequence[Mention],
     now: datetime,
     first_run_at: datetime | None,
+    search: SearchSignal | None = None,
 ) -> ArtistScore:
     candidates = sorted((v for v in videos if is_candidate(v, now)), key=lambda v: v.video_id)
     calcs = [c for c in (calc_video(v, now) for v in candidates) if c is not None]
@@ -426,15 +525,17 @@ def score_artist(
 
     news = news_signal(mentions, now, first_run_at)
     klw = ko_lead_wiki(ko, en)
-    kf = news.ko_lead or klw
-    raw_score = combine(s_yt, s_accel, g, s_new, s_wiki, news.s_news, kf)
+    s_search = search.s_search if search is not None and not search.missing else 0.0
+    kls = ko_lead_search(search, en)
+    kf = news.ko_lead or klw or kls
+    raw_score = combine(s_yt, s_accel, g, s_new, s_wiki, news.s_news, kf, s_search)
     score = round(raw_score, 1)
-    eligible = score >= MIN_SCORE and max(s_yt, s_wiki, news.s_news) > 0
+    eligible = score >= MIN_SCORE and max(s_yt, s_wiki, news.s_news, s_search) > 0
     return ArtistScore(
         artist=artist, calcs=calcs, candidates=candidates, top=top, yt_raw=yt_raw, s_yt=s_yt, r_top=r_top,
         s_accel=s_accel, g=g, s_new=s_new, wiki_ko=ko, wiki_en=en, wiki_z=wiki_z, s_wiki=s_wiki, news=news,
         ko_lead_news=news.ko_lead, ko_lead_wiki=klw, korea_first=kf, raw_score=raw_score, score=score,
-        eligible=eligible,
+        eligible=eligible, search=search, s_search=s_search, ko_lead_search=kls,
     )
 
 
@@ -445,9 +546,17 @@ def score_all(
     mentions_by_artist: Mapping[str, Sequence[Mention]],
     now: datetime,
     first_run_at: datetime | None,
+    search_by_artist: Mapping[str, SearchSignal] | None = None,
 ) -> list[ArtistScore]:
+    """`search_by_artist` is None when the Naver source is not configured (no search term at all)."""
+    def search_for(aid: str) -> SearchSignal | None:
+        if search_by_artist is None:
+            return None
+        return search_by_artist.get(aid) or SearchSignal(True, "no data")
+
     return [
-        score_artist(a, videos_by_artist.get(a.id, ()), wiki, mentions_by_artist.get(a.id, ()), now, first_run_at)
+        score_artist(a, videos_by_artist.get(a.id, ()), wiki, mentions_by_artist.get(a.id, ()), now, first_run_at,
+                     search_for(a.id))
         for a in artists
     ]
 

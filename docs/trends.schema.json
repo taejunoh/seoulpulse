@@ -13,7 +13,10 @@
     "rank_change_basis_at": { "anyOf": [{ "$ref": "#/$defs/timestamp" }, { "type": "null" }] },
     "cold_start": { "type": "boolean" },
     "items": { "type": "array", "maxItems": 20, "items": { "$ref": "#/$defs/item" } },
-    "sources": { "type": "array", "minItems": 5, "maxItems": 5, "items": { "$ref": "#/$defs/source" } }
+    "sources": {
+      "description": "The five keyless sources in fixed order (youtube, wikipedia, yonhap, soompi, koreaboo), followed by the key-gated naver source only when the producer has Naver DataLab credentials configured.",
+      "type": "array", "minItems": 5, "maxItems": 6, "items": { "$ref": "#/$defs/source" }
+    }
   },
   "$defs": {
     "timestamp": { "type": "string", "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$" },
@@ -63,7 +66,8 @@
             "accel": { "type": "number", "minimum": -0.5, "maximum": 1 },
             "new_release": { "type": "number", "minimum": 0, "maximum": 1 },
             "wiki": { "type": "number", "minimum": 0, "maximum": 1 },
-            "news": { "type": "number", "minimum": 0, "maximum": 1 }
+            "news": { "type": "number", "minimum": 0, "maximum": 1 },
+            "search": { "description": "Optional. Korean search spike (Naver DataLab); present only when that source is configured.", "type": "number", "minimum": 0, "maximum": 1 }
           }
         },
         "top_video": {
@@ -119,7 +123,7 @@
       "additionalProperties": false,
       "required": ["id", "name", "status", "last_success_at", "detail"],
       "properties": {
-        "id": { "enum": ["youtube", "wikipedia", "yonhap", "soompi", "koreaboo"] },
+        "id": { "enum": ["youtube", "wikipedia", "yonhap", "soompi", "koreaboo", "naver"] },
         "name": { "type": "string", "minLength": 1 },
         "status": { "enum": ["ok", "degraded", "error", "disabled"] },
         "last_success_at": { "anyOf": [{ "$ref": "#/$defs/timestamp" }, { "type": "null" }] },

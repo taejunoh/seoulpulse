@@ -7,7 +7,7 @@ This spec is the contract that the backend and iOS agents build against. They wo
 ## 0. Non-negotiables
 
 1. **Legal.** We store and show only headline text, a link, the source name, the publish time, and metrics we compute ourselves. Article bodies, RSS `<description>`, and `content:encoded` are discarded at parse time. They are never stored, translated, summarized, or sent to an LLM. Korean headlines are shown as-is, with no machine translation.
-2. **Keyless.** Every feature works with no API keys. `YOUTUBE_API_KEY` and `ANTHROPIC_API_KEY` only add optional enhancements. The LLM feature stays off unless `SP_WHY_LLM=1`.
+2. **Keyless.** Every feature works with no API keys. `YOUTUBE_API_KEY` (§3.3), `NAVER_CLIENT_ID` + `NAVER_CLIENT_SECRET` (§3.7) and `ANTHROPIC_API_KEY` only add optional enhancements, each off and harmless when its variables are absent: a keyless run is byte-identical to one built without that code. The LLM feature stays off unless `SP_WHY_LLM=1`. Secrets travel only in request headers and never reach logs, error strings, the DB or `trends.json` (asserted by tests).
 3. **Deterministic.** Given the same DB state and the same `--now`, the pipeline produces byte-identical `trends.json`. Tests inject the clock and the HTTP transport. Tests never touch the live network.
 4. **Times.** Everything is UTC internally and in JSON (`YYYY-MM-DDTHH:MM:SSZ`, no fractional seconds). KST (`Asia/Seoul`) is used only for display in social drafts.
 
@@ -24,7 +24,7 @@ seoulpulse/
 │   │   ├── seed.py        load/validate artists.yaml, channels.yaml, channels.lock.json
 │   │   ├── matching.py    normalize(), AliasMatcher, classify_video(), extract_song()
 │   │   ├── http.py        HttpClient (UA, timeouts, retries, per-host pacing, conditional GET)
-│   │   ├── fetchers/      base.py · youtube_rss.py · youtube_api.py · wikipedia.py · news_rss.py
+│   │   ├── fetchers/      base.py · youtube_rss.py · youtube_api.py · wikipedia.py · news_rss.py · naver_datalab.py
 │   │   ├── store.py       SQLite schema/migrations + typed accessors
 │   │   ├── scoring.py     pure functions (§5)   · why.py (§6) · publish.py (§7) · social.py (§9)
 │   │   ├── resolve.py     handle→channel-id resolver · serve.py static server
@@ -56,7 +56,8 @@ iOS (in `ios/`): `xcodegen generate && xcodebuild -project SeoulPulse.xcodeproj 
 
 Env config (`config.py`): `SP_DB_PATH` (default `backend/var/seoulpulse.db`), `SP_PUBLIC_DIR` (`<repo>/public`), `SP_INTERVAL_SEC` (1800),
 `SP_CONTACT` (a contact URL or email for the User-Agent; warn if unset — Wikimedia throttles anonymous UAs), `SP_TOP_N` (20), `SP_RANK_COMPARE_HOURS` (6),
-`YOUTUBE_API_KEY`, `SP_WHY_LLM` (`0`), `ANTHROPIC_API_KEY`, `SP_LLM_MODEL` (`claude-haiku-5-5`). Paths resolve relative to `backend/`.
+`YOUTUBE_API_KEY`, `SP_YOUTUBE_DAILY_UNITS` (`9000`, clamped to 0–10000), `NAVER_CLIENT_ID` + `NAVER_CLIENT_SECRET` (both required), `SP_NAVER_ENDPOINT` (`auto` | `hub` | `developers`; default `auto`),
+`SP_WHY_LLM` (`0`), `ANTHROPIC_API_KEY`, `SP_LLM_MODEL` (`claude-haiku-5-5`). Paths resolve relative to `backend/`. `Config.__repr__` prints secrets as `<set>`.
 
 ## 2. Seed data
 
@@ -74,6 +75,8 @@ artists:
     # …
     aliases: [{term: TWICE, case_sensitive: true}, 트와이스]   # alias = string | {term, case_sensitive}
 ```
+Optional per artist: `search: [terms]`, explicit Naver DataLab keywords (§3.7). Same rules as aliases (deny-list, ≥2 Hangul syllables or ≥2 characters), at most 20. Without it the keywords are the artist's Hangul aliases.
+
 **A starter roster is committed:** 82 acts in `backend/data/artists.yaml`. Of these, 63 have an own channel whose resolved title was checked against an alias, and the ids are in `channels.lock.json`. `channels.yaml` adds 14 label/broadcaster channels: HYBE LABELS, SMTOWN, JYP, 1theK, YG, THEBLACKLABEL, Cube, KQ, WAKE ONE, Mnet K-POP, SBSKPOP, MBCkpop, KBS Kpop, and STUDIO CHOOM. The wiki titles are canonical as of 2026-10-14. Edit the roster and fix it with the validator; never regenerate it blindly.
 
 Findings from building the roster, which are now design rules:
@@ -129,14 +132,15 @@ Artist channels come from `artists[].youtube` and are kind `artist` with `owner 
 - httpx sync client with `follow_redirects=True`, timeouts `connect=5s read=10s write=10s pool=5s`, and a response cap of 5 MB.
 - UA: `SeoulPulse/0.1 (+{SP_CONTACT})`. Only the resolver uses a browser UA.
 - Retries apply to connect/read timeouts and to 429/500/502/503/504: at most 2 retries, sleeping 1 s then 4 s (each with 0–0.5 s jitter). `Retry-After` is honored up to 30 s. Other 4xx responses are not retried. `sleep` and `clock` are injectable.
-- Per-host pacing, sequential within a host: `www.youtube.com` 0.5 s, `wikimedia.org` 0.4 s (≈150/min, under the 200/min limit), `*.wikipedia.org` 1.0 s, news hosts 1.0 s, `googleapis.com` 0.2 s.
+- Per-host pacing, sequential within a host: `www.youtube.com` 0.5 s, `wikimedia.org` 0.4 s (≈150/min, under the 200/min limit), `*.wikipedia.org` 1.0 s, news hosts 1.0 s, `googleapis.com` 0.2 s, other hosts (Naver DataLab) 1.0 s.
+- `get()` for everything; `post_json()` only for Naver DataLab (a read-only POST). It shares pacing, retries, the byte cap and the deadline, and never follows redirects.
 - Conditional GET: ETag and Last-Modified per URL go in the `http_cache` table. A 304 means "no new items" and counts as success.
 
 ### 3.2 Fetcher contract (`fetchers/base.py`)
 ```python
 @dataclass(frozen=True)
 class FetchResult:
-    source_id: str            # "youtube" | "wikipedia" | "yonhap" | "soompi" | "koreaboo"
+    source_id: str            # "youtube" | "wikipedia" | "yonhap" | "soompi" | "koreaboo" | "naver" (key-gated)
     status: str               # "ok" | "degraded" | "error" | "disabled"
     started_at: datetime; finished_at: datetime
     units_ok: int; units_total: int
@@ -149,6 +153,8 @@ class FetchOutput:
     videos: list[VideoObs] = field(default_factory=list)      # §3.3
     wiki: list[WikiDay] = field(default_factory=list)         # §3.4
     headlines: list[Headline] = field(default_factory=list)   # §3.5
+    api_snapshots, http_cache                                 # YouTube API snapshots (§3.3), conditional-GET validators
+    search: list[SearchRow]; api_usage: list[ApiUsage]        # §3.7 derived rows; quota units spent (§3.3, §3.7)
 
 class Fetcher(Protocol):
     source_id: str
@@ -163,7 +169,20 @@ Status rule for multi-unit sources: `ok` when all units succeeded, `degraded` wh
 - **RSS** (always): one GET per channel (≈90 total): `https://www.youtube.com/feeds/videos.xml?channel_id=<UC…>`. Parse with defusedxml using namespaces `atom=http://www.w3.org/2005/Atom`, `yt=http://www.youtube.com/xml/schemas/2015`, `media=http://search.yahoo.com/mrss/`.
   Per `atom:entry`, read: `yt:videoId`, the entry-level `yt:channelId` (the feed-level one lacks the `UC` prefix, so ignore it), `title`, `link[@rel=alternate]/@href` (to detect Shorts), `published`, `media:group/media:community/media:statistics/@views` (int; if missing, skip the snapshot but keep the video), and `media:group/media:thumbnail/@url`.
   `VideoObs(video_id, channel_id, title, url, published_at, views|None, observed_at=time the response arrived)`. Each feed holds only the latest 15 uploads. On high-volume label channels that is about 1–4 days, so a video drops out of tracking when it leaves the feed (see the carry-forward in §5.2).
-- **Data API** (only if `YOUTUBE_API_KEY` is set): after the RSS pass, call `GET https://www.googleapis.com/youtube/v3/videos?part=statistics&id=<≤50 ids>&key=…` for every video where `kind != short`, `artist_id` is not null, `published_at ≥ now-30d`, and no snapshot exists from this run. Store them as snapshots with `source='api'`. This extends tracking past the RSS window. The `detail` field then reads `RSS 86/87 channels · API 3 calls`.
+- **Data API** (only if `YOUTUBE_API_KEY` is set; `fetchers/youtube_api.py`). RSS stays the base and the fallback; the API only enriches it. It fixes four RSS weaknesses: only the latest 15 uploads (label channels: 1–4 days, ~70% Shorts), coarse view counts cached for ~15 min, videos dropping out of tracking when they leave the feed, and Shorts detection for videos RSS never showed. After the RSS pass:
+  1. **Discovery** — `GET https://www.googleapis.com/youtube/v3/playlistItems?part=snippet,contentDetails&playlistId=UU<id[2:]>&maxResults=50` (the uploads playlist; 1 unit for the latest 50 uploads, so uploads 16–50 become visible). Channels: those whose RSS fetch failed this run, those with no stored video yet (cold start backfill), then a rotating share: channel `c` is read when `crc32(c) % 12 == floor(epoch(now)/1800) % 12`, i.e. every channel about every 6 h. Keep uploads with `contentDetails.videoPublishedAt` in `[now−30d, now]` that are not stored yet, not in this run's RSS, attributed (§2.3), and without `#shorts` in the title. Private/deleted entries (no `videoPublishedAt`) are skipped. Discovery may spend at most half of the run's units.
+  2. **Statistics** — `GET …/videos?part=statistics,contentDetails&id=<≤50 ids>` (1 unit per call), in this priority order, each newest first: (a) tracked videos without an RSS view count this run (`kind ≠ short`, attributed, `published_at ≥ now−30d`; this is what keeps videos alive after they leave the 15-item feed), (b) newly discovered uploads, (c) RSS videos. For (c) the exact API count **replaces** the RSS count for that run (one `source='api'` snapshot instead of a coarse `rss` one). Missing ids (deleted/private) get no snapshot.
+  3. **Shorts for discovered uploads.** RSS's `/shorts/` link stays authoritative whenever RSS saw the video. For uploads only the API saw there is no "is a Short" field, and duration alone is ambiguous (Shorts may run 180 s; horizontal teasers are often ≤60 s). Rule: `#shorts` in the title and duration ≤180 s → Short; duration ≤60 s and the title is not a teaser (§2.3 rule 2) → Short; zero/unknown duration (premieres, live) → skip and rediscover later; otherwise a regular video. The decision is stored as the video URL (`/shorts/<id>` or `/watch?v=<id>`), so `classify_video()` stays the single classifier and re-classification stays retroactive.
+- **Quota guard (normative).** The free quota is 10,000 units per Google Cloud project per day, reset at midnight Pacific time. Every call costs 1 unit and is booked before it is sent (failed calls are billed too). Caps: `RUN_CAP = 200` units per run and `SP_YOUTUBE_DAILY_UNITS` (default 9,000) per Pacific day, tracked in the `api_usage` ledger (§4). `48 × 200 = 9,600 < 10,000`, so even a lost ledger cannot exceed the quota at the 30-minute cadence. When the budget is reached the remaining work is skipped and RSS values stand (`detail` flags `discovery cap`, `budget cap` or `daily budget used`). A `403 quotaExceeded`/`dailyLimitExceeded` answer stops all calls and books the rest of the day's budget (`quota exhausted`); `401` or a key-level `400/403` (`API_KEY_INVALID`, `accessNotConfigured`, referrer/IP blocks …) stops the run's calls (`key rejected`).
+
+  | per run (82 acts, ~77 resolved channels) | units | per day (48 runs) |
+  |---|---|---|
+  | cold start: discovery 77 + statistics ~1–2k ids / 50 | ~80–120 | once |
+  | steady state: discovery ~7 (rotation) + statistics ~1–2.5k tracked ids / 50 | ~30–60 | ~1,500–2,900 |
+  | hard caps | ≤200 | ≤9,000 (of 10,000) |
+- **Secrets.** The key is sent only as the `X-Goog-Api-Key` header, never as a `key=` URL parameter, so it cannot appear in URLs, logged exceptions, `source_runs.error`, the DB or `trends.json` (`redact()` remains as a backstop).
+- **Status.** The source status stays the RSS status (§3.2); API problems appear in `errors` and `detail`, e.g. `RSS 77/77 channels · API 41 units (2310/9000 today)`.
+- **Terms.** YouTube API Services policies allow storing API data for at most 30 days without refreshing it: `source='api'` snapshots are deleted after 30 days, and videos only the API ever saw are deleted 30 days after their last refresh (§4).
 
 ### 3.4 Wikipedia pageviews (`source_id = "wikipedia"`)
 `GET https://wikimedia.org/api/rest_v1/metrics/pageviews/per-article/{lang}.wikipedia/all-access/user/{quote(title.replace(' ','_'), safe='')}/daily/{start}00/{end}00`
@@ -179,12 +198,31 @@ Source weights and language: yonhap 1.5 / ko, soompi 1.0 / en, koreaboo 0.8 / en
 ### 3.6 Run sequence & failure isolation (`pipeline.py`)
 1. Take a non-blocking `fcntl.flock` on `var/run.lock`. If another run holds it, log and exit 0.
 2. Load config and seed. An invalid seed exits 1. Open the DB (WAL mode, `busy_timeout=5000`) and migrate. Insert a `runs` row. `now` is the run start, truncated to seconds, unless `--now` is given.
-3. Run the 5 fetchers in a `ThreadPoolExecutor(5)`, each wrapped in `try/except Exception`. An escaped exception becomes `status=error` with the exception string. Overall deadline: 8 minutes. After that, unfinished fetchers count as `error`.
+3. Run the 5 fetchers (plus `naver` when configured, §3.7) concurrently, each wrapped in `try/except Exception`. An escaped exception becomes `status=error` with the exception string. Overall deadline: 8 minutes. After that, unfinished fetchers count as `error`.
 4. Persist each `FetchOutput` in its own transaction, so one failure cannot roll back another. Insert `source_runs`.
 5. Re-attribute and re-classify videos (§2.3). Score all artists (§5). Rank, compute changes, generate whys (§5.7, §6).
-6. Build the payload (§7). Write `public/trends.json.tmp` then `os.replace` it. Insert into `published`. Exception: if **every** source is `error` this run and `public/trends.json` exists, do not publish and exit 2. If there are zero eligible items and a file exists, keep the old file. If no file exists, publish with `items: []`.
+6. Build the payload (§7). Write `public/trends.json.tmp` then `os.replace` it. Insert into `published`. Exception: if **every** keyless source is `error` this run and `public/trends.json` exists, do not publish and exit 2 (a key-gated source succeeding alone never counts; its failure still makes the run `partial`). If there are zero eligible items and a file exists, keep the old file. If no file exists, publish with `items: []`.
 7. Retention (§4). Release the lock. Log one summary line: `run 412 ok items=20 youtube=ok wikipedia=ok yonhap=ok soompi=ok koreaboo=error 74.2s`.
 Exit codes: 0 for ok or partial, 1 for config or crash, 2 when all sources failed. In `--loop` mode, catch everything and sleep `interval − elapsed` (minimum 60 s).
+
+### 3.7 Naver DataLab search trend (`source_id = "naver"`, key-gated; `fetchers/naver_datalab.py`)
+Runs only when **both** `NAVER_CLIENT_ID` and `NAVER_CLIENT_SECRET` are set. Without them nothing changes: no fetcher, no `naver` source entry, no `signals.search`, no score term, and stale rows from an earlier configuration are ignored.
+
+**Status of the API (researched 2026-10-14).**
+- Naver moved its Search API, Search Trend (DataLab) and Shopping Insight APIs to **NAVER API HUB** on Naver Cloud Platform (launched 2026-06-25). New applications at developers.naver.com closed on **2026-07-31**; keys applied for by 2026-07-30 keep working until **2027-06-30**. Search Trend is migrated and available to new users through the HUB (it is not among the shopping/book/academic search APIs that were shut down on 2026-07-31).
+- Endpoints, identical request/response bodies:
+  - HUB: `POST https://naverapihub.apigw.ntruss.com/search-trend/v1/search`, headers `X-NCP-APIGW-API-KEY-ID` and `X-NCP-APIGW-API-KEY` (the Client ID/Secret of a HUB *Application*, not an NCP IAM key). Quota: 50,000 calls/month per app (temporarily free, metered later), 50 requests/s per key, `429` when exceeded.
+  - developers.naver.com (legacy keys only): `POST https://openapi.naver.com/v1/datalab/search`, headers `X-Naver-Client-Id` and `X-Naver-Client-Secret`. Quota: 1,000 calls/day. Legacy and HUB credentials are not interchangeable.
+  - `SP_NAVER_ENDPOINT=auto` tries the HUB and, if it answers 401/403, the legacy endpoint once; the first endpoint that answers 200 is used for the rest of the run. `hub` or `developers` pins one.
+- Body: `startDate`, `endDate` (`yyyy-mm-dd`, from 2016-01-01), `timeUnit` (`date|week|month`), `keywordGroups` (≤5 × `{groupName, keywords ≤20}`); optional `device`, `gender`, `ages` (unused). Response: `results[].{title, keywords, data[].{period, ratio}}`, where `ratio` is relative: the largest value in the whole response is 100.
+- **Terms.** The September 2026 amendment (effective 2026-09-07 at developers.naver.com, 2026-09-20 on the HUB, as reported) is a special clause for the **Search API** ("네이버 검색 API 서비스"): use only to show Naver search results; no input into AI (training, evaluation, answer generation); no copying/storing/caching of search data including derivatives beyond narrow exceptions (server history ≤21 days, on-device ≤24 h); attribution; no ads on result pages; no resale. Secondary sources read DataLab as outside that clause, and the clause's purpose ("to provide Naver search results") does not fit trend statistics, but the primary text was not available to verify. We therefore comply with the strictest reading anyway (below).
+
+**Our use.** Relative daily search interest for each artist's Korean keywords, used as one numeric input to the ranking. Never shown as Naver content (no Naver series, chart or result list is published), never sent to an LLM, never resold.
+
+**Fetch.** `target` = yesterday in KST; request `[target−27 d, target]`, `timeUnit=date`, one keyword group per artist (`groupName` = artist id; keywords = `Artist.search_keywords()`, §2.1), 5 groups per request in roster order → 17 requests for 82 acts. Data is daily, so an artist is requested only when its stored row is for an older target, or for this target but without data for `target` yet (`landed=false`) and fetched ≥1 h 55 min ago. In practice ~17 calls a day plus a few morning re-polls. Per response, each group's series goes through `search_spike()` (§5.3) in memory.
+**Caps.** ≤20 calls per run, ≤300 per KST day (ledger `api_usage`); after 3 consecutive failed requests the run stops asking. `48 × 20 = 960/day` stays under the legacy 1,000/day and `300 × 31 = 9,300/month` under the HUB's 50,000 even with retries. A 429 books the rest of the day (`quota exhausted`); credentials rejected by every endpoint → `credentials rejected`.
+**Status/detail.** Multi-unit over artists with keywords (§3.2): `82/82 current · day 2026-10-13 · 17 calls (17/300 today)`, plus ` · legacy endpoint` when the developers.naver.com endpoint answered.
+**Storage (compliance by design).** Naver's ratio series is never written: only our derived values, one row per artist in `search_signal` (latest `day` D, `z`, `ratio = x_D/μ`, `baseline_n`, `reason`, fetch bookkeeping), deleted after 7 days. Naver-derived numbers elsewhere (`artist_scores.components_json`, the `published` payloads) are kept ≤14 and ≤21 days. All of this is under the strictest 21-day reading. (Copies of the DB inside GitHub Actions cache entries can outlive this by up to the cache's 7-day eviction window.)
 
 ## 4. Storage — SQLite (`backend/var/seoulpulse.db`)
 ```sql
@@ -211,9 +249,15 @@ CREATE TABLE artist_scores (run_id INTEGER NOT NULL, artist_id TEXT NOT NULL, sc
 CREATE TABLE published (run_id INTEGER PRIMARY KEY, generated_at TEXT NOT NULL, payload_json TEXT NOT NULL);
 CREATE TABLE http_cache (url TEXT PRIMARY KEY, etag TEXT, last_modified TEXT, fetched_at TEXT NOT NULL);
 CREATE TABLE why_cache (key TEXT PRIMARY KEY, why TEXT NOT NULL, created_at TEXT NOT NULL);   -- LLM only
+CREATE TABLE api_usage (api TEXT NOT NULL, day TEXT NOT NULL, units INTEGER NOT NULL,         -- quota ledger:
+  PRIMARY KEY (api, day));                       -- youtube (Pacific day, units) · naver (KST day, calls)
+CREATE TABLE search_signal (artist_id TEXT PRIMARY KEY, target TEXT NOT NULL, landed INTEGER NOT NULL,
+  day TEXT, z REAL, ratio REAL, baseline_n INTEGER NOT NULL, reason TEXT NOT NULL, fetched_at TEXT NOT NULL);
 ```
+The two new tables are created with `IF NOT EXISTS`, so existing databases migrate in place (`schema_version` stays 1).
 Headline mentions are not stored. They are recomputed each run from `headlines.title`, which is cheap and keeps alias fixes retroactive. `components_json` keeps every intermediate value from §5 for debugging.
-Retention, applied every run: delete snapshots older than 35 days. Delete videos when `last_seen_at` and `published_at` are both older than 35 days. Delete headlines published more than 30 days ago. Delete `wiki_daily` rows more than 60 days old, `artist_scores` and `runs`/`source_runs` older than 14 days, and keep only the newest 500 `published` rows.
+Retention, applied every run: delete snapshots older than 35 days. Delete videos when `last_seen_at` and `published_at` are both older than 35 days. Delete headlines published more than 30 days ago. Delete `wiki_daily` rows more than 60 days old, `artist_scores` and `runs`/`source_runs` older than 14 days, and keep only the newest 500 `published` rows, none older than 21 days.
+Keyed-API data: `source='api'` snapshots older than 30 days; videos that have only API snapshots and were last refreshed >30 days ago (YouTube API policy); `search_signal` rows fetched >7 days ago; `api_usage` days older than 40 days. A keyless DB has no such rows, so these rules never touch it.
 
 ## 5. Scoring (`scoring.py`, pure functions of DB rows + `now`)
 
@@ -228,6 +272,8 @@ Retention, applied every run: delete snapshots older than 35 days. Delete videos
 | `NEWS_HALF`, `NEWS_WIN`, `K_BASE` | 12 h, 48 h, 0.676 | `K_BASE` = expected decayed sum per 1 headline/day (`∫₀⁴⁸2^(−a/12)da / 24`) |
 | `KO_LEAD_H` | 6 h | Korean lead needed for korea_first |
 | weights | yt 0.35 · accel 0.15 · new 0.15 · wiki 0.20 · news 0.15 · kf bonus +6 | final combination |
+| `W_SEARCH`, `SEARCH_Z_FULL` | 0.10 (additive), 6 | Korean search term, only when `naver` is configured (§5.3) |
+| `SEARCH_SIGMA_FLOOR`, `SEARCH_MIN_MU`, `SEARCH_STALE_D`, `SEARCH_KF_Z` | 0.25, 0.01, 2 d, 2.0 | search spike guards and the Korea-first threshold |
 
 ### 5.2 Per-video intensity
 For each eligible video, all of the following must hold:
@@ -262,17 +308,22 @@ Define `t_L, V_L` as the latest snapshot and `age_L = max(0.25, hours(t_L − pu
   - Baseline: `hist_days = min(7, days(now − 24h − meta.first_run_at))`. If `hist_days < 2`, then `base_daily = 0`. Otherwise `base_daily` = Σ `SRC_W` over mentions published in `[now−24h−hist_days·24h, now−24h)`, divided by `hist_days`.
   - `excess = max(0, raw − K_BASE·base_daily)` and `S_news = clamp(log2(1+excess)/4, 0, 1)`. Acts that are always in the news must exceed their own baseline.
   - `headlines_24h` / `headlines_ko_24h` are unweighted counts of mentions with age ≤24 h.
+- **Korean search** (only when `naver` is configured, §3.7):
+  - At fetch time, per keyword group, `search_spike(series, target)`: `D` = latest day in the series, which must be ≥ `target − 2 d` (else missing, "stale"). Baseline: days `D−14 … D−1`, at least 7 present (else "short baseline"). `μ` = mean, `σ` = population std; `μ < 0.01` → missing ("low volume": Naver rounds ratios, so tiny groups are noise). `σ_eff = max(σ, 0.25·μ)` (so a 2x day scores at most z = 4). `z_s = clamp((x_D − μ)/σ_eff, −3, 10)`, `ratio_s = x_D/μ`. Naver rescales each response to max 100, but z and the ratio are scale-free, so values from different batches and days compare. Only `D`, `z_s`, `ratio_s` are stored.
+  - At scoring time the stored row is missing if it has no z or `D < target − 2 d` (target = KST yesterday at `now`). `S_search = clamp(max(z_s, 0)/6, 0, 1)`; 0 when missing or not configured.
 
 ### 5.4 Korea-first flag
 - `ko_lead_news`: let K be the Korean mentions with age ≤48 h. At least one of them must have age ≤24 h. Let `t_ko = min(published_at over K)` and E be the English mentions with `published_at ≥ t_ko − 24h`. The flag is true when E is empty or `min(E.published_at) ≥ t_ko + 6h`.
 - `ko_lead_wiki`: `z_ko ≥ 2.0` (after the gate) and (`z_en` is missing or `z_en < 1.0`).
-- `korea_first = ko_lead_news or ko_lead_wiki`. `S_kf = 1` if true, else 0.
+- `ko_lead_search` (only when configured): `z_s ≥ 2.0` and (`z_en` is missing or `z_en < 1.0`): a Korean search spike while English Wikipedia is quiet.
+- `korea_first = ko_lead_news or ko_lead_wiki or ko_lead_search`. `S_kf = 1` if true, else 0.
 
 ### 5.5 Combination, eligibility, ranking
 ```
-score = clamp( 100·( 0.35·S_yt + 0.15·S_accel·g + 0.15·S_new·(0.5+0.5·g) + 0.20·S_wiki + 0.15·S_news ) + 6·S_kf , 0, 100 )
+score = clamp( 100·( 0.35·S_yt + 0.15·S_accel·g + 0.15·S_new·(0.5+0.5·g) + 0.20·S_wiki + 0.15·S_news [+ 0.10·S_search] ) + 6·S_kf , 0, 100 )
 ```
-Round to 1 decimal (Python `round`). An artist is eligible if `score ≥ 3.0` and `max(S_yt, S_wiki, S_news) > 0`. Sort by `(−score, −yt_raw, id)`. Ranks run 1..n, and the top `SP_TOP_N` (20) are published.
+The bracketed term exists only when the `naver` source is configured; otherwise `S_search = 0` and the sum is bit-identical to the keyless formula (§5.8 must keep reproducing exactly). It is additive (a Korean search spike can only raise a score) rather than a re-weighting, so configuring Naver never lowers any act and acts without search data keep their keyless score.
+Round to 1 decimal (Python `round`). An artist is eligible if `score ≥ 3.0` and `max(S_yt, S_wiki, S_news, S_search) > 0`. Sort by `(−score, −yt_raw, id)`. Ranks run 1..n, and the top `SP_TOP_N` (20) are published.
 
 ### 5.6 Cold start
 The first run has no history. It still ranks sensibly because:
@@ -313,6 +364,15 @@ The first run has no history. It still ranks sensibly because:
 Takeaway: a Korea-first resurgence edges out a big fresh release. That is the product thesis, working as intended.
 (Song titles: KISS OF LIFE `KISS OF LIFE (키스오브라이프) 'Lucky Seven' Official MV`, aespa `aespa 에스파 'Neon Tide' MV`.)
 
+### 5.9 Worked example: Korean search spike (normative — `test_naver.py` must reproduce it)
+The §5.8 inputs, with the `naver` source configured and one search row: SEVENTEEN, target and D = 2026-10-13.
+- Series (one keyword group, Naver ratio units): baseline D−14…D−1 = `20,19,21,20,20,21,19,20,20,20,21,19,20,20`, x_D = 46.
+- `μ = 20.0`, `σ = 0.6547`, `σ_eff = max(0.6547, 0.25·20) = 5.0`, `z_s = (46 − 20)/5 = 5.2`, `ratio_s = 2.30`. Multiplying the whole series by any constant (Naver's rescaling) gives the same z and ratio.
+- `S_search = 5.2/6 = 0.8667` → `+100·0.10·0.8667 = +8.67`.
+- `ko_lead_search`: z_s 5.2 ≥ 2 and z_en = 0.6 < 1 → true. SEVENTEEN had no Korea-first lead before (`ko_lead_news` false, `ko_lead_wiki` false), so it gains `S_kf = 1` → `+6`.
+- Score: `20.2057 + 8.6667 + 6 = 34.87 → 34.9`. Rank stays 3 (67.0, 63.1, 34.9), change `down 1`. Why: rule R3S → `Korean searches 2.3x normal, EN quiet`. `signals.search = 0.867`.
+- KISS OF LIFE and aespa have no search row (missing → 0): 67.0 and 63.1 with the same whys as §5.8. Configured with no rows at all reproduces §5.8 exactly.
+
 ## 6. "Why" line (`why.py`)
 Use the first rule whose condition holds. Render the text. If it exceeds **60 code points** with the song truncated to 24 characters, use that rule's no-song form. If that is still too long, fall through to the next rule.
 Number format `fmt(n)`:
@@ -328,8 +388,10 @@ Ratios and r use `{:.1f}x`. Headline text is **never** included.
 | R1 | NEW_MV | an eligible `mv` with `age_now ≤ 48h` (newest one) | `New MV "{song}" at {fmt(vph)} views/hr` · (`New MV out, {fmt(vph)} views/hr`) |
 | R2 | ACCEL | `r_top ≥ 2.0` and `S_yt ≥ 0.2` | `"{song}" views up {r}x vs. normal decay` · (`MV views up {r}x vs. normal decay`; use `Video` instead of `MV` if top kind ≠ mv) |
 | R3 | KO_WIKI | `ko_lead_wiki` | `Korean Wikipedia views {ratio_ko}x normal, EN quiet` |
+| R3S | KO_SEARCH | `ko_lead_search` (Naver configured) | `Korean searches {ratio_s}x normal, EN quiet` |
 | R4 | KO_NEWS | `ko_lead_news` | no EN mention: `{n_ko} Korean headline(s), no English coverage yet` (`1 Korean headline, …` / `2 Korean headlines, …`); else `Korean press led English by {h}h` |
 | R5 | WIKI | `max(z_ko, z_en) ≥ 2.0` | `{Korean\|English} Wikipedia views {ratio}x the 2-week avg` (higher z; tie → Korean) |
+| R5S | SEARCH | `z_s ≥ 2.0` (Naver configured) | `Korean searches {ratio_s}x normal` |
 | R6 | NEWS | `headlines_24h ≥ 2` | `{n} headlines in 24h ({n_ko} Korean)`; drop the parenthetical if `n_ko = 0` |
 | R7 | TEASER | `teaser` with `age_now ≤ 72h` | `New teaser "{song}": comeback incoming` · (`New teaser out: comeback incoming`) |
 | R8 | MOMENTUM | `top_video` exists | `"{song}" steady at {fmt(vph)} views/hr` · (`Steady YouTube pull: {fmt(vph)} views/hr`) |
@@ -337,7 +399,7 @@ Ratios and r use `{:.1f}x`. Headline text is **never** included.
 
 Here `n_ko` is the count of Korean mentions in 24 h, and `h` is the integer hours between `t_ko` and the first English mention.
 **Optional LLM.** It runs only when `SP_WHY_LLM=1`, `ANTHROPIC_API_KEY` is set, and `anthropic` is importable. It covers only the top 10 items, with at most 10 calls per run. Results are cached in `why_cache` for 6 h under the key `sha256(input JSON)`.
-- Input: the item's metrics and signals, plus the template line. Headline titles are not sent.
+- Input: the item's metrics and signals, plus the template line. Headline titles are not sent. **Naver-derived values are never sent:** the five keyless signals only, `korea_first` is the keyless lead (`ko_lead_news or ko_lead_wiki`), any `search*` metric is stripped, and items whose template rule is R3S/R5S keep their template line without an LLM call.
 - Call: `anthropic.Anthropic(timeout=20, max_retries=1).beta.messages.create(model=SP_LLM_MODEL, max_tokens=1024, output_config={"effort":"low"}, betas=["server-side-fallback-2026-07-01"], extra_body={"fallbacks":"default"}, system=<"Write ONE English line ≤60 chars explaining why this K-pop act is trending, using only the given numbers. No quotes from headlines, no hashtags, no emoji.">, messages=[{"role":"user","content":<json>}])`
 - Accept the result only if `stop_reason != "refusal"` and the text is one line of 1–60 characters with no Hangul. Then set `why_source="llm"`. Any exception or rejection falls back to the template.
 
@@ -353,7 +415,7 @@ UTF-8 JSON with `ensure_ascii=False`, 2-space indent, keys in the order shown. A
 | `rank_change_basis_at` | ts \| null | §5.7 |
 | `cold_start` | bool | §5.6 |
 | `items` | Item[0..20] | sorted by `rank`; ranks contiguous from 1 |
-| `sources` | Source[5] | fixed order: youtube, wikipedia, yonhap, soompi, koreaboo |
+| `sources` | Source[5..6] | fixed order: youtube, wikipedia, yonhap, soompi, koreaboo; then `naver` ("Naver DataLab") only when its credentials are configured (it is the attribution for the search signal) |
 
 **Item:**
 - `id` (slug; deep-link key), `rank` (int), `prev_rank` (int|null), `change` (`new|up|down|same`), `change_amount` (int ≥0)
@@ -363,7 +425,7 @@ UTF-8 JSON with `ensure_ascii=False`, 2-space indent, keys in the order shown. A
   - `yt_views_per_hour` (int|null), `yt_views_per_hour_estimated` (bool), `yt_accel` (number 2 dp | null)
   - `wiki_day` (`YYYY-MM-DD` | null; the latest D used), `wiki_ko_views` (int|null), `wiki_ko_ratio` (2 dp | null), `wiki_en_views`, `wiki_en_ratio`
   - `headlines_24h` (int), `headlines_ko_24h` (int)
-- `signals` (3 dp): `youtube` (0–1), `accel` (−0.5–1), `new_release`, `wiki`, `news` (0–1). These are S_yt, S_accel, S_new, S_wiki, S_news.
+- `signals` (3 dp): `youtube` (0–1), `accel` (−0.5–1), `new_release`, `wiki`, `news` (0–1). These are S_yt, S_accel, S_new, S_wiki, S_news. Optional `search` (0–1, S_search) only when `naver` is configured. Naver's ratio is not published as a metric (data minimization); it appears only inside an R3S/R5S `why`.
 - `top_video` (null | `{video_id, title, url: https://www.youtube.com/watch?v=…, kind: mv|perf|teaser|show|other, published_at, views (latest), channel_name}`)
 - `headlines`: up to 5 mentions from the last 48 h, newest first, each `{title, url, source_id: yonhap|soompi|koreaboo, source_name, lang: ko|en, published_at}`
 - `links`:
@@ -400,8 +462,10 @@ Excerpt from `docs/trends.example.json`. The sample data uses `[Sample]` headlin
     { "id": "soompi", "name": "Soompi", "status": "ok", "last_success_at": "2026-10-14T09:00:00Z", "detail": "60 items, 2 new" },
     { "id": "koreaboo", "name": "Koreaboo", "status": "error", "last_success_at": "2026-10-14T08:30:00Z", "detail": "timeout after 2 retries" } ] }
 ```
+**Contract change for the key-gated sources (backward compatible, no `schema_version` bump).** The schema now allows `sources` to hold 5 or 6 entries (`naver` added to the id enum) and an optional `signals.search`. Every payload valid before stays valid; keyless producers emit exactly the old shape. The iOS decoder already tolerates both: `sources` decodes as a lossy array rendered with `ForEach`/`FlowLayout` (any count), unknown keys are ignored, and `TrendSignals` reads only its five keys. Chosen over a separate top-level status object because the app then shows Naver's attribution and status with no app change.
+
 **Consumer rules (iOS):**
-- Ignore unknown keys.
+- Ignore unknown keys. Render `sources` in the given order without assuming a count.
 - Map an unknown `change` to `.same`, an unknown `kind` to `.other`, and an unknown `status` to `.degraded`.
 - Treat `schema_version > 1` as "try to decode, and fall back on failure".
 - Decode `wiki_day` as a String, not a Date.
@@ -623,6 +687,8 @@ Korea-first K-pop Trends — TOP 5 (Oct 14, 18:00 KST)
 - `test_http.py`: 503 then 200 retries; `Retry-After` honored with a fake sleep; 404 is not retried.
 - `test_publish_contract.py`: a generated payload and `docs/trends.example.json` both validate against `docs/trends.schema.json`. Ranks are contiguous. The write is atomic: the temp file is used and the destination is never partially written.
 - `test_social.py`: golden strings from §9; weighted ≤280; ≤500.
+- `test_youtube_api.py`: no key → no calls; discovery + exact stats + RSS-count replacement; Shorts rule; rotation covers every channel once per 6 h; per-run and per-day caps are hard ceilings (ledger == calls); quota-exhausted and rejected-key stops; the key only in the `X-Goog-Api-Key` header and never in URLs, errors, the DB, `trends.json` or logs; 30-day API retention.
+- `test_naver.py`: absent/partial keys are a no-op (5 sources, no `signals.search`); end-to-end with a fake DataLab (17 batched requests, headers, body limits, 6th source, schema-valid, §5.9 worked example, R3S/R5S); no raw series and no secrets stored; daily cadence and 2 h re-poll; HUB→legacy fallback; rejected credentials, 429 and timeouts isolated; daily/run caps; Naver alone never counts as a successful run; the LLM never sees Naver values.
 - Manual live smoke run, not in CI: `resolve-channels` → `validate-seed --online` → `run`. It must produce ≥10 items in under 5 minutes, and a second run 30 minutes later must report `cold_start:false`.
 
 **iOS:**
@@ -648,7 +714,7 @@ Korea-first K-pop Trends — TOP 5 (Oct 14, 18:00 KST)
 - [ ] `seoulpulse serve --seed-example` serves `docs/trends.example.json` at `http://localhost:8787/trends.json` with `Cache-Control: no-cache`.
 - [ ] `.github/workflows/pipeline.yml` exists:
   - triggers: cron `*/30 * * * *` plus `workflow_dispatch`; `concurrency: pipeline`
-  - steps: checkout → `astral-sh/setup-uv` → restore `backend/var` with `actions/cache/restore` (key `sp-state-${{ github.run_id }}`, restore-keys `sp-state-`) → `uv sync --frozen` → `uv run seoulpulse run` (env `SP_CONTACT` from vars, `YOUTUBE_API_KEY` from secrets) → `actions/cache/save` (if: always()) → `actions/upload-pages-artifact` (path `public`) → a `deploy-pages` job
+  - steps: checkout → `astral-sh/setup-uv` → restore `backend/var` with `actions/cache/restore` (key `sp-state-${{ github.run_id }}`, restore-keys `sp-state-`) → `uv sync --frozen` → `uv run seoulpulse run` (env `SP_CONTACT` from vars; `YOUTUBE_API_KEY`, `NAVER_CLIENT_ID`, `NAVER_CLIENT_SECRET` from secrets; optional vars `SP_YOUTUBE_DAILY_UNITS`, `SP_NAVER_ENDPOINT`) → `actions/cache/save` (if: always()) → `actions/upload-pages-artifact` (path `public`) → a `deploy-pages` job
   - `backend-ci.yml` runs pytest on push and PR. Neither workflow is executed in this session.
 - [ ] The iOS project generates and builds, and its tests pass, including the 4 snapshot PNGs. `sample-trends.json` is byte-identical to `docs/trends.example.json` (`cmp`).
 - [ ] In the simulator: home shows 10+ cards from the local server; `seoulpulse://item/<id>` opens detail; external links open Safari; Settings changes the URL and "Test connection" reports OK; widget gallery screenshots exist for all 4 families.
@@ -659,3 +725,5 @@ Korea-first K-pop Trends — TOP 5 (Oct 14, 18:00 KST)
 - **YouTube coverage and freshness.** RSS view counts can be cached or frozen; the `V_L > V_O` guard handles it. Label feeds roll over in 1–4 days; mitigated by carry-forward and the optional API key. Guessed artist handles are often wrong; mitigated by the resolver title check, plus label channels keep coverage.
 - **Thresholds are first guesses.** Wiki daily granularity means the wiki signal updates once a day (after about 01:00–06:00 UTC). The decay exponent `P=0.8` and the weights are first guesses; tune them using `components_json`. GitHub cron is best-effort and can run 5–15 minutes late, so `next_update_hint` is only a hint.
 - **Publisher terms.** Yonhap's feed carries a reuse and AI-use notice. We use headline and link only, never descriptions, and we never send headlines to the LLM.
+- **Naver DataLab.** New credentials exist only on NAVER API HUB, which is free "temporarily"; metering could start later (the caps keep us at ~500–3,000 calls a month). Legacy developers.naver.com keys stop working after 2027-06-30. The DataLab-specific terms text could not be verified; storage and LLM rules follow the strictest reading (§3.7). Bare keyword queries carry no context, so ambiguous names need an explicit `search:` list (§2.1).
+- **YouTube Shorts for API-only discoveries** use a duration/title heuristic (§3.3); a 61–180 s Short without `#shorts` in its title is scored as a regular video (usually `other`, weight 0.15).

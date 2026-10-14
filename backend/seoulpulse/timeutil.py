@@ -2,9 +2,34 @@
 
 from __future__ import annotations
 
-from datetime import UTC, date, datetime, timedelta
+from datetime import UTC, date, datetime, timedelta, timezone, tzinfo
 
 ISO_FMT = "%Y-%m-%dT%H:%M:%SZ"
+
+
+def _zone(name: str, fallback: tzinfo) -> tzinfo:
+    try:
+        from zoneinfo import ZoneInfo
+
+        return ZoneInfo(name)
+    except Exception:  # noqa: BLE001 - no tz database available
+        return fallback
+
+
+# Korea has had no DST since 1988. Pacific time is only used to find the YouTube quota day; the fixed
+# fallback (PST) can at worst start that day one hour early, which only makes the budget stricter.
+KST = _zone("Asia/Seoul", timezone(timedelta(hours=9), "KST"))
+PACIFIC = _zone("America/Los_Angeles", timezone(timedelta(hours=-8), "PST"))
+
+
+def kst_date(dt: datetime) -> date:
+    """Calendar day in Korea (Naver DataLab days and its quota day are KST)."""
+    return dt.astimezone(KST).date()
+
+
+def pacific_date(dt: datetime) -> date:
+    """YouTube Data API quota day: quotas reset at midnight Pacific time."""
+    return dt.astimezone(PACIFIC).date()
 
 
 def utcnow() -> datetime:

@@ -18,6 +18,7 @@ SLUG_RE = re.compile(r"^[a-z0-9]+(-[a-z0-9]+)*$")
 UC_RE = re.compile(r"^UC[\w-]{22}$")
 HANDLE_RE = re.compile(r"^@[\w.\-]{2,}$")
 CHANNEL_KINDS = ("label", "broadcaster")
+MAX_SEARCH_TERMS = 20   # Naver DataLab: at most 20 keywords per keyword group
 
 
 class SeedError(Exception):
@@ -41,9 +42,28 @@ class Artist:
     youtube: tuple[str, ...]
     wiki_en: str | None
     wiki_ko: str | None
+    search: tuple[str, ...] = ()   # optional explicit Naver DataLab keywords (artists.yaml `search:`)
 
     def wiki_title(self, lang: str) -> str | None:
         return self.wiki_en if lang == "en" else self.wiki_ko if lang == "ko" else None
+
+    def search_keywords(self) -> tuple[str, ...]:
+        """Keywords for the Korean-search signal (spec §3.7).
+
+        The explicit `search:` list when given, else the artist's Hangul aliases. Hangul aliases already passed
+        the deny-list and syllable rules; `name_ko` is not added implicitly (it may be a deny-listed word such as
+        있지 or 지수), and Latin aliases are not added because a bare query has no context to disambiguate
+        English words (`TWICE`, `Red Velvet`). Order-preserving, de-duplicated, at most 20.
+        """
+        terms = self.search or tuple(a.term for a in self.aliases if hangul_count(a.term) > 0)
+        out: list[str] = []
+        seen: set[str] = set()
+        for t in terms:
+            key = t.casefold()
+            if key not in seen:
+                seen.add(key)
+                out.append(t)
+        return tuple(out[:MAX_SEARCH_TERMS])
 
 
 @dataclass(frozen=True)
@@ -125,6 +145,32 @@ def _parse_alias(raw: Any, where: str, errors: list[str]) -> Alias | None:
     return Alias(term=term, case_sensitive=explicit or auto_case_sensitive(term))
 
 
+def _parse_search(raw: Any, where: str, errors: list[str]) -> tuple[str, ...]:
+    """Optional `search:` keyword list for Naver DataLab. Same safety rules as aliases, max 20 terms."""
+    if raw is None:
+        return ()
+    if not isinstance(raw, list) or not raw:
+        errors.append(f"{where}: search must be a non-empty list of strings")
+        return ()
+    out: list[str] = []
+    for t in raw:
+        term = normalize(t) if isinstance(t, str) else ""
+        if not term:
+            errors.append(f"{where}: bad search term {t!r}")
+            continue
+        if hangul_count(term) > 0:
+            if hangul_count(term) < 2:
+                errors.append(f"{where}: search term {term!r} needs ≥2 Hangul syllables")
+            if term in DENY_LIST:
+                errors.append(f"{where}: search term {term!r} is on the ambiguous-word deny-list")
+        elif len(term) < 2:
+            errors.append(f"{where}: search term {term!r} needs ≥2 characters")
+        out.append(term)
+    if len(out) > MAX_SEARCH_TERMS:
+        errors.append(f"{where}: at most {MAX_SEARCH_TERMS} search terms")
+    return tuple(out)
+
+
 def _opt_str(v: Any) -> str | None:
     if v is None:
         return None
@@ -189,9 +235,11 @@ def load_seed(data_dir: Path, *, strict: bool = True) -> Seed:
         if not isinstance(wiki, dict):
             errors.append(f"{where}: wiki must be a mapping")
             wiki = {}
+        search = _parse_search(a.get("search"), where, errors)
         artists.append(Artist(
             id=aid, name=name, name_ko=_opt_str(a.get("name_ko")), aliases=aliases,
             youtube=tuple(str(h) for h in yt), wiki_en=_opt_str(wiki.get("en")), wiki_ko=_opt_str(wiki.get("ko")),
+            search=search,
         ))
 
     errors.extend(check_alias_rules(artists))

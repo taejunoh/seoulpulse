@@ -17,7 +17,14 @@ import httpx
 
 from .config import Config
 from .contract import load_schema, validate_payload
-from .fetchers import SOURCE_IDS, Fetcher, FetchOutput, RunContext, default_fetchers
+from .fetchers import (
+    SOURCE_IDS,
+    Fetcher,
+    FetchOutput,
+    RunContext,
+    configured_optional_sources,
+    default_fetchers,
+)
 from .fetchers.base import FetchResult, make_result
 from .http import HttpClient
 from .matching import AliasMatcher, classify_video
@@ -32,6 +39,7 @@ from .scoring import (
     is_cold_start,
     rank_scores,
     score_all,
+    search_signal,
 )
 from .seed import Seed, SeedError, load_seed
 from .store import Store
@@ -168,6 +176,10 @@ def persist_output(store: Store, run_id: int, out: FetchOutput, seed: Seed, matc
                 store.insert_headline(h)
             for e in out.http_cache:
                 store.upsert_http_cache(e)
+            for r in out.search:
+                store.upsert_search_row(r)
+            for u in out.api_usage:
+                store.add_api_usage(u)
             store.insert_source_run(run_id, result)
     except Exception as exc:  # noqa: BLE001 - one source's persist failure must not affect others
         log.exception("persisting %s failed", result.source_id)
@@ -176,6 +188,8 @@ def persist_output(store: Store, run_id: int, out: FetchOutput, seed: Seed, matc
                              0, max(1, result.units_total), msg, [msg, *result.errors])
         with store.tx():
             store.insert_source_run(run_id, result)
+            for u in out.api_usage:          # quota already spent must stay booked even if the data was lost
+                store.add_api_usage(u)
     return result
 
 
@@ -263,7 +277,9 @@ def _run(config: Config, store: Store, seed: Seed, *, now, sources, publish, tra
          fetchers, deadline_sec, llm_call) -> RunOutcome:
     t0 = monotonic()
     now = (now or utcnow()).replace(microsecond=0)
-    enabled = set(SOURCE_IDS) if sources is None else {s for s in sources if s in SOURCE_IDS}
+    optional = configured_optional_sources(config)          # key-gated sources whose credentials are set
+    all_ids = SOURCE_IDS + optional
+    enabled = set(all_ids) if sources is None else {s for s in sources if s in all_ids}
     store.ensure_first_run_at(now)
     first_run_at = store.first_run_at()
     run_id = store.insert_run(now)
@@ -274,14 +290,15 @@ def _run(config: Config, store: Store, seed: Seed, *, now, sources, publish, tra
         soft = max(deadline_sec * 0.5, deadline_sec - FETCH_GRACE_SEC)
         ctx = RunContext(now=now, http=http, seed=seed, config=config, store=store.view(now), log=log,
                          monotonic=monotonic, deadline=t0 + soft, started_mono=t0)
-        active = [f for f in (fetchers if fetchers is not None else default_fetchers()) if f.source_id in enabled]
+        active = [f for f in (fetchers if fetchers is not None else default_fetchers(config))
+                  if f.source_id in enabled]
         try:
             outputs = run_fetchers(ctx, active, deadline_sec)
         finally:
             http.close()
 
         results: dict[str, FetchResult] = {}
-        for sid in SOURCE_IDS:
+        for sid in all_ids:
             if sid in outputs:
                 results[sid] = persist_output(store, run_id, outputs[sid], seed, matcher)
             else:
@@ -290,14 +307,17 @@ def _run(config: Config, store: Store, seed: Seed, *, now, sources, publish, tra
                 results[sid] = make_result(sid, status, now, now, 0, 0, detail, [])
                 with store.tx():
                     store.insert_source_run(run_id, results[sid])
-        for sid in SOURCE_IDS:
+        for sid in all_ids:
             r = results[sid]
             if r.errors:
                 log.warning("%s %s: %s", sid, r.status, "; ".join(r.errors[:3]))
 
         reattribute(store, seed, matcher, now)
         videos_by_artist, wiki, mentions = load_scoring_inputs(store, seed, matcher, now)
-        scores = score_all(artist_infos(seed), videos_by_artist, wiki, mentions, now, first_run_at)
+        search = None
+        if "naver" in optional:      # unconfigured: no search term at all, even if old rows linger
+            search = {aid: search_signal(row, now) for aid, row in store.search_rows().items()}
+        scores = score_all(artist_infos(seed), videos_by_artist, wiki, mentions, now, first_run_at, search)
         ranked = rank_scores(scores)
         basis = store.rank_basis(now, config.rank_compare_hours)
         apply_rank_changes(ranked, basis_ranks(basis[1]) if basis else None)
@@ -312,19 +332,23 @@ def _run(config: Config, store: Store, seed: Seed, *, now, sources, publish, tra
         with store.tx():
             store.insert_artist_scores(run_id, [(s.id, s.score, s.rank, s.korea_first, s.components()) for s in scores])
 
-        enabled_results = [results[s] for s in SOURCE_IDS if s in enabled]
-        all_failed = bool(enabled_results) and all(r.status == "error" for r in enabled_results)
+        # "Every source failed" looks at the five keyless sources only: a key-gated enrichment alone cannot
+        # justify replacing the last good file. Its own failure still makes the run "partial".
+        core_results = [results[s] for s in SOURCE_IDS if s in enabled]
+        all_failed = bool(core_results) and all(r.status == "error" for r in core_results)
+        enabled_results = [results[s] for s in all_ids if s in enabled]
         run_status = "failed" if all_failed else (
             "ok" if all(r.status == "ok" for r in enabled_results) else "partial")
 
         source_info = {
             sid: SourceInfo(sid, results[sid].status, store.last_success_at(sid), results[sid].detail)
-            for sid in SOURCE_IDS
+            for sid in all_ids
         }
         payload = build_payload(
             now=now, interval_sec=config.interval_sec, ranked=ranked, top_n=config.top_n,
             rank_basis_at=basis[0] if basis else None, cold_start=cold, sources=source_info,
             channel_urls={s.id: seed.artist_channel_url(s.id) for s in top},
+            include_search="naver" in optional,
         )
         contract_errors = validate_payload(payload, load_schema(config.docs_dir))
         if contract_errors:
@@ -355,7 +379,7 @@ def _run(config: Config, store: Store, seed: Seed, *, now, sources, publish, tra
             store.finish_run(run_id, run_status, now + timedelta(seconds=int(monotonic() - t0)), published, cold)
         elapsed = monotonic() - t0
         summary = (f"run {run_id} {run_status} items={len(payload['items'])} "
-                   + " ".join(f"{sid}={results[sid].status}" for sid in SOURCE_IDS)
+                   + " ".join(f"{sid}={results[sid].status}" for sid in all_ids)
                    + (" contract=INVALID" if contract_errors else "") + f" {elapsed:.1f}s")
         log.info(summary)
         return RunOutcome(exit_code=exit_code, run_id=run_id, status=run_status, items=len(payload["items"]),

@@ -201,6 +201,7 @@ artists:
     aliases: ["AHOF"]
     youtube: ["@AHOF"]
     wiki: {en: "AHOF", ko: "AHOF"}
+    search: ["AHOF"]  # 아홉 = "nine"
   - id: g-dragon
     name: "G-DRAGON"
     name_ko: "지드래곤"
@@ -249,6 +250,7 @@ artists:
     aliases: ["ITZY"]
     youtube: ["@ITZY"]
     wiki: {en: "Itzy", ko: null}
+    search: ["ITZY"]  # 있지 is a deny-listed common word
   - id: nmixx
     name: "NMIXX"
     name_ko: "엔믹스"
@@ -351,18 +353,21 @@ artists:
     aliases: ["KiiiKiii", "키키"]
     youtube: ["@KiiiKiiiofficial"]
     wiki: {en: "KiiiKiii", ko: null}
+    search: ["KiiiKiii"]  # 키키 is a common name/word
   - id: artms
     name: "ARTMS"
     name_ko: "아르테미스"
     aliases: [{term: "ARTMS", case_sensitive: true}, "아르테미스"]
     youtube: []
     wiki: {en: "Artms", ko: null}
+    search: ["ARTMS"]  # 아르테미스 collides with NASA Artemis news
   - id: billlie
     name: "Billlie"
     name_ko: "빌리"
     aliases: ["Billlie"]
     youtube: ["@Billlie"]
     wiki: {en: "Billlie", ko: "Billlie"}
+    search: ["Billlie"]  # 빌리 is deny-listed
   - id: dreamcatcher
     name: "Dreamcatcher"
     name_ko: "드림캐쳐"
@@ -489,9 +494,11 @@ artists:
     aliases: ["CHUNG HA", "CHUNGHA"]
     youtube: []
     wiki: {en: "Chung Ha", ko: "청하 (가수)"}
+    search: ["가수 청하", "CHUNG HA", "CHUNGHA"]  # 청하 is also a soju brand
   - id: bibi
     name: "BIBI"
     name_ko: "비비"
     aliases: ["BIBI"]
     youtube: []
     wiki: {en: "Bibi (singer)", ko: null}
+    search: ["가수 비비", "BIBI"]  # 비비 is deny-listed

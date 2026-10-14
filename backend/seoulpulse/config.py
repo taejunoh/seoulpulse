@@ -5,7 +5,7 @@ from __future__ import annotations
 import logging
 import os
 from collections.abc import Mapping
-from dataclasses import dataclass, replace
+from dataclasses import dataclass, fields, replace
 from pathlib import Path
 
 log = logging.getLogger("seoulpulse.config")
@@ -18,6 +18,12 @@ REPO_DIR = BACKEND_DIR.parent
 DEFAULT_CONTACT = "https://github.com/taejunoh/seoulpulse"
 
 DEFAULT_LLM_MODEL = "claude-haiku-5-5"
+
+# YouTube Data API v3: the free quota is 10,000 units per project per day (resets at midnight Pacific time).
+# We budget 9,000 so manual tests and other tools sharing the project keep headroom (spec §3.3).
+DEFAULT_YOUTUBE_DAILY_UNITS = 9000
+YOUTUBE_QUOTA_UNITS = 10000
+NAVER_ENDPOINTS = ("auto", "hub", "developers")
 
 
 @dataclass(frozen=True)
@@ -37,6 +43,23 @@ class Config:
     why_llm: bool
     anthropic_api_key: str | None
     llm_model: str
+    youtube_daily_units: int = DEFAULT_YOUTUBE_DAILY_UNITS
+    naver_client_id: str | None = None
+    naver_client_secret: str | None = None
+    naver_endpoint: str = "auto"
+
+    @property
+    def naver_enabled(self) -> bool:
+        """The Naver DataLab source runs only when both credentials are present (spec §3.7)."""
+        return bool(self.naver_client_id and self.naver_client_secret)
+
+    def __repr__(self) -> str:  # never print secrets, e.g. in a traceback or a debug log line
+        hidden = {"youtube_api_key", "anthropic_api_key", "naver_client_id", "naver_client_secret"}
+        parts = []
+        for f in fields(self):
+            v = getattr(self, f.name)
+            parts.append(f"{f.name}={'<set>' if f.name in hidden and v else repr(v)}")
+        return f"Config({', '.join(parts)})"
 
     @property
     def var_dir(self) -> Path:
@@ -87,6 +110,16 @@ def _float(env: Mapping[str, str], key: str, default: float) -> float:
         return default
 
 
+def _choice(env: Mapping[str, str], key: str, allowed: tuple[str, ...], default: str) -> str:
+    raw = env.get(key, "").strip().lower()
+    if not raw:
+        return default
+    if raw not in allowed:
+        log.warning("ignoring %s=%r (expected one of %s)", key, raw, ", ".join(allowed))
+        return default
+    return raw
+
+
 def load_config(env: Mapping[str, str] | None = None, *, warn: bool = True) -> Config:
     env = os.environ if env is None else env
     contact = env.get("SP_CONTACT", "").strip()
@@ -111,4 +144,9 @@ def load_config(env: Mapping[str, str] | None = None, *, warn: bool = True) -> C
         why_llm=env.get("SP_WHY_LLM", "0").strip() == "1",
         anthropic_api_key=env.get("ANTHROPIC_API_KEY", "").strip() or None,
         llm_model=env.get("SP_LLM_MODEL", "").strip() or DEFAULT_LLM_MODEL,
+        youtube_daily_units=max(0, min(YOUTUBE_QUOTA_UNITS,
+                                       _int(env, "SP_YOUTUBE_DAILY_UNITS", DEFAULT_YOUTUBE_DAILY_UNITS))),
+        naver_client_id=env.get("NAVER_CLIENT_ID", "").strip() or None,
+        naver_client_secret=env.get("NAVER_CLIENT_SECRET", "").strip() or None,
+        naver_endpoint=_choice(env, "SP_NAVER_ENDPOINT", NAVER_ENDPOINTS, "auto"),
     )

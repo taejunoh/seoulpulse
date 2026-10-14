@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import email.utils
+import json
 import logging
 import random
 import re
@@ -11,6 +12,7 @@ import time
 from collections.abc import Callable, Mapping
 from dataclasses import dataclass
 from datetime import UTC, datetime
+from typing import Any
 from urllib.parse import urljoin, urlsplit
 
 import httpx
@@ -211,7 +213,7 @@ class HttpClient:
                 hop_headers = dict(req_headers)
                 if cookies and _same_site(origin, host):
                     hop_headers["Cookie"] = "; ".join(f"{k}={v}" for k, v in cookies.items())
-                resp = self._get_one(current, host, hop_headers)
+                resp = self._request_one("GET", current, host, hop_headers)
                 location = resp.headers.get("location")
                 if resp.status not in REDIRECT_STATUSES or not location:
                     return resp
@@ -223,7 +225,22 @@ class HttpClient:
         except _DeadlineExceeded:
             raise HttpError("run deadline exceeded") from None
 
-    def _get_one(self, url: str, host: str, headers: Mapping[str, str]) -> Response:
+    def post_json(self, url: str, payload: Any, *, headers: Mapping[str, str] | None = None) -> Response:
+        """POST a JSON body with the same pacing, retries, byte cap and deadline as get().
+
+        Redirects are not followed (a 3xx is returned as the final response). Used for Naver DataLab, whose
+        search-trend endpoint is a read-only POST, so retrying 429/5xx is safe.
+        """
+        req_headers = {"Content-Type": "application/json", **dict(headers or {})}
+        body = json.dumps(payload, ensure_ascii=False, separators=(",", ":")).encode("utf-8")
+        host = urlsplit(url).hostname or ""
+        try:
+            return self._request_one("POST", url, host, req_headers, body)
+        except _DeadlineExceeded:
+            raise HttpError("run deadline exceeded") from None
+
+    def _request_one(self, method: str, url: str, host: str, headers: Mapping[str, str],
+                     content: bytes | None = None) -> Response:
         """One hop: host lock + pacing + retries + bounded body."""
         attempts = len(BACKOFF) + 1
         with self._host_lock(host):
@@ -231,7 +248,7 @@ class HttpClient:
                 self._check_deadline()
                 self._pace(host)
                 try:
-                    resp = self._fetch(url, headers)
+                    resp = self._fetch(url, headers, method=method, content=content)
                 except (httpx.ConnectTimeout, httpx.ReadTimeout, httpx.PoolTimeout, httpx.WriteTimeout) as exc:
                     if attempt + 1 < attempts:
                         self._backoff(attempt, None)
@@ -253,9 +270,10 @@ class HttpClient:
         log.debug("retrying in %.2fs", delay)
         self._sleep_bounded(delay)
 
-    def _fetch(self, url: str, headers: Mapping[str, str]) -> Response:
+    def _fetch(self, url: str, headers: Mapping[str, str], *, method: str = "GET",
+               content: bytes | None = None) -> Response:
         started = self._clock()
-        with self._client.stream("GET", url, headers=headers) as r:
+        with self._client.stream(method, url, headers=headers, content=content) as r:
             declared = r.headers.get("content-length")
             if declared and declared.isdigit() and int(declared) > self._max_bytes:
                 raise httpx.DecodingError(f"response too large ({declared} bytes)")

@@ -15,7 +15,17 @@ from datetime import date, datetime, timedelta
 from pathlib import Path
 from typing import Any
 
-from .fetchers.base import ApiSnapshot, CacheEntry, FetchResult, Headline, StoreView, VideoObs, WikiDay
+from .fetchers.base import (
+    ApiSnapshot,
+    ApiUsage,
+    CacheEntry,
+    FetchResult,
+    Headline,
+    SearchRow,
+    StoreView,
+    VideoObs,
+    WikiDay,
+)
 from .timeutil import day_str, iso, parse_day, parse_iso
 
 SCHEMA_VERSION = 1
@@ -44,6 +54,10 @@ CREATE TABLE IF NOT EXISTS artist_scores (run_id INTEGER NOT NULL, artist_id TEX
 CREATE TABLE IF NOT EXISTS published (run_id INTEGER PRIMARY KEY, generated_at TEXT NOT NULL, payload_json TEXT NOT NULL);
 CREATE TABLE IF NOT EXISTS http_cache (url TEXT PRIMARY KEY, etag TEXT, last_modified TEXT, fetched_at TEXT NOT NULL);
 CREATE TABLE IF NOT EXISTS why_cache (key TEXT PRIMARY KEY, why TEXT NOT NULL, created_at TEXT NOT NULL);
+CREATE TABLE IF NOT EXISTS api_usage (api TEXT NOT NULL, day TEXT NOT NULL, units INTEGER NOT NULL,
+  PRIMARY KEY (api, day));
+CREATE TABLE IF NOT EXISTS search_signal (artist_id TEXT PRIMARY KEY, target TEXT NOT NULL, landed INTEGER NOT NULL,
+  day TEXT, z REAL, ratio REAL, baseline_n INTEGER NOT NULL, reason TEXT NOT NULL, fetched_at TEXT NOT NULL);
 """
 
 
@@ -220,12 +234,20 @@ class Store:
         return videos, snaps
 
     def api_candidate_ids(self, now: datetime) -> tuple[str, ...]:
+        return tuple(self.api_candidates_published(now))
+
+    def api_candidates_published(self, now: datetime) -> dict[str, datetime]:
         rows = self.conn.execute(
-            "SELECT video_id FROM videos WHERE artist_id IS NOT NULL AND kind != 'short' AND published_at >= ?"
-            " ORDER BY video_id",
+            "SELECT video_id, published_at FROM videos WHERE artist_id IS NOT NULL AND kind != 'short'"
+            " AND published_at >= ? ORDER BY video_id",
             (iso(now - timedelta(days=30)),),
         ).fetchall()
-        return tuple(r["video_id"] for r in rows)
+        return {r["video_id"]: parse_iso(r["published_at"]) for r in rows}
+
+    def known_video_ids(self) -> tuple[frozenset[str], frozenset[str]]:
+        """(every stored video id, every channel id that has at least one stored video)."""
+        rows = self.conn.execute("SELECT video_id, channel_id FROM videos").fetchall()
+        return frozenset(r["video_id"] for r in rows), frozenset(r["channel_id"] for r in rows)
 
     # ------------------------------------------------------------------ wiki
 
@@ -288,15 +310,60 @@ class Store:
             (e.url, e.etag, e.last_modified, iso(e.fetched_at)),
         )
 
+    # ------------------------------------------------------------------ keyed-API quota ledger
+
+    def add_api_usage(self, u: ApiUsage) -> None:
+        if u.units <= 0:
+            return
+        self.conn.execute(
+            "INSERT INTO api_usage(api, day, units) VALUES (?,?,?) "
+            "ON CONFLICT(api, day) DO UPDATE SET units = api_usage.units + excluded.units",
+            (u.api, day_str(u.day), int(u.units)),
+        )
+
+    def api_usage(self) -> dict[tuple[str, date], int]:
+        return {(r["api"], parse_day(r["day"])): int(r["units"])
+                for r in self.conn.execute("SELECT api, day, units FROM api_usage")}
+
+    # ------------------------------------------------------------------ Korean search signal (derived only)
+
+    def upsert_search_row(self, r: SearchRow) -> None:
+        """One row per artist: only our latest derived values. Naver's ratio series is never written."""
+        self.conn.execute(
+            "INSERT INTO search_signal(artist_id, target, landed, day, z, ratio, baseline_n, reason, fetched_at)"
+            " VALUES (?,?,?,?,?,?,?,?,?) ON CONFLICT(artist_id) DO UPDATE SET target=excluded.target,"
+            " landed=excluded.landed, day=excluded.day, z=excluded.z, ratio=excluded.ratio,"
+            " baseline_n=excluded.baseline_n, reason=excluded.reason, fetched_at=excluded.fetched_at",
+            (r.artist_id, day_str(r.target), int(r.landed), day_str(r.day) if r.day else None, r.z, r.ratio,
+             int(r.baseline_n), r.reason, iso(r.fetched_at)),
+        )
+
+    def search_rows(self) -> dict[str, SearchRow]:
+        out: dict[str, SearchRow] = {}
+        for r in self.conn.execute("SELECT * FROM search_signal ORDER BY artist_id"):
+            out[r["artist_id"]] = SearchRow(
+                artist_id=r["artist_id"], target=parse_day(r["target"]), landed=bool(r["landed"]),
+                day=parse_day(r["day"]) if r["day"] else None, z=r["z"], ratio=r["ratio"],
+                baseline_n=int(r["baseline_n"]), reason=r["reason"], fetched_at=parse_iso(r["fetched_at"]),
+            )
+        return out
+
     # ------------------------------------------------------------------ fetcher snapshot
 
     def view(self, now: datetime) -> StoreView:
+        known, channels = self.known_video_ids()
+        candidates = self.api_candidates_published(now)
         return StoreView(
             wiki_latest=self.wiki_latest_days(),
             wiki_fetched=self.wiki_last_fetches(),
             validators=self.http_validators(),
             headline_ids=self.headline_ids(),
-            api_candidates=self.api_candidate_ids(now),
+            api_candidates=tuple(candidates),
+            known_videos=known,
+            channels_with_videos=channels,
+            published_at=candidates,
+            api_usage=self.api_usage(),
+            search_state=self.search_rows(),
         )
 
     # ------------------------------------------------------------------ scores / published
@@ -363,6 +430,19 @@ class Store:
             c.execute("DELETE FROM published WHERE run_id NOT IN"
                       " (SELECT run_id FROM published ORDER BY generated_at DESC, run_id DESC LIMIT 500)")
             c.execute("DELETE FROM why_cache WHERE created_at < ?", (iso(now - timedelta(days=1)),))
+            # Keyed-API data (spec §4): YouTube API Services policy allows storing API data for at most 30 days
+            # without a refresh; Naver-derived values are kept far below the strictest reading of Naver's terms.
+            # API-only videos (found by playlist discovery, never in RSS) go first, while their api snapshots
+            # still identify them; a keyless DB has no api snapshots, so this never touches it.
+            d30 = iso(now - timedelta(days=30))
+            c.execute("DELETE FROM videos WHERE last_seen_at < ? AND published_at < ?"
+                      " AND video_id IN (SELECT video_id FROM video_snapshots WHERE source='api')"
+                      " AND video_id NOT IN (SELECT video_id FROM video_snapshots WHERE source='rss')", (d30, d30))
+            c.execute("DELETE FROM video_snapshots WHERE source='api' AND observed_at < ?", (d30,))
+            c.execute("DELETE FROM video_snapshots WHERE video_id NOT IN (SELECT video_id FROM videos)")
+            c.execute("DELETE FROM search_signal WHERE fetched_at < ?", (iso(now - timedelta(days=7)),))
+            c.execute("DELETE FROM published WHERE generated_at < ?", (iso(now - timedelta(days=21)),))
+            c.execute("DELETE FROM api_usage WHERE day < ?", (day_str((now - timedelta(days=40)).date()),))
 
 
 def _video_row(r: sqlite3.Row) -> VideoRow:

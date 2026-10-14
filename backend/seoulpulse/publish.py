@@ -11,7 +11,7 @@ from pathlib import Path
 from typing import Any
 from urllib.parse import quote
 
-from .fetchers.base import SOURCE_IDS, SOURCE_NAMES, clip_detail
+from .fetchers.base import OPTIONAL_SOURCE_IDS, SOURCE_IDS, SOURCE_NAMES, clip_detail
 from .scoring import ArtistScore, Mention
 from .timeutil import iso
 
@@ -73,7 +73,8 @@ def _headline(m: Mention) -> dict[str, Any]:
     }
 
 
-def build_item(s: ArtistScore, channel_url: str | None) -> dict[str, Any]:
+def build_item(s: ArtistScore, channel_url: str | None, *, include_search: bool = False) -> dict[str, Any]:
+    """`include_search` adds the optional `signals.search` (only when the Naver source is configured)."""
     top = s.top
     top_video = None
     if top is not None:
@@ -107,6 +108,7 @@ def build_item(s: ArtistScore, channel_url: str | None) -> dict[str, Any]:
             "new_release": _r(s.s_new, 3),
             "wiki": _r(s.s_wiki, 3),
             "news": _r(s.news.s_news, 3),
+            **({"search": _r(s.s_search, 3)} if include_search else {}),
         },
         "top_video": top_video,
         "headlines": [_headline(m) for m in s.news.recent[:MAX_HEADLINES]],
@@ -128,10 +130,12 @@ def build_payload(
     cold_start: bool,
     sources: Mapping[str, SourceInfo],
     channel_urls: Mapping[str, str | None],
+    include_search: bool = False,
 ) -> dict[str, Any]:
-    items = [build_item(s, channel_urls.get(s.id)) for s in ranked[:top_n]]
+    items = [build_item(s, channel_urls.get(s.id), include_search=include_search) for s in ranked[:top_n]]
     src_list = []
-    for sid in SOURCE_IDS:
+    # The five keyless sources always, in fixed order; a key-gated source (naver) follows only when configured.
+    for sid in SOURCE_IDS + tuple(o for o in OPTIONAL_SOURCE_IDS if o in sources):
         info = sources.get(sid) or SourceInfo(sid, "error", None, "no result")
         src_list.append({
             "id": sid,

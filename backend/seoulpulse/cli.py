@@ -10,10 +10,11 @@ import time
 from pathlib import Path
 
 from .config import load_config
-from .fetchers.base import SOURCE_IDS
+from .fetchers.base import OPTIONAL_SOURCE_IDS, SOURCE_IDS
 from .timeutil import parse_iso
 
 log = logging.getLogger("seoulpulse")
+ALL_SOURCE_IDS = SOURCE_IDS + OPTIONAL_SOURCE_IDS
 
 
 def _setup_logging(verbose: bool) -> None:
@@ -32,9 +33,9 @@ def _parse_sources(raw: str | None) -> list[str] | None:
     if not raw:
         return None
     names = [s.strip() for s in raw.split(",") if s.strip()]
-    bad = [s for s in names if s not in SOURCE_IDS]
+    bad = [s for s in names if s not in ALL_SOURCE_IDS]
     if bad:
-        raise SystemExit(f"unknown source(s): {', '.join(bad)} (valid: {', '.join(SOURCE_IDS)})")
+        raise SystemExit(f"unknown source(s): {', '.join(bad)} (valid: {', '.join(ALL_SOURCE_IDS)})")
     return names
 
 
@@ -43,6 +44,8 @@ def cmd_run(args: argparse.Namespace) -> int:
 
     config = load_config()
     sources = _parse_sources(args.sources)
+    if sources and "naver" in sources and not config.naver_enabled:
+        raise SystemExit("source naver needs NAVER_CLIENT_ID and NAVER_CLIENT_SECRET")
     if args.loop:
         interval = args.interval or config.interval_sec
         run_loop(config, interval, run=lambda: run_once(config, sources=sources, publish=not args.no_publish))
@@ -116,7 +119,8 @@ def build_parser() -> argparse.ArgumentParser:
 
     r = sub.add_parser("run", help="one pipeline run -> public/trends.json")
     r.add_argument("--now", help="override the run clock (ISO-8601 UTC)")
-    r.add_argument("--sources", help=f"comma-separated subset of {','.join(SOURCE_IDS)}")
+    r.add_argument("--sources", help=f"comma-separated subset of {','.join(ALL_SOURCE_IDS)}"
+                   " (naver only when NAVER_CLIENT_ID/SECRET are set)")
     r.add_argument("--no-publish", action="store_true", help="score but do not write trends.json")
     r.add_argument("--loop", action="store_true", help="run forever")
     r.add_argument("--interval", type=int, help="loop interval in seconds (default SP_INTERVAL_SEC)")

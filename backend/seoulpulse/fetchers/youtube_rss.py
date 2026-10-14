@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import re
+from dataclasses import replace
 from datetime import datetime
 
 from defusedxml import ElementTree as ET
@@ -10,6 +11,8 @@ from defusedxml import ElementTree as ET
 from ..http import HttpError
 from ..timeutil import parse_iso
 from .base import (
+    ApiSnapshot,
+    ApiUsage,
     CacheEntry,
     FetchOutput,
     RunContext,
@@ -89,6 +92,7 @@ class YouTubeFetcher:
         errors: list[str] = []
         videos: list[VideoObs] = []
         cache: list[CacheEntry] = []
+        failed: set[str] = set()
         for i, ch in enumerate(channels):
             if ctx.time_left() <= 0:
                 errors.append(f"deadline reached; {total - i} channels skipped")
@@ -98,17 +102,20 @@ class YouTubeFetcher:
                 resp = ctx.http.get(url, validators=ctx.store.http_validators(url))
             except HttpError as exc:
                 errors.append(f"{ch.handle}: {exc}")
+                failed.add(ch.channel_id)
                 continue
             if resp.status == 304:
                 ok += 1
                 continue
             if resp.status != 200:
                 errors.append(f"{ch.handle}: HTTP {resp.status}")
+                failed.add(ch.channel_id)
                 continue
             try:
                 obs = parse_youtube_feed(resp.content, ctx.observed(), channel_id=ch.channel_id)
             except Exception as exc:  # noqa: BLE001 - malformed feed is a unit error
                 errors.append(f"{ch.handle}: parse error {type(exc).__name__}: {exc}"[:200])
+                failed.add(ch.channel_id)
                 continue
             videos.extend(obs)
             ok += 1
@@ -116,13 +123,21 @@ class YouTubeFetcher:
                 cache.append(CacheEntry(url, resp.etag, resp.last_modified, ctx.observed()))
 
         detail = f"RSS {ok}/{total} channels"
-        status = multi_unit_status(ok, total)
-        api_snaps = []
+        status = multi_unit_status(ok, total)   # RSS is the base; the API pass only enriches it
+        api_snaps: list[ApiSnapshot] = []
+        usage: list[ApiUsage] = []
         if ctx.config.youtube_api_key:
-            from .youtube_api import fetch_api_snapshots
+            from .youtube_api import fetch_api_pass
 
-            api_snaps, calls, api_errors = fetch_api_snapshots(ctx, videos)
-            detail += f" · API {calls} calls"
-            errors.extend(api_errors)
+            api = fetch_api_pass(ctx, videos, failed)
+            if api.superseded:
+                # The exact API count replaces the coarse RSS count for this run (one snapshot, not two).
+                videos = [replace(v, views=None) if v.video_id in api.superseded else v for v in videos]
+            videos.extend(api.discovered)
+            api_snaps = api.snapshots
+            usage = [api.usage] if api.usage else []
+            detail += " · " + api.detail()
+            errors.extend(api.errors)
         result = make_result(self.source_id, status, started, ctx.observed(), ok, total, detail, errors)
-        return FetchOutput(result=result, videos=videos, api_snapshots=api_snaps, http_cache=cache)
+        return FetchOutput(result=result, videos=videos, api_snapshots=api_snaps, http_cache=cache,
+                           api_usage=usage)
