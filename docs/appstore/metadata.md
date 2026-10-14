@@ -163,19 +163,18 @@ Not needed for 1.0.
 
 ## Guideline risk notes
 
-- **2.3.7 / 5.2 (names and third-party IP):** the name, subtitle, promotional text, keywords and description name no artist, label or agency. Screenshots do show artist names, because the ranking is the product; they are used descriptively as factual trend data, and the description carries the fan-made, not-affiliated disclaimer. **`02-detail.png` shows a YouTube video thumbnail** (a still from an official music video). That is third-party artwork and a possible 5.2 issue. Decide whether to upload it, or retake the detail shot on an item without a thumbnail.
+- **2.3.7 / 5.2 (names and third-party IP):** the name, subtitle, promotional text, keywords and description name no artist, label or agency. Screenshots do show artist names, because the ranking is the product; they are used descriptively as factual trend data, and the description carries the fan-made, not-affiliated disclaimer. `02-detail.png` was retaken on an item with no top video (CORTIS, rank 19), so it contains no YouTube thumbnail or other third-party artwork. If the detail shot is ever retaken on an item that has a top video, it will show a music-video still, which is a possible 5.2 issue.
 - **No superlatives:** no "best", "#1" or "top app" claims.
 - **4.2 (minimum functionality):** the app is a data product with widgets, detail screens, deep links and offline fallback, not a thin web wrapper.
 - **5.1.2 / data use:** nothing is collected; the privacy policy URL is the one above.
 
 ## Screenshot set (6.9" iPhone, 1320x2868, no alpha)
 
-Files are in `docs/appstore/screenshots/`. Suggested upload order: 01, 05 (or 03), 02, 04.
+Files are in `docs/appstore/screenshots/`. Recommended upload order: 01-list, 03-widgets, 02-detail; 04-settings is optional (add it as a fourth if you want to show feed and source status).
 
 | File | Shows |
 |---|---|
 | `01-list.png` | Home: Live ranking with a KR FIRST entry |
-| `02-detail.png` | Detail view of a KR FIRST item (contains a third-party video thumbnail) |
-| `03-widgets.png` | Home Screen with the Large widget (another app's widget and the dock are visible) |
-| `04-settings.png` | Settings with feed and source status |
-| `05-widget-gallery.png` | In-app widget preview: small, medium and large, no other apps in frame |
+| `02-detail.png` | Detail view of a KR FIRST item (CORTIS) with Korean headlines and no video thumbnail |
+| `03-widgets.png` | Clean Home Screen with a Medium and a Large SeoulPulse widget on live data; only stock Apple dock icons |
+| `04-settings.png` | Settings with feed and source status (optional) |
