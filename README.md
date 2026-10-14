@@ -108,7 +108,7 @@ uv run seoulpulse social --top 3 --format x
 
 The command only prints text. Posting is manual; the project never posts anything. See `docs/SPEC.md` section 9.
 
-**Daily draft issue.** `.github/workflows/social-draft.yml` runs at 13:00 UTC (9am US Eastern), downloads the live
+**Daily draft issue.** `.github/workflows/social-draft.yml` runs at 13:17 UTC (about 9am US Eastern), downloads the live
 feed, runs `seoulpulse social`, and opens a GitHub issue titled `Social draft · YYYY-MM-DD` (label `social-draft`)
 with the X and Threads drafts in copyable code blocks. It closes the previous open draft first and adds a warning
 while the feed is still calibrating (`cold_start`). Copy the text and post it yourself; nothing is posted
