@@ -1,0 +1,9 @@
+backend/var/
+backend/.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+ios/build/
+ios/*.xcodeproj/xcuserdata/
+DerivedData/
+.DS_Store

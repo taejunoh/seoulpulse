@@ -1,0 +1,497 @@
+# SeoulPulse seed roster — generated 2026-10-14 from a verified pass (see docs/SPEC.md §2).
+# youtube: only handles whose resolved channel title matched an alias. Others rely on label channels.
+# wiki: canonical titles (redirect-resolved). null = missing/disambiguation; fix via `validate-seed --online`.
+version: 1
+artists:
+  - id: bts
+    name: "BTS"
+    name_ko: "방탄소년단"
+    aliases: ["BTS", "방탄소년단", "Bangtan"]
+    youtube: ["@BTS"]
+    wiki: {en: "BTS", ko: "방탄소년단"}
+  - id: seventeen
+    name: "SEVENTEEN"
+    name_ko: "세븐틴"
+    aliases: ["SEVENTEEN", "세븐틴", "SVT", "부석순"]
+    youtube: ["@pledis17"]
+    wiki: {en: "Seventeen (South Korean band)", ko: "세븐틴 (음악 그룹)"}
+  - id: stray-kids
+    name: "Stray Kids"
+    name_ko: "스트레이 키즈"
+    aliases: ["Stray Kids", "스트레이 키즈", "스트레이키즈", "스키즈", "SKZ"]
+    youtube: ["@StrayKids"]
+    wiki: {en: "Stray Kids", ko: "Stray Kids"}
+  - id: enhypen
+    name: "ENHYPEN"
+    name_ko: "엔하이픈"
+    aliases: ["ENHYPEN", "엔하이픈"]
+    youtube: []
+    wiki: {en: "Enhypen", ko: "ENHYPEN"}
+  - id: txt
+    name: "TOMORROW X TOGETHER"
+    name_ko: "투모로우바이투게더"
+    aliases: ["TOMORROW X TOGETHER", "TXT", "투모로우바이투게더", "투바투"]
+    youtube: ["@TXT_bighit"]
+    wiki: {en: "Tomorrow X Together", ko: "투모로우바이투게더"}
+  - id: ateez
+    name: "ATEEZ"
+    name_ko: "에이티즈"
+    aliases: ["ATEEZ", "에이티즈"]
+    youtube: ["@ATEEZofficial"]
+    wiki: {en: "Ateez", ko: "에이티즈"}
+  - id: nct-127
+    name: "NCT 127"
+    name_ko: "엔시티 127"
+    aliases: ["NCT 127", "NCT127", "엔시티 127"]
+    youtube: ["@NCT127"]
+    wiki: {en: "NCT 127", ko: "NCT 127"}
+  - id: nct-dream
+    name: "NCT DREAM"
+    name_ko: "엔시티 드림"
+    aliases: ["NCT DREAM", "엔시티 드림"]
+    youtube: ["@NCTDREAM"]
+    wiki: {en: "NCT Dream", ko: "NCT DREAM"}
+  - id: nct-wish
+    name: "NCT WISH"
+    name_ko: "엔시티 위시"
+    aliases: ["NCT WISH", "엔시티 위시"]
+    youtube: ["@NCTWISH"]
+    wiki: {en: "NCT Wish", ko: "NCT WISH"}
+  - id: wayv
+    name: "WayV"
+    name_ko: "웨이션브이"
+    aliases: ["WayV", "웨이션브이"]
+    youtube: ["@WayV"]
+    wiki: {en: "WayV", ko: "WayV"}
+  - id: riize
+    name: "RIIZE"
+    name_ko: "라이즈"
+    aliases: ["RIIZE", "라이즈"]
+    youtube: ["@RIIZE_official"]
+    wiki: {en: "Riize", ko: "RIIZE"}
+  - id: the-boyz
+    name: "THE BOYZ"
+    name_ko: "더보이즈"
+    aliases: ["THE BOYZ", "더보이즈"]
+    youtube: []
+    wiki: {en: "The Boyz (South Korean band)", ko: null}
+  - id: treasure
+    name: "TREASURE"
+    name_ko: "트레저"
+    aliases: [{term: "TREASURE", case_sensitive: true}, "트레저"]
+    youtube: ["@TREASURE"]
+    wiki: {en: "Treasure (band)", ko: "트레저 (음악 그룹)"}
+  - id: boynextdoor
+    name: "BOYNEXTDOOR"
+    name_ko: "보이넥스트도어"
+    aliases: ["BOYNEXTDOOR", "보이넥스트도어", "보넥도"]
+    youtube: ["@BOYNEXTDOOR_official"]
+    wiki: {en: "BoyNextDoor", ko: "보이넥스트도어"}
+  - id: zerobaseone
+    name: "ZEROBASEONE"
+    name_ko: "제로베이스원"
+    aliases: ["ZEROBASEONE", "ZB1", "제로베이스원", "제베원"]
+    youtube: ["@ZB1_official"]
+    wiki: {en: "Zerobaseone", ko: "ZEROBASEONE"}
+  - id: tws
+    name: "TWS"
+    name_ko: "투어스"
+    aliases: ["TWS", "투어스"]
+    youtube: ["@TWS_PLEDIS"]
+    wiki: {en: "TWS (group)", ko: "TWS (음악 그룹)"}
+  - id: cortis
+    name: "CORTIS"
+    name_ko: "코르티스"
+    aliases: ["CORTIS", "코르티스"]
+    youtube: []
+    wiki: {en: "Cortis", ko: "CORTIS"}
+  - id: p1harmony
+    name: "P1Harmony"
+    name_ko: "피원하모니"
+    aliases: ["P1Harmony", "피원하모니"]
+    youtube: []
+    wiki: {en: "P1Harmony", ko: "P1Harmony"}
+  - id: exo
+    name: "EXO"
+    name_ko: "엑소"
+    aliases: ["EXO", "엑소"]
+    youtube: ["@weareoneEXO"]
+    wiki: {en: "Exo", ko: "EXO"}
+  - id: shinee
+    name: "SHINee"
+    name_ko: "샤이니"
+    aliases: ["SHINee", "샤이니"]
+    youtube: ["@SHINee"]
+    wiki: {en: "Shinee", ko: "샤이니"}
+  - id: super-junior
+    name: "SUPER JUNIOR"
+    name_ko: "슈퍼주니어"
+    aliases: ["SUPER JUNIOR", "슈퍼주니어", "슈주"]
+    youtube: ["@SUPERJUNIOR"]
+    wiki: {en: "Super Junior", ko: "슈퍼주니어"}
+  - id: monsta-x
+    name: "MONSTA X"
+    name_ko: "몬스타엑스"
+    aliases: ["MONSTA X", "몬스타엑스"]
+    youtube: ["@MONSTAX"]
+    wiki: {en: "Monsta X", ko: "몬스타엑스"}
+  - id: day6
+    name: "DAY6"
+    name_ko: "데이식스"
+    aliases: ["DAY6", "데이식스"]
+    youtube: ["@DAY6official"]
+    wiki: {en: "Day6", ko: "DAY6"}
+  - id: plave
+    name: "PLAVE"
+    name_ko: "플레이브"
+    aliases: ["PLAVE", "플레이브"]
+    youtube: ["@plave_official"]
+    wiki: {en: "Plave", ko: "플레이브"}
+  - id: kickflip
+    name: "KickFlip"
+    name_ko: "킥플립"
+    aliases: ["KickFlip", "킥플립"]
+    youtube: []
+    wiki: {en: "KickFlip", ko: "KickFlip"}
+  - id: nexz
+    name: "NEXZ"
+    name_ko: "넥스지"
+    aliases: ["NEXZ", "넥스지"]
+    youtube: ["@NEXZ_official"]
+    wiki: {en: "Nexz", ko: "넥스지"}
+  - id: allday-project
+    name: "ALLDAY PROJECT"
+    name_ko: "올데이 프로젝트"
+    aliases: ["ALLDAY PROJECT", "ALL DAY PROJECT", "올데이 프로젝트"]
+    youtube: ["@ALLDAYPROJECT"]
+    wiki: {en: "AllDay Project", ko: "ALLDAY PROJECT"}
+  - id: xdinary-heroes
+    name: "Xdinary Heroes"
+    name_ko: "엑스디너리 히어로즈"
+    aliases: ["Xdinary Heroes", "엑스디너리 히어로즈"]
+    youtube: ["@XdinaryHeroes"]
+    wiki: {en: "Xdinary Heroes", ko: "엑스디너리 히어로즈"}
+  - id: btob
+    name: "BTOB"
+    name_ko: "비투비"
+    aliases: ["BTOB", "비투비"]
+    youtube: ["@OfficialBTOB"]
+    wiki: {en: null, ko: "비투비"}
+  - id: xikers
+    name: "xikers"
+    name_ko: "싸이커스"
+    aliases: ["xikers", "싸이커스"]
+    youtube: ["@xikers_official"]
+    wiki: {en: "Xikers", ko: "Xikers"}
+  - id: cravity
+    name: "CRAVITY"
+    name_ko: "크래비티"
+    aliases: ["CRAVITY", "크래비티"]
+    youtube: ["@CRAVITYofficial"]
+    wiki: {en: "Cravity", ko: "CRAVITY"}
+  - id: close-your-eyes
+    name: "CLOSE YOUR EYES"
+    name_ko: "클로즈 유어 아이즈"
+    aliases: [{term: "CLOSE YOUR EYES", case_sensitive: true}, "클로즈 유어 아이즈"]
+    youtube: ["@CLOSEYOUREYES"]
+    wiki: {en: "Close Your Eyes (group)", ko: null}
+  - id: ahof
+    name: "AHOF"
+    name_ko: "아홉"
+    aliases: ["AHOF"]
+    youtube: ["@AHOF"]
+    wiki: {en: "AHOF", ko: "AHOF"}
+  - id: g-dragon
+    name: "G-DRAGON"
+    name_ko: "지드래곤"
+    aliases: ["G-DRAGON", "GDRAGON", "지드래곤", "권지용"]
+    youtube: ["@xxxibgdrgn"]
+    wiki: {en: "G-Dragon", ko: "지드래곤"}
+  - id: blackpink
+    name: "BLACKPINK"
+    name_ko: "블랙핑크"
+    aliases: ["BLACKPINK", "블랙핑크", "블핑"]
+    youtube: ["@BLACKPINK"]
+    wiki: {en: "Blackpink", ko: "BLACKPINK"}
+  - id: twice
+    name: "TWICE"
+    name_ko: "트와이스"
+    aliases: [{term: "TWICE", case_sensitive: true}, "트와이스"]
+    youtube: ["@TWICE"]
+    wiki: {en: "Twice", ko: "트와이스"}
+  - id: aespa
+    name: "aespa"
+    name_ko: "에스파"
+    aliases: ["aespa", "에스파"]
+    youtube: ["@aespa"]
+    wiki: {en: "Aespa", ko: "Aespa"}
+  - id: ive
+    name: "IVE"
+    name_ko: "아이브"
+    aliases: ["IVE", "아이브"]
+    youtube: ["@IVEstarship"]
+    wiki: {en: "Ive (group)", ko: "IVE"}
+  - id: le-sserafim
+    name: "LE SSERAFIM"
+    name_ko: "르세라핌"
+    aliases: ["LE SSERAFIM", "르세라핌"]
+    youtube: ["@LESSERAFIM_official"]
+    wiki: {en: "Le Sserafim", ko: "LE SSERAFIM"}
+  - id: newjeans
+    name: "NewJeans"
+    name_ko: "뉴진스"
+    aliases: ["NewJeans", "뉴진스", "NJZ"]
+    youtube: ["@NewJeans_official"]
+    wiki: {en: "NewJeans", ko: "NewJeans"}
+  - id: itzy
+    name: "ITZY"
+    name_ko: "있지"
+    aliases: ["ITZY"]
+    youtube: ["@ITZY"]
+    wiki: {en: "Itzy", ko: null}
+  - id: nmixx
+    name: "NMIXX"
+    name_ko: "엔믹스"
+    aliases: ["NMIXX", "엔믹스"]
+    youtube: ["@NMIXXofficial"]
+    wiki: {en: "Nmixx", ko: "NMIXX"}
+  - id: i-dle
+    name: "i-dle"
+    name_ko: "아이들"
+    aliases: ["i-dle", "(G)I-DLE", "(여자)아이들", "여자아이들"]
+    youtube: ["@official_i_dle"]
+    wiki: {en: "I-dle", ko: "I-dle"}
+  - id: red-velvet
+    name: "Red Velvet"
+    name_ko: "레드벨벳"
+    aliases: [{term: "Red Velvet", case_sensitive: true}, "레드벨벳"]
+    youtube: ["@RedVelvet"]
+    wiki: {en: "Red Velvet (group)", ko: null}
+  - id: stayc
+    name: "STAYC"
+    name_ko: "스테이씨"
+    aliases: ["STAYC", "스테이씨"]
+    youtube: ["@STAYC"]
+    wiki: {en: "STAYC", ko: "STAYC"}
+  - id: illit
+    name: "ILLIT"
+    name_ko: "아일릿"
+    aliases: ["ILLIT", "아일릿"]
+    youtube: ["@ILLIT_official"]
+    wiki: {en: "Illit", ko: "ILLIT"}
+  - id: babymonster
+    name: "BABYMONSTER"
+    name_ko: "베이비몬스터"
+    aliases: ["BABYMONSTER", "베이비몬스터", "베몬"]
+    youtube: ["@BABYMONSTER"]
+    wiki: {en: "Babymonster", ko: "베이비몬스터"}
+  - id: kiss-of-life
+    name: "KISS OF LIFE"
+    name_ko: "키스오브라이프"
+    aliases: [{term: "KISS OF LIFE", case_sensitive: true}, "KIOF", "키스오브라이프", "키오프"]
+    youtube: ["@KISSOFLIFE_official"]
+    wiki: {en: "Kiss of Life (group)", ko: null}
+  - id: triples
+    name: "tripleS"
+    name_ko: "트리플에스"
+    aliases: [{term: "tripleS", case_sensitive: true}, "트리플에스"]
+    youtube: ["@triplescosmos"]
+    wiki: {en: "TripleS", ko: "TripleS"}
+  - id: fromis-9
+    name: "fromis_9"
+    name_ko: "프로미스나인"
+    aliases: ["fromis_9", "프로미스나인"]
+    youtube: []
+    wiki: {en: "Fromis 9", ko: "Fromis 9"}
+  - id: hearts2hearts
+    name: "Hearts2Hearts"
+    name_ko: "하츠투하츠"
+    aliases: ["Hearts2Hearts", "하츠투하츠", "H2H"]
+    youtube: []
+    wiki: {en: "Hearts2Hearts", ko: "Hearts2Hearts"}
+  - id: meovv
+    name: "MEOVV"
+    name_ko: "미야오"
+    aliases: ["MEOVV", "미야오"]
+    youtube: ["@MEOVV_official"]
+    wiki: {en: "Meovv", ko: null}
+  - id: izna
+    name: "izna"
+    name_ko: "이즈나"
+    aliases: ["izna", "이즈나"]
+    youtube: ["@iznaofficial"]
+    wiki: {en: "Izna", ko: "Izna"}
+  - id: katseye
+    name: "KATSEYE"
+    name_ko: "캣츠아이"
+    aliases: ["KATSEYE", "캣츠아이"]
+    youtube: ["@KATSEYE"]
+    wiki: {en: "Katseye", ko: null}
+  - id: unis
+    name: "UNIS"
+    name_ko: "유니스"
+    aliases: ["UNIS", "유니스"]
+    youtube: ["@UNIS"]
+    wiki: {en: "Unis (group)", ko: "유니스 (음악 그룹)"}
+  - id: kep1er
+    name: "Kep1er"
+    name_ko: "케플러"
+    aliases: ["Kep1er", "케플러"]
+    youtube: []
+    wiki: {en: "Kep1er", ko: "케플러 (음악 그룹)"}
+  - id: qwer
+    name: "QWER"
+    name_ko: "큐더블유이알"
+    aliases: ["QWER", "큐더블유이알"]
+    youtube: ["@QWER_Band"]
+    wiki: {en: null, ko: "QWER"}
+  - id: kiiikiii
+    name: "KiiiKiii"
+    name_ko: "키키"
+    aliases: ["KiiiKiii", "키키"]
+    youtube: ["@KiiiKiiiofficial"]
+    wiki: {en: "KiiiKiii", ko: null}
+  - id: artms
+    name: "ARTMS"
+    name_ko: "아르테미스"
+    aliases: [{term: "ARTMS", case_sensitive: true}, "아르테미스"]
+    youtube: []
+    wiki: {en: "Artms", ko: null}
+  - id: billlie
+    name: "Billlie"
+    name_ko: "빌리"
+    aliases: ["Billlie"]
+    youtube: ["@Billlie"]
+    wiki: {en: "Billlie", ko: "Billlie"}
+  - id: dreamcatcher
+    name: "Dreamcatcher"
+    name_ko: "드림캐쳐"
+    aliases: [{term: "Dreamcatcher", case_sensitive: true}, "드림캐쳐", "드림캐처"]
+    youtube: ["@DREAMCATCHERofficial"]
+    wiki: {en: "Dreamcatcher (group)", ko: "드림캐처"}
+  - id: mamamoo
+    name: "MAMAMOO"
+    name_ko: "마마무"
+    aliases: ["MAMAMOO", "마마무"]
+    youtube: ["@mamamoo_official"]
+    wiki: {en: "Mamamoo", ko: "마마무"}
+  - id: oh-my-girl
+    name: "OH MY GIRL"
+    name_ko: "오마이걸"
+    aliases: [{term: "OH MY GIRL", case_sensitive: true}, "오마이걸"]
+    youtube: ["@OHMYGIRL"]
+    wiki: {en: "Oh My Girl", ko: "오마이걸"}
+  - id: apink
+    name: "Apink"
+    name_ko: "에이핑크"
+    aliases: ["Apink", "에이핑크"]
+    youtube: ["@Apink"]
+    wiki: {en: "Apink", ko: "에이핑크"}
+  - id: iu
+    name: "IU"
+    name_ko: "아이유"
+    aliases: ["IU", "아이유"]
+    youtube: ["@dlwlrma"]
+    wiki: {en: "IU (entertainer)", ko: "아이유"}
+  - id: jennie
+    name: "JENNIE"
+    name_ko: "제니"
+    aliases: ["Jennie", "제니"]
+    youtube: ["@jennierubyjane"]
+    wiki: {en: "Jennie (singer)", ko: null}
+  - id: lisa
+    name: "LISA"
+    name_ko: "리사"
+    aliases: ["Lisa", "리사"]
+    youtube: []
+    wiki: {en: "Lisa (rapper)", ko: null}
+  - id: rose
+    name: "ROSÉ"
+    name_ko: "로제"
+    aliases: ["Rosé", "로제"]
+    youtube: ["@roses_are_rosie"]
+    wiki: {en: "Rosé (singer)", ko: "로제 (가수)"}
+  - id: jisoo
+    name: "JISOO"
+    name_ko: "지수"
+    aliases: ["Jisoo", "블랙핑크 지수"]
+    youtube: ["@sooyaaa__"]
+    wiki: {en: "Jisoo", ko: "지수 (가수)"}
+  - id: jungkook
+    name: "Jung Kook"
+    name_ko: "정국"
+    aliases: ["Jung Kook", "Jungkook", "방탄소년단 정국", "BTS 정국"]
+    youtube: []
+    wiki: {en: "Jung Kook", ko: "정국 (가수)"}
+  - id: jimin
+    name: "Jimin"
+    name_ko: "지민"
+    aliases: ["Jimin", "지민"]
+    youtube: []
+    wiki: {en: "Jimin", ko: null}
+  - id: taeyeon
+    name: "TAEYEON"
+    name_ko: "태연"
+    aliases: ["Taeyeon", "태연"]
+    youtube: []
+    wiki: {en: "Taeyeon", ko: "태연"}
+  - id: lim-young-woong
+    name: "Lim Young-woong"
+    name_ko: "임영웅"
+    aliases: ["Lim Young-woong", "Lim Young Woong", "임영웅"]
+    youtube: []
+    wiki: {en: "Lim Young-woong", ko: "임영웅"}
+  - id: zico
+    name: "ZICO"
+    name_ko: "지코"
+    aliases: ["ZICO", "지코"]
+    youtube: ["@ZICO"]
+    wiki: {en: "Zico (rapper)", ko: null}
+  - id: taemin
+    name: "TAEMIN"
+    name_ko: "태민"
+    aliases: ["TAEMIN", "태민"]
+    youtube: ["@TAEMIN"]
+    wiki: {en: "Taemin", ko: "태민"}
+  - id: baekhyun
+    name: "BAEKHYUN"
+    name_ko: "백현"
+    aliases: ["BAEKHYUN", "백현"]
+    youtube: ["@BAEKHYUN"]
+    wiki: {en: "Baekhyun", ko: null}
+  - id: akmu
+    name: "AKMU"
+    name_ko: "악뮤"
+    aliases: ["AKMU", "악뮤", "악동뮤지션"]
+    youtube: ["@AKMU"]
+    wiki: {en: "AKMU", ko: "AKMU"}
+  - id: hwasa
+    name: "HWASA"
+    name_ko: "화사"
+    aliases: ["HWASA", "화사"]
+    youtube: []
+    wiki: {en: "Hwasa", ko: null}
+  - id: jeon-somi
+    name: "JEON SOMI"
+    name_ko: "전소미"
+    aliases: ["JEON SOMI", "Somi", "전소미"]
+    youtube: []
+    wiki: {en: "Jeon Somi", ko: "전소미"}
+  - id: yena
+    name: "YENA"
+    name_ko: "최예나"
+    aliases: ["Yena", "Choi Yena", "Choi Ye-na", "최예나"]
+    youtube: []
+    wiki: {en: "Choi Ye-na", ko: "최예나"}
+  - id: chungha
+    name: "CHUNG HA"
+    name_ko: "청하"
+    aliases: ["CHUNG HA", "CHUNGHA"]
+    youtube: []
+    wiki: {en: "Chung Ha", ko: "청하 (가수)"}
+  - id: bibi
+    name: "BIBI"
+    name_ko: "비비"
+    aliases: ["BIBI"]
+    youtube: []
+    wiki: {en: "Bibi (singer)", ko: null}

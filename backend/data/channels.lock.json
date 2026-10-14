@@ -1,0 +1,390 @@
+{
+  "generated_at": "2026-10-14T05:10:00Z",
+  "channels": {
+    "@1theK": {
+      "channel_id": "UCweOkPb1wVVH0Q0Tlj4a5Pw",
+      "title": "1theK (원더케이)",
+      "resolved_at": "2026-10-14T05:10:00Z"
+    },
+    "@aespa": {
+      "channel_id": "UC9GtSLeksfK4yuJ_g1lgQbg",
+      "title": "aespa",
+      "resolved_at": "2026-10-14T05:10:00Z"
+    },
+    "@AHOF": {
+      "channel_id": "UCyCjqvqcQO5Q2wnazx8dkzA",
+      "title": "AHOF",
+      "resolved_at": "2026-10-14T05:10:00Z"
+    },
+    "@AKMU": {
+      "channel_id": "UCIcXK1CI8URMIqNO_1cehiQ",
+      "title": "AKMU",
+      "resolved_at": "2026-10-14T05:10:00Z"
+    },
+    "@ALLDAYPROJECT": {
+      "channel_id": "UC97HzlnJULHjVHRKrw1MpYA",
+      "title": "ALL DAY PROJECT",
+      "resolved_at": "2026-10-14T05:10:00Z"
+    },
+    "@Apink": {
+      "channel_id": "UC3y-P13TIRCXu7rF8928KGA",
+      "title": "Apink",
+      "resolved_at": "2026-10-14T05:10:00Z"
+    },
+    "@ATEEZofficial": {
+      "channel_id": "UC2e4Ukj5Pfr7cb3KpJAFBdQ",
+      "title": "ATEEZ",
+      "resolved_at": "2026-10-14T05:10:00Z"
+    },
+    "@BABYMONSTER": {
+      "channel_id": "UCqwUnggBBct-AY2lAdI88jQ",
+      "title": "BABYMONSTER",
+      "resolved_at": "2026-10-14T05:10:00Z"
+    },
+    "@BAEKHYUN": {
+      "channel_id": "UCUyr5000laFgF79tWJB3rXQ",
+      "title": "백현 Baekhyun",
+      "resolved_at": "2026-10-14T05:10:00Z"
+    },
+    "@Billlie": {
+      "channel_id": "UCyc9sUCxELTDK9vELO5Fzeg",
+      "title": "Billlie",
+      "resolved_at": "2026-10-14T05:10:00Z"
+    },
+    "@BLACKPINK": {
+      "channel_id": "UCOmHUn--16B90oW2L6FRR3A",
+      "title": "BLACKPINK",
+      "resolved_at": "2026-10-14T05:10:00Z"
+    },
+    "@BOYNEXTDOOR_official": {
+      "channel_id": "UChhKBlh_wvspTh5n4mL0b5g",
+      "title": "BOYNEXTDOOR",
+      "resolved_at": "2026-10-14T05:10:00Z"
+    },
+    "@BTS": {
+      "channel_id": "UCLkAepWjdylmXSltofFvsYQ",
+      "title": "BANGTANTV",
+      "resolved_at": "2026-10-14T05:10:00Z"
+    },
+    "@CLOSEYOUREYES": {
+      "channel_id": "UCXdExKJErLyZN2KoeeZb92g",
+      "title": "Close Your Eyes",
+      "resolved_at": "2026-10-14T05:10:00Z"
+    },
+    "@CRAVITYofficial": {
+      "channel_id": "UCRm-0JVuUFh5HV7NGG7qXlQ",
+      "title": "CRAVITY",
+      "resolved_at": "2026-10-14T05:10:00Z"
+    },
+    "@CUBEentertainment": {
+      "channel_id": "UCPdhGatSP8Enex8128Q4t-g",
+      "title": "Cube Entertainment",
+      "resolved_at": "2026-10-14T05:10:00Z"
+    },
+    "@DAY6official": {
+      "channel_id": "UCp-pqXsizklX3ZHvLxXyhxw",
+      "title": "DAY6",
+      "resolved_at": "2026-10-14T05:10:00Z"
+    },
+    "@dlwlrma": {
+      "channel_id": "UC3SyT4_WLHzN7JmHQwKQZww",
+      "title": "이지금 [IU Official]",
+      "resolved_at": "2026-10-14T05:10:00Z"
+    },
+    "@DREAMCATCHERofficial": {
+      "channel_id": "UCijULR2sXLutCRBtW3_WEfA",
+      "title": "Dreamcatcher official",
+      "resolved_at": "2026-10-14T05:10:00Z"
+    },
+    "@HYBELABELS": {
+      "channel_id": "UC3IZKseVpdzPSBaWxBxundA",
+      "title": "HYBE LABELS",
+      "resolved_at": "2026-10-14T05:10:00Z"
+    },
+    "@ILLIT_official": {
+      "channel_id": "UCEpFoWeCMCo5z3EvWaz6hQQ",
+      "title": "ILLIT",
+      "resolved_at": "2026-10-14T05:10:00Z"
+    },
+    "@ITZY": {
+      "channel_id": "UCDhM2k2Cua-JdobAh5moMFg",
+      "title": "ITZY",
+      "resolved_at": "2026-10-14T05:10:00Z"
+    },
+    "@IVEstarship": {
+      "channel_id": "UC-Fnix71vRP64WXeo0ikd0Q",
+      "title": "IVE",
+      "resolved_at": "2026-10-14T05:10:00Z"
+    },
+    "@iznaofficial": {
+      "channel_id": "UCDdv5hfWUYWZEXbs2Nw3mjg",
+      "title": "IZNA",
+      "resolved_at": "2026-10-14T05:10:00Z"
+    },
+    "@jennierubyjane": {
+      "channel_id": "UCNYi_zGmR519r5gYdOKLTjQ",
+      "title": "JENNIE",
+      "resolved_at": "2026-10-14T05:10:00Z"
+    },
+    "@jypentertainment": {
+      "channel_id": "UCaO6TYtlC8U5ttz62hTrZgg",
+      "title": "JYP Entertainment",
+      "resolved_at": "2026-10-14T05:10:00Z"
+    },
+    "@KATSEYE": {
+      "channel_id": "UC2ff-9LhZKnDnw9XWHUOc_A",
+      "title": "Katseye",
+      "resolved_at": "2026-10-14T05:10:00Z"
+    },
+    "@kbskpop": {
+      "channel_id": "UCeLPm9yH_a_QH8n6445G-Ow",
+      "title": "KBS Kpop",
+      "resolved_at": "2026-10-14T05:10:00Z"
+    },
+    "@KiiiKiiiofficial": {
+      "channel_id": "UCTctR_Fwd1fxinR4xJJEA-A",
+      "title": "Kiiikiii",
+      "resolved_at": "2026-10-14T05:10:00Z"
+    },
+    "@KISSOFLIFE_official": {
+      "channel_id": "UCvEEeBssb4XxIfWWIB8IjMw",
+      "title": "KISS OF LIFE",
+      "resolved_at": "2026-10-14T05:10:00Z"
+    },
+    "@kqent": {
+      "channel_id": "UCQdq-lqPEq_yZ_wP_kuVB9Q",
+      "title": "KQ ENTERTAINMENT",
+      "resolved_at": "2026-10-14T05:10:00Z"
+    },
+    "@LESSERAFIM_official": {
+      "channel_id": "UCs-QBT4qkj_YiQw1ZntDO3g",
+      "title": "LE SSERAFIM",
+      "resolved_at": "2026-10-14T05:10:00Z"
+    },
+    "@mamamoo_official": {
+      "channel_id": "UCuhAUMLzJxlP1W7mEk0_6lA",
+      "title": "MAMAMOO",
+      "resolved_at": "2026-10-14T05:10:00Z"
+    },
+    "@MBCkpop": {
+      "channel_id": "UCe52oeb7Xv_KaJsEzcKXJJg",
+      "title": "MBCkpop",
+      "resolved_at": "2026-10-14T05:10:00Z"
+    },
+    "@MEOVV_official": {
+      "channel_id": "UCowiwt93gqGlNG4k5VDxO-w",
+      "title": "MEOVV",
+      "resolved_at": "2026-10-14T05:10:00Z"
+    },
+    "@MnetKpop": {
+      "channel_id": "UCqJ3rYYs-n5blu6JxpciQjA",
+      "title": "Mnet K-POP",
+      "resolved_at": "2026-10-14T05:10:00Z"
+    },
+    "@MONSTAX": {
+      "channel_id": "UCZvCP6sWj75MwpUP4LVtpNw",
+      "title": "MONSTA X",
+      "resolved_at": "2026-10-14T05:10:00Z"
+    },
+    "@NCT127": {
+      "channel_id": "UCk2E0dbAyEJWnrN2bbQOcbg",
+      "title": "NCT 127",
+      "resolved_at": "2026-10-14T05:10:00Z"
+    },
+    "@NCTDREAM": {
+      "channel_id": "UCXURHJRGr4-EB3l87kcbElw",
+      "title": "NCT DREAM",
+      "resolved_at": "2026-10-14T05:10:00Z"
+    },
+    "@NCTWISH": {
+      "channel_id": "UCiZqWVAeChfqlom5ZPR3ZJA",
+      "title": "NCT WISH",
+      "resolved_at": "2026-10-14T05:10:00Z"
+    },
+    "@NewJeans_official": {
+      "channel_id": "UCMki_UkHb4qSc0qyEcOHHJw",
+      "title": "NewJeans",
+      "resolved_at": "2026-10-14T05:10:00Z"
+    },
+    "@NEXZ_official": {
+      "channel_id": "UC-o9yrZxu5Ru-DVGhnmeTug",
+      "title": "NEXZ",
+      "resolved_at": "2026-10-14T05:10:00Z"
+    },
+    "@NMIXXofficial": {
+      "channel_id": "UCnUAyD4t2LkvW68YrDh7fDg",
+      "title": "NMIXX",
+      "resolved_at": "2026-10-14T05:10:00Z"
+    },
+    "@official_i_dle": {
+      "channel_id": "UCritGVo7pLJLUS8wEu32vow",
+      "title": "i-dle (아이들)",
+      "resolved_at": "2026-10-14T05:10:00Z"
+    },
+    "@OfficialBTOB": {
+      "channel_id": "UCgB7A457ULlgm5c3948vr-w",
+      "title": "BTOB 비투비 (Official YouTube Channel)",
+      "resolved_at": "2026-10-14T05:10:00Z"
+    },
+    "@OHMYGIRL": {
+      "channel_id": "UC-qYkzKFdekoEniRu_FS3zg",
+      "title": "OH MY GIRL",
+      "resolved_at": "2026-10-14T05:10:00Z"
+    },
+    "@plave_official": {
+      "channel_id": "UCPZIPuQPrfrUG9Xe_okEmQA",
+      "title": "PLAVE 플레이브",
+      "resolved_at": "2026-10-14T05:10:00Z"
+    },
+    "@pledis17": {
+      "channel_id": "UCfkXDY7vwkcJ8ddFGz8KusA",
+      "title": "SEVENTEEN",
+      "resolved_at": "2026-10-14T05:10:00Z"
+    },
+    "@QWER_Band": {
+      "channel_id": "UCJYDRhbinaV44l7MskyCPdQ",
+      "title": "Qwer Band",
+      "resolved_at": "2026-10-14T05:10:00Z"
+    },
+    "@RedVelvet": {
+      "channel_id": "UCk9GmdlDTBfgGRb7vXeRMoQ",
+      "title": "Red Velvet",
+      "resolved_at": "2026-10-14T05:10:00Z"
+    },
+    "@RIIZE_official": {
+      "channel_id": "UCdVD0MsYecQaIE5Ru-pOIQQ",
+      "title": "RIIZE",
+      "resolved_at": "2026-10-14T05:10:00Z"
+    },
+    "@roses_are_rosie": {
+      "channel_id": "UCBo1hnzxV9rz3WVsv__Rn1g",
+      "title": "ROSÉ",
+      "resolved_at": "2026-10-14T05:10:00Z"
+    },
+    "@sbskpop": {
+      "channel_id": "UCS_hnpJLQTvBkqALgapi_4g",
+      "title": "SBSKPOP X INKIGAYO",
+      "resolved_at": "2026-10-14T05:10:00Z"
+    },
+    "@SHINee": {
+      "channel_id": "UCyPwRgc3gQGqhk6RoGS50Ug",
+      "title": "SHINee",
+      "resolved_at": "2026-10-14T05:10:00Z"
+    },
+    "@SMTOWN": {
+      "channel_id": "UCEf_Bc-KVd7onSeifS3py9g",
+      "title": "SMTOWN",
+      "resolved_at": "2026-10-14T05:10:00Z"
+    },
+    "@sooyaaa__": {
+      "channel_id": "UCRE-097LGtx_Zo7LrHvkycA",
+      "title": "JISOO",
+      "resolved_at": "2026-10-14T05:10:00Z"
+    },
+    "@STAYC": {
+      "channel_id": "UCod5V2dpnpJLklGvVOv5FcQ",
+      "title": "STAYC",
+      "resolved_at": "2026-10-14T05:10:00Z"
+    },
+    "@StrayKids": {
+      "channel_id": "UC9rMiEjNaCSsebs31MRDCRA",
+      "title": "Stray Kids",
+      "resolved_at": "2026-10-14T05:10:00Z"
+    },
+    "@STUDIOCHOOM": {
+      "channel_id": "UCEIi7zFR_wE23jFncVtd6-A",
+      "title": "STUDIO CHOOM [스튜디오 춤]",
+      "resolved_at": "2026-10-14T05:10:00Z"
+    },
+    "@SUPERJUNIOR": {
+      "channel_id": "UCFipx49muiJ8-d2YsnLlNVw",
+      "title": "SUPER JUNIOR",
+      "resolved_at": "2026-10-14T05:10:00Z"
+    },
+    "@TAEMIN": {
+      "channel_id": "UCkwHE8TVk8RGpW50dDUZw1Q",
+      "title": "taemin",
+      "resolved_at": "2026-10-14T05:10:00Z"
+    },
+    "@THEBLACKLABEL": {
+      "channel_id": "UCg8ZzloDPTrOiGztK0C9txQ",
+      "title": "THEBLACKLABEL",
+      "resolved_at": "2026-10-14T05:10:00Z"
+    },
+    "@TREASURE": {
+      "channel_id": "UCx9hXYOCvUYwrprEqe4ZQHA",
+      "title": "TREASURE (트레저)",
+      "resolved_at": "2026-10-14T05:10:00Z"
+    },
+    "@triplescosmos": {
+      "channel_id": "UCJnL-TBcsYrF2SLs7tmiC8Q",
+      "title": "tripleS official",
+      "resolved_at": "2026-10-14T05:10:00Z"
+    },
+    "@TWICE": {
+      "channel_id": "UCzgxx_DM2Dcb9Y1spb9mUJA",
+      "title": "TWICE",
+      "resolved_at": "2026-10-14T05:10:00Z"
+    },
+    "@TWS_PLEDIS": {
+      "channel_id": "UC8C6QOPDVYwmuaSBZksefdg",
+      "title": "TWS",
+      "resolved_at": "2026-10-14T05:10:00Z"
+    },
+    "@TXT_bighit": {
+      "channel_id": "UCtiObj3CsEAdNU6ZPWDsddQ",
+      "title": "TOMORROW X TOGETHER OFFICIAL",
+      "resolved_at": "2026-10-14T05:10:00Z"
+    },
+    "@UNIS": {
+      "channel_id": "UCU3s8CYosQHpV0fRbqi15wA",
+      "title": "UNIS",
+      "resolved_at": "2026-10-14T05:10:00Z"
+    },
+    "@wakeone": {
+      "channel_id": "UCPm_zFkmbHXJKuKbgq2FSDg",
+      "title": "WAKE ONE",
+      "resolved_at": "2026-10-14T05:10:00Z"
+    },
+    "@WayV": {
+      "channel_id": "UC-ZHt5Zgadfx-B1CM63Lqew",
+      "title": "WayV",
+      "resolved_at": "2026-10-14T05:10:00Z"
+    },
+    "@weareoneEXO": {
+      "channel_id": "UCzCedBCSSltI1TFd3bKyN6g",
+      "title": "EXO",
+      "resolved_at": "2026-10-14T05:10:00Z"
+    },
+    "@XdinaryHeroes": {
+      "channel_id": "UCDhnnyC4WIZuuaEXHdXtlXA",
+      "title": "Xdinary heroes",
+      "resolved_at": "2026-10-14T05:10:00Z"
+    },
+    "@xikers_official": {
+      "channel_id": "UCPtC0MXSW40Qq7RkhsCXjUQ",
+      "title": "xikers",
+      "resolved_at": "2026-10-14T05:10:00Z"
+    },
+    "@xxxibgdrgn": {
+      "channel_id": "UCeU5qTuBiqTU5z-hyL6WITQ",
+      "title": "OfficialGDRAGON",
+      "resolved_at": "2026-10-14T05:10:00Z"
+    },
+    "@YGEntertainment": {
+      "channel_id": "UCQi67q4kGdmnJaRzX81uK5g",
+      "title": "YG ENTERTAINMENT",
+      "resolved_at": "2026-10-14T05:10:00Z"
+    },
+    "@ZB1_official": {
+      "channel_id": "UCSAp0Yl9S0Zq5uDqE6im_XQ",
+      "title": "ZEROBASEONE",
+      "resolved_at": "2026-10-14T05:10:00Z"
+    },
+    "@ZICO": {
+      "channel_id": "UCiLj5XN-EwMZnUzXaP_Flqg",
+      "title": "ZICO",
+      "resolved_at": "2026-10-14T05:10:00Z"
+    }
+  }
+}

@@ -1,0 +1,17 @@
+# Label & broadcaster channels (artist-owned channels live in artists.yaml). Ids are in channels.lock.json.
+version: 1
+channels:
+  - {handle: "@HYBELABELS", name: "HYBE LABELS", kind: label}
+  - {handle: "@SMTOWN", name: "SMTOWN", kind: label}
+  - {handle: "@jypentertainment", name: "JYP Entertainment", kind: label}
+  - {handle: "@1theK", name: "1theK", kind: label}
+  - {handle: "@YGEntertainment", name: "YG ENTERTAINMENT", kind: label}
+  - {handle: "@THEBLACKLABEL", name: "THEBLACKLABEL", kind: label}
+  - {handle: "@CUBEentertainment", name: "Cube Entertainment", kind: label}
+  - {handle: "@kqent", name: "KQ ENTERTAINMENT", kind: label}
+  - {handle: "@wakeone", name: "WAKE ONE", kind: label}
+  - {handle: "@MnetKpop", name: "Mnet K-POP", kind: broadcaster}
+  - {handle: "@sbskpop", name: "SBSKPOP X INKIGAYO", kind: broadcaster}
+  - {handle: "@MBCkpop", name: "MBCkpop", kind: broadcaster}
+  - {handle: "@kbskpop", name: "KBS Kpop", kind: broadcaster}
+  - {handle: "@STUDIOCHOOM", name: "STUDIO CHOOM", kind: broadcaster}
