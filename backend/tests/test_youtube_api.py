@@ -13,7 +13,7 @@ import pytest
 
 from seoulpulse.config import load_config
 from seoulpulse.fetchers import youtube_api as ya
-from seoulpulse.fetchers.base import ApiSnapshot, ApiUsage, RunContext, StoreView, VideoObs
+from seoulpulse.fetchers.base import ApiSnapshot, ApiUsage, RunContext, StoreView, UploadsState, VideoObs
 from seoulpulse.pipeline import run_once
 from seoulpulse.seed import load_seed
 from seoulpulse.store import Store
@@ -57,16 +57,28 @@ STATS = {
 class FakeYouTubeApi:
     """googleapis.com YouTube Data API v3 double. Records every request."""
 
-    def __init__(self, error=None):
+    def __init__(self, error=None, *, missing=(), resolve=None, real_uploads=()):
         self.requests: list[httpx.Request] = []
         self.error = error          # (status, body) returned for every API call when set
+        self.missing = set(missing)         # playlist ids answering 404 playlistNotFound
+        self.resolve = resolve or {}        # channels.list: channel id -> its real uploads playlist id
+        self.real_uploads = set(real_uploads)   # extra playlist ids that serve HYBE's uploads
 
     def __call__(self, req: httpx.Request) -> httpx.Response:
         self.requests.append(req)
         if self.error is not None:
             return httpx.Response(self.error[0], content=json.dumps(self.error[1]).encode())
         if req.url.path == "/youtube/v3/playlistItems":
-            items = HYBE_UPLOADS if req.url.params["playlistId"] == "UU" + HYBE[2:] else []
+            pid = req.url.params["playlistId"]
+            if pid in self.missing:
+                body = {"error": {"code": 404, "message": "The playlist identified with the request's playlistId "
+                                  "parameter cannot be found.", "errors": [{"reason": "playlistNotFound"}]}}
+                return httpx.Response(404, content=json.dumps(body).encode())
+            items = HYBE_UPLOADS if pid in ({"UU" + HYBE[2:]} | self.real_uploads) else []
+            return httpx.Response(200, content=json.dumps({"items": items}).encode())
+        if req.url.path == "/youtube/v3/channels":
+            items = [{"id": c, "contentDetails": {"relatedPlaylists": {"uploads": self.resolve[c]}}}
+                     for c in req.url.params["id"].split(",") if c in self.resolve]
             return httpx.Response(200, content=json.dumps({"items": items}).encode())
         if req.url.path == "/youtube/v3/videos":
             ids = req.url.params["id"].split(",")
@@ -144,6 +156,10 @@ def test_parsers_and_error_reasons():
     assert ya.api_error_reason(json.dumps(bad_key).encode()) == "API_KEY_INVALID"
     assert ya.api_error_reason(b"<html>") is None
     assert ya.uploads_playlist_id(HYBE) == "UU3IZKseVpdzPSBaWxBxundA"
+    chans = ya.parse_channel_uploads(json.dumps({"items": [
+        {"id": HYBE, "contentDetails": {"relatedPlaylists": {"uploads": "UUreal"}}},
+        {"id": "UCnoUploads", "contentDetails": {"relatedPlaylists": {}}}, {"contentDetails": {}}]}).encode())
+    assert chans == {HYBE: "UUreal"}
 
 
 def test_discovery_rotation_covers_every_channel_once_per_6h(config):
@@ -173,6 +189,7 @@ def test_no_key_means_no_api_calls_and_unchanged_detail(config):
     assert out.results["youtube"].detail == "RSS 77/77 channels"
     assert not any("googleapis" in c for c in net.calls)
     assert db_rows(config, "SELECT * FROM api_usage") == []
+    assert db_rows(config, "SELECT * FROM yt_uploads") == []
 
 
 def test_key_path_discovers_tracks_and_replaces_rss_counts(config, caplog):
@@ -351,3 +368,117 @@ def test_load_config_reads_budget_and_clamps():
     assert load_config({}, warn=False).youtube_daily_units == 9000
     assert load_config({"SP_YOUTUBE_DAILY_UNITS": "2500"}, warn=False).youtube_daily_units == 2500
     assert load_config({"SP_YOUTUBE_DAILY_UNITS": "99999"}, warn=False).youtube_daily_units == 10000
+
+
+# ---------------------------------------------------------------------------- uploads playlist resolution
+
+DERIVED = "UU" + HYBE[2:]
+REAL = "UUREALHYBEPLAYLIST0000"
+
+
+def hybe_slot_time(after):
+    """The first 30-minute step after `after` whose rotation slot contains HYBE's channel."""
+    t = after
+    while ya.current_slot(t) != ya.discovery_slot(HYBE):
+        t += timedelta(minutes=30)
+    return t
+
+
+def warnings(caplog):
+    return [r for r in caplog.records if r.levelno >= logging.WARNING]
+
+
+def test_derived_playlist_404_resolves_via_channels_list_and_is_cached(config, caplog):
+    caplog.set_level(logging.INFO)
+    cfg = replace(config, youtube_api_key=KEY)
+    api = FakeYouTubeApi(missing={DERIVED}, resolve={HYBE: REAL}, real_uploads={REAL})
+    out, _ = run(cfg, api)
+    res = out.results["youtube"]
+    # 77 derived playlists (one 404) + channels.list + the resolved playlist + one videos.list
+    assert [len(api.calls(k)) for k in ("playlistItems", "channels", "videos")] == [78, 1, 1]
+    assert res.status == "ok" and res.errors == [] and "RSS-only" not in res.detail
+    assert res.detail == "RSS 77/77 channels · API 80 units (80/9000 today)"
+    assert db_rows(cfg, "SELECT units FROM api_usage") == [(80,)] and len(api.requests) == 80   # every call booked
+    creq = api.calls("channels")[0]
+    assert creq.url.params["part"] == "contentDetails" and creq.url.params["id"] == HYBE
+    assert creq.headers["x-goog-api-key"] == KEY and KEY not in str(creq.url)
+    assert [r.url.params["playlistId"] for r in api.calls("playlistItems")][-1] == REAL
+    assert db_rows(cfg, "SELECT channel_id, playlist_id, unavailable_until FROM yt_uploads") == [(HYBE, REAL, None)]
+    assert db_rows(cfg, "SELECT video_id FROM videos WHERE video_id='APIDISC0001'")      # discovered via REAL
+    assert not warnings(caplog) and not any("playlistNotFound" in r.getMessage() for r in caplog.records)
+
+    # Next time HYBE's slot comes round: the stored id is used directly, no 404 and no channels.list.
+    api2 = FakeYouTubeApi(missing={DERIVED}, resolve={HYBE: REAL}, real_uploads={REAL})
+    out2, _ = run(cfg, api2, now=hybe_slot_time(NOW + timedelta(minutes=30)))
+    assert api2.calls("channels") == []
+    ids = [r.url.params["playlistId"] for r in api2.calls("playlistItems")]
+    assert REAL in ids and DERIVED not in ids
+    assert out2.results["youtube"].errors == []
+
+
+@pytest.mark.parametrize(("api_kw", "n_units"), [
+    ({}, 79),                                                    # channels.list knows nothing about it
+    ({"resolve": {HYBE: DERIVED}}, 79),                          # ...or returns the same id
+    ({"missing": {DERIVED, REAL}, "resolve": {HYBE: REAL}}, 80),  # ...or the resolved playlist is gone as well
+])
+def test_unresolvable_uploads_playlist_is_skipped_for_7_days(config, caplog, api_kw, n_units):
+    caplog.set_level(logging.INFO)
+    cfg = replace(config, youtube_api_key=KEY)
+    api = FakeYouTubeApi(**{"missing": {DERIVED}, **api_kw})
+    out, _ = run(cfg, api)
+    res = out.results["youtube"]
+    assert res.status == "ok" and res.errors == []                # a 404 never degrades the source
+    assert res.detail == f"RSS 77/77 channels · API {n_units} units ({n_units}/9000 today) · 1 channel RSS-only"
+    assert len(api.requests) == n_units
+    assert db_rows(cfg, "SELECT units FROM api_usage") == [(n_units,)]
+    assert db_rows(cfg, "SELECT channel_id, playlist_id, unavailable_until FROM yt_uploads") == [
+        (HYBE, None, "2026-10-21T09:00:00Z")]
+    assert not warnings(caplog)
+    infos = [r for r in caplog.records if r.levelno == logging.INFO and "no usable uploads playlist" in r.getMessage()]
+    assert len(infos) == 1 and KEY not in infos[0].getMessage()
+
+    # Inside the 7 days: no playlist, no channels.list call for this channel, still RSS-only and ok.
+    api2 = FakeYouTubeApi(**{"missing": {DERIVED}, **api_kw})
+    out2, _ = run(cfg, api2, now=hybe_slot_time(NOW + timedelta(minutes=30)))
+    assert all(r.url.params.get("playlistId") not in (DERIVED, REAL) for r in api2.calls("playlistItems"))
+    assert api2.calls("channels") == []
+    assert out2.results["youtube"].status == "ok" and out2.results["youtube"].errors == []
+    assert "1 channel RSS-only" in out2.results["youtube"].detail
+
+    # After the 7 days it is tried again (once, on its rotation slot).
+    api3 = FakeYouTubeApi(**{"missing": {DERIVED}, **api_kw})
+    run(cfg, api3, now=hybe_slot_time(NOW + timedelta(days=8)))
+    assert DERIVED in [r.url.params["playlistId"] for r in api3.calls("playlistItems")]
+    assert len(api3.calls("channels")) == 1
+
+
+def test_other_playlist_errors_still_count_as_errors(config):
+    cfg = replace(config, youtube_api_key=KEY)
+    api = FakeYouTubeApi(error=(404, {"error": {"code": 404, "errors": [{"reason": "channelNotFound"}]}}))
+    out, _ = run(cfg, api)
+    assert any("HTTP 404 channelNotFound" in e for e in out.results["youtube"].errors)
+    assert db_rows(cfg, "SELECT * FROM yt_uploads") == []
+
+
+def test_migration_adds_uploads_table_to_an_existing_db(tmp_path):
+    path = tmp_path / "old.sqlite"
+    st = Store(path)
+    with st.tx():
+        st.upsert_video(VideoObs("KEEPVIDEO01", HYBE, "t", "https://www.youtube.com/watch?v=KEEPVIDEO01",
+                                 NOW, 100, NOW), "mv", "aespa")
+        st.conn.execute("DROP TABLE yt_uploads")                      # a DB written before the table existed
+    st.close()
+    st = Store(path)                                                  # migrate() on open, like the Actions cache copy
+    assert st.uploads_states() == {}
+    with st.tx():
+        st.upsert_uploads_state(UploadsState(HYBE, REAL, None, NOW))
+        st.upsert_uploads_state(UploadsState("UCother", None, NOW + timedelta(days=7), NOW))
+    st.close()
+    st = Store(path)                                                  # idempotent, data survives
+    states = st.uploads_states()
+    assert states[HYBE] == UploadsState(HYBE, REAL, None, NOW)
+    assert states["UCother"].unavailable_until == NOW + timedelta(days=7)
+    assert st.conn.execute("SELECT COUNT(*) FROM videos").fetchone()[0] == 1
+    assert st.view(NOW).uploads_state == states
+    assert st.conn.execute("SELECT value FROM meta WHERE key='schema_version'").fetchone()[0] == "1"
+    st.close()

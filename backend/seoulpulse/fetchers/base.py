@@ -102,6 +102,20 @@ class CacheEntry:
 
 
 @dataclass(frozen=True)
+class UploadsState:
+    """Per-channel uploads-playlist knowledge for the YouTube API pass (spec §3.3).
+
+    `playlist_id` is a resolved uploads playlist that differs from the derived `UU…` id (None: use the derived id);
+    `unavailable_until` marks a channel API discovery skips until then (RSS continues).
+    """
+
+    channel_id: str
+    playlist_id: str | None
+    unavailable_until: datetime | None
+    checked_at: datetime
+
+
+@dataclass(frozen=True)
 class FetchResult:
     source_id: str
     status: str            # ok | degraded | error | disabled
@@ -123,6 +137,7 @@ class FetchOutput:
     http_cache: list[CacheEntry] = field(default_factory=list)
     search: list[SearchRow] = field(default_factory=list)
     api_usage: list[ApiUsage] = field(default_factory=list)
+    uploads_state: list[UploadsState] = field(default_factory=list)
 
 
 @dataclass(frozen=True)
@@ -140,6 +155,7 @@ class StoreView:
     published_at: dict[str, datetime] = field(default_factory=dict)   # api_candidates -> published_at
     api_usage: dict[tuple[str, date], int] = field(default_factory=dict)
     search_state: dict[str, SearchRow] = field(default_factory=dict)
+    uploads_state: dict[str, UploadsState] = field(default_factory=dict)
 
     def api_units_used(self, api: str, day: date) -> int:
         return self.api_usage.get((api, day), 0)

@@ -23,6 +23,7 @@ from .fetchers.base import (
     Headline,
     SearchRow,
     StoreView,
+    UploadsState,
     VideoObs,
     WikiDay,
 )
@@ -58,6 +59,8 @@ CREATE TABLE IF NOT EXISTS api_usage (api TEXT NOT NULL, day TEXT NOT NULL, unit
   PRIMARY KEY (api, day));
 CREATE TABLE IF NOT EXISTS search_signal (artist_id TEXT PRIMARY KEY, target TEXT NOT NULL, landed INTEGER NOT NULL,
   day TEXT, z REAL, ratio REAL, baseline_n INTEGER NOT NULL, reason TEXT NOT NULL, fetched_at TEXT NOT NULL);
+CREATE TABLE IF NOT EXISTS yt_uploads (channel_id TEXT PRIMARY KEY, playlist_id TEXT, unavailable_until TEXT,
+  checked_at TEXT NOT NULL);
 """
 
 
@@ -325,6 +328,21 @@ class Store:
         return {(r["api"], parse_day(r["day"])): int(r["units"])
                 for r in self.conn.execute("SELECT api, day, units FROM api_usage")}
 
+    # ------------------------------------------------------------------ YouTube uploads playlists (spec §3.3)
+
+    def upsert_uploads_state(self, u: UploadsState) -> None:
+        self.conn.execute(
+            "INSERT INTO yt_uploads(channel_id, playlist_id, unavailable_until, checked_at) VALUES (?,?,?,?) "
+            "ON CONFLICT(channel_id) DO UPDATE SET playlist_id=excluded.playlist_id,"
+            " unavailable_until=excluded.unavailable_until, checked_at=excluded.checked_at",
+            (u.channel_id, u.playlist_id, iso(u.unavailable_until) if u.unavailable_until else None, iso(u.checked_at)),
+        )
+
+    def uploads_states(self) -> dict[str, UploadsState]:
+        return {r["channel_id"]: UploadsState(
+            r["channel_id"], r["playlist_id"], parse_iso(r["unavailable_until"]) if r["unavailable_until"] else None,
+            parse_iso(r["checked_at"])) for r in self.conn.execute("SELECT * FROM yt_uploads ORDER BY channel_id")}
+
     # ------------------------------------------------------------------ Korean search signal (derived only)
 
     def upsert_search_row(self, r: SearchRow) -> None:
@@ -364,6 +382,7 @@ class Store:
             published_at=candidates,
             api_usage=self.api_usage(),
             search_state=self.search_rows(),
+            uploads_state=self.uploads_states(),
         )
 
     # ------------------------------------------------------------------ scores / published
@@ -442,6 +461,7 @@ class Store:
             c.execute("DELETE FROM video_snapshots WHERE video_id NOT IN (SELECT video_id FROM videos)")
             c.execute("DELETE FROM search_signal WHERE fetched_at < ?", (iso(now - timedelta(days=7)),))
             c.execute("DELETE FROM published WHERE generated_at < ?", (iso(now - timedelta(days=21)),))
+            c.execute("DELETE FROM yt_uploads WHERE playlist_id IS NULL AND unavailable_until < ?", (iso(now),))
             c.execute("DELETE FROM api_usage WHERE day < ?", (day_str((now - timedelta(days=40)).date()),))
 
 

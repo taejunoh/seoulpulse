@@ -180,6 +180,8 @@ def persist_output(store: Store, run_id: int, out: FetchOutput, seed: Seed, matc
                 store.upsert_search_row(r)
             for u in out.api_usage:
                 store.add_api_usage(u)
+            for st in out.uploads_state:
+                store.upsert_uploads_state(st)
             store.insert_source_run(run_id, result)
     except Exception as exc:  # noqa: BLE001 - one source's persist failure must not affect others
         log.exception("persisting %s failed", result.source_id)

@@ -16,6 +16,7 @@ from .base import (
     CacheEntry,
     FetchOutput,
     RunContext,
+    UploadsState,
     VideoObs,
     make_result,
     multi_unit_status,
@@ -126,6 +127,7 @@ class YouTubeFetcher:
         status = multi_unit_status(ok, total)   # RSS is the base; the API pass only enriches it
         api_snaps: list[ApiSnapshot] = []
         usage: list[ApiUsage] = []
+        uploads_state: list[UploadsState] = []
         if ctx.config.youtube_api_key:
             from .youtube_api import fetch_api_pass
 
@@ -136,8 +138,9 @@ class YouTubeFetcher:
             videos.extend(api.discovered)
             api_snaps = api.snapshots
             usage = [api.usage] if api.usage else []
+            uploads_state = api.uploads_state
             detail += " · " + api.detail()
             errors.extend(api.errors)
         result = make_result(self.source_id, status, started, ctx.observed(), ok, total, detail, errors)
         return FetchOutput(result=result, videos=videos, api_snapshots=api_snaps, http_cache=cache,
-                           api_usage=usage)
+                           api_usage=usage, uploads_state=uploads_state)
