@@ -4,7 +4,7 @@ name: social-draft
 
 on:
   schedule:
-    - cron: "0 13 * * *" # 13:00 UTC = 9am US Eastern (8am during standard time)
+    - cron: "17 13 * * *" # 13:00 UTC = 9am US Eastern (8am during standard time)
   workflow_dispatch:
 
 concurrency: social-draft
