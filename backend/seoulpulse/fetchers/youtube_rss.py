@@ -27,6 +27,10 @@ FEED_URL = "https://www.youtube.com/feeds/videos.xml?channel_id={}"
 VIDEO_ID_RE = re.compile(r"^[A-Za-z0-9_-]{11}$")
 
 
+class FeedFormatError(ValueError):
+    """The body parsed as XML but is not an Atom feed (e.g. a consent page served with HTTP 200)."""
+
+
 def _clean_xml(xml: bytes) -> bytes:
     # Some servers prepend a BOM or whitespace before the XML declaration.
     return xml.lstrip(b"\xef\xbb\xbf \t\r\n")
@@ -35,6 +39,8 @@ def _clean_xml(xml: bytes) -> bytes:
 def parse_youtube_feed(xml: bytes, observed_at: datetime, *, channel_id: str | None = None) -> list[VideoObs]:
     """Parse a channel feed. The feed-level yt:channelId lacks the UC prefix and is ignored."""
     root = ET.fromstring(_clean_xml(xml))
+    if root.tag != f"{{{NS['atom']}}}feed":
+        raise FeedFormatError(f"not an Atom feed (root element <{root.tag}>)")
     out: list[VideoObs] = []
     for entry in root.findall("atom:entry", NS):
         vid = (entry.findtext("yt:videoId", default="", namespaces=NS) or "").strip()

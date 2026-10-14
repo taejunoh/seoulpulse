@@ -11,7 +11,7 @@ import hashlib
 import html
 import re
 from datetime import UTC, datetime, timedelta
-from urllib.parse import quote
+from urllib.parse import quote, urljoin, urlsplit
 
 from defusedxml import ElementTree as ET
 
@@ -25,6 +25,13 @@ FEEDS = {
     "yonhap": ("https://www.yna.co.kr/rss/entertainment.xml", "ko"),
 }
 TITLE_MAX = 300
+RDF_NS = "http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+RSS1_NS = "http://purl.org/rss/1.0/"
+DC_NS = "http://purl.org/dc/elements/1.1/"
+
+
+class FeedFormatError(ValueError):
+    """The body parsed as XML but is not an RSS document (e.g. an XHTML consent or block page)."""
 FUTURE_SLACK = timedelta(minutes=10)
 _WS = re.compile(r"\s+")
 _TAG = re.compile(r"<[^>]{1,200}>")
@@ -69,28 +76,61 @@ def _child_text(item, tag: str) -> str:
     return (el.text or "") if el is not None else ""
 
 
-def parse_rss(xml: bytes, source_id: str, lang: str, fetched_at: datetime) -> list[Headline]:
+def resolve_link(raw: str, base_url: str | None) -> str | None:
+    """Absolute http(s) URL for an item link, or None for unsupported/unusable links."""
+    raw = (raw or "").strip()
+    if not raw:
+        return None
+    url = urljoin(base_url, raw) if base_url else raw
+    parts = urlsplit(url)
+    if parts.scheme not in ("http", "https") or not parts.hostname:
+        return None
+    return ascii_url(url)
+
+
+def _rss_items(root) -> tuple[list, dict[str, str]]:
+    """Return (items, tag names) for RSS 2.0 or RSS 1.0 (RDF); raise FeedFormatError for anything else."""
+    if root.tag == "rss":
+        channel = root.find("channel")
+        if channel is None:
+            raise FeedFormatError("rss document without <channel>")
+        return channel.findall("item"), {"title": "title", "link": "link", "guid": "guid", "date": "pubDate"}
+    if root.tag == f"{{{RDF_NS}}}RDF":
+        if root.find(f"{{{RSS1_NS}}}channel") is None:
+            raise FeedFormatError("RDF document without an RSS 1.0 channel")
+        return root.findall(f"{{{RSS1_NS}}}item"), {
+            "title": f"{{{RSS1_NS}}}title", "link": f"{{{RSS1_NS}}}link", "guid": f"{{{RSS1_NS}}}link",
+            "date": f"{{{DC_NS}}}date",
+        }
+    raise FeedFormatError(f"not an RSS feed (root element <{root.tag}>)")
+
+
+def parse_rss(xml: bytes, source_id: str, lang: str, fetched_at: datetime, *,
+              base_url: str | None = None) -> list[Headline]:
+    """Parse an RSS 2.0/1.0 feed. Item links are resolved against `base_url` (default: the source's feed URL);
+    items whose link is not absolute http(s) after resolution are dropped."""
+    if base_url is None and source_id in FEEDS:
+        base_url = FEEDS[source_id][0]
     root = ET.fromstring(xml.lstrip(b"\xef\xbb\xbf \t\r\n"))
-    channel = root.find("channel")
-    items = channel.findall("item") if channel is not None else root.findall(".//item")
+    items, tags = _rss_items(root)
     out: list[Headline] = []
     seen: set[str] = set()
     for item in items:
-        # Only these four children are ever touched.
-        title = clean_title(_child_text(item, "title"))
-        link = _child_text(item, "link").strip()
-        guid = _child_text(item, "guid").strip() or link
-        if not title or not link or not guid:
+        # Only title, link, guid and the date are ever touched; description/content:encoded never are.
+        title = clean_title(_child_text(item, tags["title"]))
+        link = resolve_link(_child_text(item, tags["link"]), base_url)
+        if not title or link is None:
             continue
+        guid = _child_text(item, tags["guid"]).strip() or link
         hid = headline_id(source_id, guid)
         if hid in seen:
             continue
         seen.add(hid)
-        pub = parse_pubdate(_child_text(item, "pubDate"))
+        pub = parse_pubdate(_child_text(item, tags["date"]))
         if pub is not None and pub > fetched_at + FUTURE_SLACK:
             pub = None
         out.append(Headline(headline_id=hid, source_id=source_id, lang=lang, title=title,
-                            url=ascii_url(link), guid=guid, pub_date=pub, fetched_at=fetched_at))
+                            url=link, guid=guid, pub_date=pub, fetched_at=fetched_at))
     return out
 
 
@@ -116,7 +156,7 @@ class NewsFetcher:
             return FetchOutput(result=make_result(self.source_id, "error", started, ctx.observed(), 0, 1, msg, [msg]))
         fetched_at = ctx.observed()
         try:
-            items = parse_rss(resp.content, self.source_id, self.lang, fetched_at)
+            items = parse_rss(resp.content, self.source_id, self.lang, fetched_at, base_url=resp.url or self.url)
         except Exception as exc:  # noqa: BLE001 - malformed feed
             msg = f"parse error: {type(exc).__name__}: {exc}"[:200]
             return FetchOutput(result=make_result(self.source_id, "error", started, ctx.observed(), 0, 1, msg, [msg]))

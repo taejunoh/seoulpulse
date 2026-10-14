@@ -7,8 +7,8 @@ from datetime import date, timedelta
 
 import pytest
 
-from seoulpulse.fetchers.base import ApiSnapshot, Headline, VideoObs, WikiDay
 from seoulpulse import cli, serve
+from seoulpulse.fetchers.base import ApiSnapshot, Headline, VideoObs, WikiDay
 from seoulpulse.serve import make_server, seed_example
 from seoulpulse.store import Store
 

@@ -12,7 +12,7 @@ artists:
   - id: seventeen
     name: "SEVENTEEN"
     name_ko: "세븐틴"
-    aliases: ["SEVENTEEN", "세븐틴", "SVT", "부석순"]
+    aliases: [{term: "SEVENTEEN", case_sensitive: true}, "세븐틴", "SVT", "부석순"]
     youtube: ["@pledis17"]
     wiki: {en: "Seventeen (South Korean band)", ko: "세븐틴 (음악 그룹)"}
   - id: stray-kids
@@ -150,7 +150,7 @@ artists:
   - id: kickflip
     name: "KickFlip"
     name_ko: "킥플립"
-    aliases: ["KickFlip", "킥플립"]
+    aliases: [{term: "KickFlip", case_sensitive: true}, "킥플립"]
     youtube: []
     wiki: {en: "KickFlip", ko: "KickFlip"}
   - id: nexz
@@ -162,7 +162,7 @@ artists:
   - id: allday-project
     name: "ALLDAY PROJECT"
     name_ko: "올데이 프로젝트"
-    aliases: ["ALLDAY PROJECT", "ALL DAY PROJECT", "올데이 프로젝트"]
+    aliases: ["ALLDAY PROJECT", {term: "ALL DAY PROJECT", case_sensitive: true}, "올데이 프로젝트"]
     youtube: ["@ALLDAYPROJECT"]
     wiki: {en: "AllDay Project", ko: "ALLDAY PROJECT"}
   - id: xdinary-heroes

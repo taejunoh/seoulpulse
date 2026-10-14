@@ -1,0 +1,130 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://seoulpulse.local/schema/trends-v1.json",
+  "title": "SeoulPulse trends.json (schema_version 1)",
+  "description": "Producer-strict contract. The backend MUST emit exactly these fields. The iOS client MUST ignore unknown fields and tolerate unknown enum values.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "generated_at", "next_update_hint", "rank_change_basis_at", "cold_start", "items", "sources"],
+  "properties": {
+    "schema_version": { "const": 1 },
+    "generated_at": { "$ref": "#/$defs/timestamp" },
+    "next_update_hint": { "$ref": "#/$defs/timestamp" },
+    "rank_change_basis_at": { "anyOf": [{ "$ref": "#/$defs/timestamp" }, { "type": "null" }] },
+    "cold_start": { "type": "boolean" },
+    "items": { "type": "array", "maxItems": 20, "items": { "$ref": "#/$defs/item" } },
+    "sources": { "type": "array", "minItems": 5, "maxItems": 5, "items": { "$ref": "#/$defs/source" } }
+  },
+  "$defs": {
+    "timestamp": { "type": "string", "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$" },
+    "date": { "type": "string", "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$" },
+    "url": { "type": "string", "pattern": "^https?://[\\x21-\\x7E]+$" },
+    "nullableUrl": { "anyOf": [{ "$ref": "#/$defs/url" }, { "type": "null" }] },
+    "item": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "rank", "prev_rank", "change", "change_amount", "name", "name_ko", "score", "korea_first", "why", "why_source", "image_url", "metrics", "signals", "top_video", "headlines", "links"],
+      "properties": {
+        "id": { "type": "string", "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$", "maxLength": 40 },
+        "rank": { "type": "integer", "minimum": 1, "maximum": 20 },
+        "prev_rank": { "anyOf": [{ "type": "integer", "minimum": 1, "maximum": 20 }, { "type": "null" }] },
+        "change": { "enum": ["new", "up", "down", "same"] },
+        "change_amount": { "type": "integer", "minimum": 0, "maximum": 19 },
+        "name": { "type": "string", "minLength": 1, "maxLength": 40 },
+        "name_ko": { "anyOf": [{ "type": "string", "minLength": 1, "maxLength": 40 }, { "type": "null" }] },
+        "score": { "type": "number", "minimum": 0, "maximum": 100 },
+        "korea_first": { "type": "boolean" },
+        "why": { "type": "string", "minLength": 1, "maxLength": 60 },
+        "why_source": { "enum": ["template", "llm"] },
+        "image_url": { "$ref": "#/$defs/nullableUrl" },
+        "metrics": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["yt_views_per_hour", "yt_views_per_hour_estimated", "yt_accel", "wiki_day", "wiki_ko_views", "wiki_ko_ratio", "wiki_en_views", "wiki_en_ratio", "headlines_24h", "headlines_ko_24h"],
+          "properties": {
+            "yt_views_per_hour": { "anyOf": [{ "type": "integer", "minimum": 0 }, { "type": "null" }] },
+            "yt_views_per_hour_estimated": { "type": "boolean" },
+            "yt_accel": { "anyOf": [{ "type": "number", "minimum": 0.25, "maximum": 4.0 }, { "type": "null" }] },
+            "wiki_day": { "anyOf": [{ "$ref": "#/$defs/date" }, { "type": "null" }] },
+            "wiki_ko_views": { "anyOf": [{ "type": "integer", "minimum": 0 }, { "type": "null" }] },
+            "wiki_ko_ratio": { "anyOf": [{ "type": "number", "minimum": 0 }, { "type": "null" }] },
+            "wiki_en_views": { "anyOf": [{ "type": "integer", "minimum": 0 }, { "type": "null" }] },
+            "wiki_en_ratio": { "anyOf": [{ "type": "number", "minimum": 0 }, { "type": "null" }] },
+            "headlines_24h": { "type": "integer", "minimum": 0 },
+            "headlines_ko_24h": { "type": "integer", "minimum": 0 }
+          }
+        },
+        "signals": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["youtube", "accel", "new_release", "wiki", "news"],
+          "properties": {
+            "youtube": { "type": "number", "minimum": 0, "maximum": 1 },
+            "accel": { "type": "number", "minimum": -0.5, "maximum": 1 },
+            "new_release": { "type": "number", "minimum": 0, "maximum": 1 },
+            "wiki": { "type": "number", "minimum": 0, "maximum": 1 },
+            "news": { "type": "number", "minimum": 0, "maximum": 1 }
+          }
+        },
+        "top_video": {
+          "anyOf": [
+            { "type": "null" },
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["video_id", "title", "url", "kind", "published_at", "views", "channel_name"],
+              "properties": {
+                "video_id": { "type": "string", "pattern": "^[A-Za-z0-9_-]{11}$" },
+                "title": { "type": "string", "minLength": 1, "maxLength": 200 },
+                "url": { "$ref": "#/$defs/url" },
+                "kind": { "enum": ["mv", "perf", "teaser", "show", "other"] },
+                "published_at": { "$ref": "#/$defs/timestamp" },
+                "views": { "type": "integer", "minimum": 0 },
+                "channel_name": { "type": "string", "minLength": 1, "maxLength": 100 }
+              }
+            }
+          ]
+        },
+        "headlines": {
+          "type": "array",
+          "maxItems": 5,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["title", "url", "source_id", "source_name", "lang", "published_at"],
+            "properties": {
+              "title": { "type": "string", "minLength": 1, "maxLength": 300 },
+              "url": { "$ref": "#/$defs/url" },
+              "source_id": { "enum": ["yonhap", "soompi", "koreaboo"] },
+              "source_name": { "type": "string", "minLength": 1 },
+              "lang": { "enum": ["ko", "en"] },
+              "published_at": { "$ref": "#/$defs/timestamp" }
+            }
+          }
+        },
+        "links": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["youtube_channel", "wikipedia_en", "wikipedia_ko"],
+          "properties": {
+            "youtube_channel": { "$ref": "#/$defs/nullableUrl" },
+            "wikipedia_en": { "$ref": "#/$defs/nullableUrl" },
+            "wikipedia_ko": { "$ref": "#/$defs/nullableUrl" }
+          }
+        }
+      }
+    },
+    "source": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "name", "status", "last_success_at", "detail"],
+      "properties": {
+        "id": { "enum": ["youtube", "wikipedia", "yonhap", "soompi", "koreaboo"] },
+        "name": { "type": "string", "minLength": 1 },
+        "status": { "enum": ["ok", "degraded", "error", "disabled"] },
+        "last_success_at": { "anyOf": [{ "$ref": "#/$defs/timestamp" }, { "type": "null" }] },
+        "detail": { "type": "string", "maxLength": 80 }
+      }
+    }
+  }
+}

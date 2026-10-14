@@ -2,10 +2,10 @@
 
 from __future__ import annotations
 
-import concurrent.futures as cf
 import fcntl
 import logging
 import random
+import threading
 import time
 from collections import defaultdict
 from collections.abc import Callable, Iterable, Sequence
@@ -16,6 +16,7 @@ from pathlib import Path
 import httpx
 
 from .config import Config
+from .contract import load_schema, validate_payload
 from .fetchers import SOURCE_IDS, Fetcher, FetchOutput, RunContext, default_fetchers
 from .fetchers.base import FetchResult, make_result
 from .http import HttpClient
@@ -86,6 +87,7 @@ class RunOutcome:
     payload: dict | None = None
     results: dict[str, FetchResult] | None = None
     summary: str = ""
+    contract_errors: list[str] | None = None
 
 
 # ---------------------------------------------------------------------------- helpers
@@ -99,38 +101,51 @@ def attribute(channel_kind: str | None, owner: str | None, title: str, matcher: 
     return None
 
 
-def run_fetchers(ctx: RunContext, fetchers: Sequence[Fetcher], deadline_sec: float) -> dict[str, FetchOutput]:
+def run_fetchers(ctx: RunContext, fetchers: Sequence[Fetcher], deadline_sec: float,
+                 *, wall: Callable[[], float] = time.monotonic) -> dict[str, FetchOutput]:
+    """Run each fetcher in its own daemon thread and wait at most `deadline_sec` (wall clock).
+
+    Daemon threads (instead of a ThreadPoolExecutor, whose non-daemon workers are joined at interpreter
+    exit) guarantee that a hung fetcher can never keep the process alive past the hard deadline.
+    Late results are discarded; unfinished fetchers count as `error`.
+    """
     outputs: dict[str, FetchOutput] = {}
     if not fetchers:
         return outputs
+    finished: dict[str, FetchOutput] = {}
+    gate = threading.Lock()
+    closed = False
 
-    def guarded(f: Fetcher) -> FetchOutput:
+    def worker(f: Fetcher) -> None:
         started = ctx.observed()
         try:
-            return f.fetch(ctx)
+            out = f.fetch(ctx)
         except Exception as exc:  # noqa: BLE001 - escaped exception becomes status=error
             msg = f"{type(exc).__name__}: {exc}"[:200]
             if ctx.time_left() > 0:
                 log.exception("fetcher %s crashed", f.source_id)
             else:
                 log.warning("fetcher %s stopped after the deadline: %s", f.source_id, msg)
-            return FetchOutput(result=make_result(f.source_id, "error", started, ctx.observed(), 0, 1, msg, [msg]))
+            out = FetchOutput(result=make_result(f.source_id, "error", started, ctx.observed(), 0, 1, msg, [msg]))
+        with gate:
+            if not closed:
+                finished[f.source_id] = out
 
-    pool = cf.ThreadPoolExecutor(max_workers=5, thread_name_prefix="fetch")
-    try:
-        futures = {pool.submit(guarded, f): f for f in fetchers}
-        done, not_done = cf.wait(futures, timeout=deadline_sec)
-        for fut in done:
-            out = fut.result()
-            outputs[futures[fut].source_id] = out
-        for fut in not_done:
-            f = futures[fut]
-            fut.cancel()
-            msg = f"deadline exceeded after {int(deadline_sec)}s"
-            outputs[f.source_id] = FetchOutput(
-                result=make_result(f.source_id, "error", ctx.now, ctx.observed(), 0, 1, msg, [msg]))
-    finally:
-        pool.shutdown(wait=False, cancel_futures=True)
+    threads = [(f, threading.Thread(target=worker, args=(f,), name=f"fetch-{f.source_id}", daemon=True))
+               for f in fetchers]
+    end = wall() + deadline_sec
+    for _, t in threads:
+        t.start()
+    for _, t in threads:
+        t.join(timeout=max(0.0, end - wall()))
+    with gate:
+        closed = True
+        for f, _ in threads:
+            out = finished.get(f.source_id)
+            if out is None:
+                msg = f"deadline exceeded after {int(deadline_sec)}s"
+                out = FetchOutput(result=make_result(f.source_id, "error", ctx.now, ctx.observed(), 0, 1, msg, [msg]))
+            outputs[f.source_id] = out
     return outputs
 
 
@@ -254,7 +269,8 @@ def _run(config: Config, store: Store, seed: Seed, *, now, sources, publish, tra
     run_id = store.insert_run(now)
     try:
         matcher = AliasMatcher(seed.artists)
-        http = HttpClient(config.user_agent, transport=transport, sleep=sleep, clock=monotonic, rand=rand)
+        http = HttpClient(config.user_agent, transport=transport, sleep=sleep, clock=monotonic, rand=rand,
+                          deadline=t0 + deadline_sec)
         soft = max(deadline_sec * 0.5, deadline_sec - FETCH_GRACE_SEC)
         ctx = RunContext(now=now, http=http, seed=seed, config=config, store=store.view(now), log=log,
                          monotonic=monotonic, deadline=t0 + soft, started_mono=t0)
@@ -310,10 +326,18 @@ def _run(config: Config, store: Store, seed: Seed, *, now, sources, publish, tra
             rank_basis_at=basis[0] if basis else None, cold_start=cold, sources=source_info,
             channel_urls={s.id: seed.artist_channel_url(s.id) for s in top},
         )
+        contract_errors = validate_payload(payload, load_schema(config.docs_dir))
+        if contract_errors:
+            log.error("payload violates docs/trends.schema.json (%d problem(s)); keeping the last good file: %s",
+                      len(contract_errors), "; ".join(contract_errors[:5]))
+            if run_status == "ok":
+                run_status = "partial"
         trends = config.trends_path
         published = False
         if not publish:
             log.info("--no-publish: not writing %s", trends)
+        elif contract_errors:
+            pass  # never replace the last good file with a payload that breaks the contract
         elif all_failed and trends.exists():
             log.error("every source failed; keeping existing %s", trends)
         elif not payload["items"] and trends.exists():
@@ -331,10 +355,12 @@ def _run(config: Config, store: Store, seed: Seed, *, now, sources, publish, tra
             store.finish_run(run_id, run_status, now + timedelta(seconds=int(monotonic() - t0)), published, cold)
         elapsed = monotonic() - t0
         summary = (f"run {run_id} {run_status} items={len(payload['items'])} "
-                   + " ".join(f"{sid}={results[sid].status}" for sid in SOURCE_IDS) + f" {elapsed:.1f}s")
+                   + " ".join(f"{sid}={results[sid].status}" for sid in SOURCE_IDS)
+                   + (" contract=INVALID" if contract_errors else "") + f" {elapsed:.1f}s")
         log.info(summary)
         return RunOutcome(exit_code=exit_code, run_id=run_id, status=run_status, items=len(payload["items"]),
-                          published=published, cold_start=cold, payload=payload, results=results, summary=summary)
+                          published=published, cold_start=cold, payload=payload, results=results, summary=summary,
+                          contract_errors=contract_errors)
     except Exception:
         log.exception("run %s crashed", run_id)
         try:

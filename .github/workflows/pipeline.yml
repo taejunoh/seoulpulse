@@ -29,14 +29,17 @@ jobs:
 
       # SQLite state (history for velocity, rank change and baselines) persists between runs via the cache.
       # public/ is cached too, so "keep the last good trends.json" works when every source fails.
+      # Cache entries are immutable, so every run *attempt* saves under its own key; restore always falls back
+      # to the newest entry with the sp-state- prefix (reruns get the latest state, not the original attempt's).
       - name: Restore pipeline state
         uses: actions/cache/restore@v4
         with:
           path: |
             backend/var
             public
-          key: sp-state-${{ github.run_id }}
-          restore-keys: sp-state-
+          key: sp-state-${{ github.run_id }}-${{ github.run_attempt }}
+          restore-keys: |
+            sp-state-
 
       - name: Install
         working-directory: backend
@@ -66,7 +69,7 @@ jobs:
           path: |
             backend/var
             public
-          key: sp-state-${{ github.run_id }}
+          key: sp-state-${{ github.run_id }}-${{ github.run_attempt }}
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
