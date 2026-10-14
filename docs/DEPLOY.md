@@ -114,6 +114,8 @@ and App Group `group.com.taejunoh.seoulpulse`.
 `com.taejunoh.seoulpulse`. Build 1.0.0 (1) was the first upload. There is an internal TestFlight group named
 "Internal" with automatic distribution, so every processed build goes to its testers without further steps.
 
+For the App Store submission status and the owner's remaining checklist, see [LAUNCH.md](LAUNCH.md).
+
 **Versions.** The marketing version is `MARKETING_VERSION` (1.0.0) in `ios/project.yml`; edit it there for a new
 release. The build number is automatic: `ios/scripts/testflight.sh` passes
 `CURRENT_PROJECT_VERSION=$(date -u +%Y%m%d%H%M)` (a UTC timestamp such as `202610141730`) to `xcodebuild archive`.

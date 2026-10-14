@@ -118,5 +118,6 @@ automatically. Trigger it on demand from the Actions tab (`workflow_dispatch`).
 
 - `docs/SPEC.md`: product and engineering spec (scoring, storage, JSON contract, iOS design)
 - `docs/DEPLOY.md`: going live with GitHub Pages, TestFlight, App Store Connect URLs, alternative hosting
+- `docs/LAUNCH.md`: launch status and the owner's remaining checklist (App Store submission)
 - `backend/README.md`: CLI reference, scheduling, run state
 - `ios/README.md`: build, test, data flow, deep links
