@@ -109,11 +109,12 @@ class AliasMatcher:
 # ---------------------------------------------------------------------------- classify_video
 
 _RULES: tuple[tuple[str, re.Pattern[str]], ...] = (
-    # Addition to spec §2.3 (rule 1b): the acts' own variety series are `other` even when the episode is
-    # announced with a "Teaser" ("[TIME TO TWICE] 트둥의 숲 TDOONG's Crossing Teaser" read as a comeback teaser:
-    # "New teaser out: comeback incoming").
+    # Addition to spec §2.3 (rule 1b): the acts' own variety series and concert live-viewing promos are `other`
+    # even when announced with a "Teaser"/"Trailer" ("[TIME TO TWICE] 트둥의 숲 TDOONG's Crossing Teaser",
+    # "BTS WORLD TOUR … LIVE VIEWING - Special Trailer" both read as "New teaser: comeback incoming").
     ("other", re.compile(
-        r"time to twice|going seventeen|to do x txt|skz code|run bts|bangtan bomb|dada-itzy", re.IGNORECASE)),
+        r"time to twice|going seventeen|to do x txt|skz code|run bts|bangtan bomb|dada-itzy|live viewing",
+        re.IGNORECASE)),
     ("teaser", re.compile(
         r"teaser|티저|trailer|트레일러|spoiler|스포일러|highlight medley|하이라이트 메들리|concept film"
         r"|preview|sneak peek|coming soon|teasing (?:video|film|clip)", re.IGNORECASE)),
@@ -140,12 +141,17 @@ _RULES: tuple[tuple[str, re.Pattern[str]], ...] = (
 VIDEO_KINDS = ("short", "mv", "perf", "teaser", "show", "other")
 
 
-def classify_video(title: str, url: str) -> str:
+def classify_video(title: str, url: str, channel_kind: str | None = None) -> str:
     if "/shorts/" in (url or ""):
         return "short"
     t = normalize(title or "")
     for kind, pat in _RULES:
         if pat.search(t):
+            # Addition to spec §2.3 (rule 2): on a broadcaster channel a teaser/trailer/preview promotes the
+            # broadcaster's own programme (KBS Kpop "[Teaser] … MEOVV Mood Sampler", a festival line-up), never
+            # an act's comeback, so it must not read as "New teaser: comeback incoming".
+            if kind == "teaser" and channel_kind == "broadcaster":
+                return "other"
             return kind
     return "other"
 

@@ -165,7 +165,7 @@ def persist_output(store: Store, run_id: int, out: FetchOutput, seed: Seed, matc
             channels = seed.channel_by_id
             for v in out.videos:
                 ch = channels.get(v.channel_id)
-                kind = classify_video(v.title, v.url)
+                kind = classify_video(v.title, v.url, ch.kind if ch else None)
                 artist = attribute(ch.kind if ch else None, ch.owner if ch else None, v.title, matcher)
                 store.upsert_video(v, kind, artist)
             for s in out.api_snapshots:
@@ -202,7 +202,7 @@ def reattribute(store: Store, seed: Seed, matcher: AliasMatcher, now: datetime) 
     with store.tx():
         for row in store.videos_seen_since(now - timedelta(days=30)):
             ch = channels.get(row.channel_id)
-            kind = classify_video(row.title, row.url)
+            kind = classify_video(row.title, row.url, ch.kind if ch else None)
             artist = attribute(ch.kind if ch else None, ch.owner if ch else None, row.title, matcher)
             if kind != row.kind or artist != row.artist_id:
                 store.update_video_attribution(row.video_id, kind, artist)

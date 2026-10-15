@@ -208,3 +208,34 @@ def test_stage_videos_classify_as_performances(title, kind):
 ])
 def test_comeback_teasers_vs_variety_teasers(title, kind):
     assert classify_video(title, W) == kind
+
+
+MEOVV_KBS = "[Teaser] 🐈\u200d⬛ : Go too hard!! We always go 🤟 | 돌박이일 MEOVV Mood Sampler 4K"
+
+
+@pytest.mark.parametrize(("title", "channel_kind", "kind"), [
+    # Live 2026-10-15 03:47: MEOVV #1 read "New teaser out: comeback incoming" from this KBS web-show teaser...
+    (MEOVV_KBS, "broadcaster", "other"),
+    ("2026 MUSIC BANK GLOBAL FESTIVAL IN JAPAN | 2차 라인업티저", "broadcaster", "other"),
+    # ...and BTS got the teaser new-release term from a cinema live-viewing trailer.
+    ("BTS WORLD TOUR ‘ARIRANG’ IN BUENOS AIRES & SÃO PAULO: LIVE VIEWING - Special Trailer", "artist", "other"),
+    ("[Teaser 2] TEEN TOP(틴탑) _ DON'T STOP", "label", "teaser"),               # 1theK comeback teaser stays
+    ("HYOJUNG (OH MY GIRL) '미완성일지도' MV Teaser | Film ver.", "label", "teaser"),
+    ("aespa 에스파 'Neon Tide' MV Teaser", "artist", "teaser"),
+    ("ATEEZ - Sample #엠카운트다운 EP.912 | Mnet 241010 방송", "broadcaster", "show"),   # stages unaffected
+])
+def test_broadcaster_and_event_teasers_are_not_comeback_teasers(title, channel_kind, kind):
+    assert classify_video(title, W, channel_kind) == kind
+
+
+def test_reattribution_applies_the_channel_rule_to_stored_videos(config):
+    from seoulpulse.pipeline import reattribute
+
+    st = Store(config.db_path)
+    kbs = next(c.channel_id for c in load_seed(DATA_DIR).resolved_channels() if c.kind == "broadcaster")
+    with st.tx():
+        st.upsert_video(VideoObs("KBSTEASER01", kbs, MEOVV_KBS, W, h(14), 50_000, h(1)), "teaser", "meovv")
+    seed = load_seed(DATA_DIR)
+    assert reattribute(st, seed, AliasMatcher(seed.artists), NOW) == 1
+    assert st.conn.execute("SELECT kind, artist_id FROM videos").fetchone()[:] == ("other", "meovv")
+    st.close()
