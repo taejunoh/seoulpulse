@@ -1,6 +1,6 @@
 # Launch status
 
-Status as of 2026-10-14. Everything below was verified that day. The backend is live and the App Store draft is
+Status as of 2026-10-15. Everything below was verified on 2026-10-14/15. The backend is live and the App Store draft is
 complete but **not submitted for review**. What remains is owner-only: legal attestations, contact details, a
 real-device test and the submit button.
 
@@ -27,7 +27,15 @@ real-device test and the submit button.
   - 3 screenshots (6.3" 1206x2622, from `docs/appstore/screenshots/6.3in`)
   - build 1 attached
 
+**Widgets**
+- Home Screen small/medium/large verified on the simulator's real Home Screen with live data.
+- Lock Screen (`accessoryRectangular`) verified on the simulator's real Lock Screen on 2026-10-15 with live data:
+  `docs/appstore/lockscreen-widget.png`. Legible; the second line is faint over very pale wallpaper areas, which is
+  the system's vibrant rendering.
+
 ## Owner checklist (in order)
+
+Tracked with direct links in issue [#2](https://github.com/taejunoh/seoulpulse/issues/2).
 
 - [ ] **1. License agreement.** Account Holder accepts the updated Apple Developer Program License Agreement at
   developer.apple.com/account. Required before submitting new apps or updates.
@@ -38,7 +46,7 @@ real-device test and the submit button.
 - [ ] **4. App Review Information.** On the version page, add the owner's contact phone and email, then paste the
   review notes from `docs/appstore/metadata.md`. The notes did not persist without the contact fields.
 - [ ] **5. Real-device test.** Install through the TestFlight app on an iPhone and test the widgets, including the
-  Lock Screen widgets.
+  Lock Screen widget (already verified on the simulator).
 - [ ] **6. Submit.** "Add for Review", then Submit.
 - [ ] **7. Optional: Naver DataLab.** Get a key via NAVER API HUB on Naver Cloud (needs a Naver Cloud account), then:
   `gh secret set NAVER_CLIENT_ID --repo taejunoh/seoulpulse` and
