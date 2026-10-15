@@ -1,0 +1,53 @@
+# Keeps the pipeline on a ~30-minute cadence without relying on GitHub's `schedule` trigger,
+# which skips most runs on this repo (0 of 5 expected runs fired in 75 minutes on a 15-minute cron).
+#
+# One long job dispatches pipeline.yml every 30 minutes, then re-dispatches this workflow before
+# the 6-hour job limit so the chain continues. GITHUB_TOKEN may trigger workflow_dispatch
+# (the documented exception to "events from GITHUB_TOKEN don't start new runs").
+# `cancel-in-progress` keeps exactly one ticker alive: a new ticker replaces the old one.
+# The sparse cron below only restarts the chain if it ever dies.
+name: ticker
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "41 */3 * * *"
+
+concurrency:
+  group: ticker
+  cancel-in-progress: true
+
+permissions:
+  actions: write
+  contents: read
+
+jobs:
+  tick:
+    runs-on: ubuntu-latest
+    timeout-minutes: 358
+    env:
+      GH_TOKEN: ${{ github.token }}
+      GH_REPO: ${{ github.repository }}
+      INTERVAL_SECONDS: 1800
+      CHAIN_AFTER_SECONDS: 19800 # last dispatch at 5h, hand off at ~5h30m (job timeout 5h58m)
+    steps:
+      - name: Dispatch pipeline every 30 minutes
+        run: |
+          start=$(date +%s)
+          while :; do
+            gh workflow run pipeline.yml --ref "${GITHUB_REF_NAME}" \
+              && echo "dispatched pipeline at $(date -u +%H:%M:%SZ)" \
+              || echo "::warning::pipeline dispatch failed at $(date -u +%H:%M:%SZ)"
+            elapsed=$(( $(date +%s) - start ))
+            if [ $(( elapsed + INTERVAL_SECONDS )) -ge "$CHAIN_AFTER_SECONDS" ]; then
+              break
+            fi
+            sleep "$INTERVAL_SECONDS"
+          done
+          # Wait out the rest of the interval so the next ticker's first dispatch stays ~30 min apart.
+          remaining=$(( INTERVAL_SECONDS - ( ( $(date +%s) - start ) % INTERVAL_SECONDS ) ))
+          [ "$remaining" -lt "$INTERVAL_SECONDS" ] && sleep "$remaining" || true
+
+      - name: Hand off to the next ticker
+        if: ${{ !cancelled() }} # a ticker cancelled by its replacement must not spawn another
+        run: gh workflow run ticker.yml --ref "${GITHUB_REF_NAME}"
