@@ -5,7 +5,7 @@ channel feeds, Wikipedia pageviews and Yonhap/Soompi/Koreaboo headlines, scores 
 Korea moves before English-language coverage), and writes one static file, `public/trends.json`. The iOS app
 and WidgetKit extension read that file. No server, no accounts, no API keys required.
 
-**Live feed:** <https://taejunoh.com/seoulpulse/trends.json> (refreshed every 30 minutes). The iOS app defaults to
+**Live feed:** <https://taejunoh.com/seoulpulse/trends.json> (refreshed every 30 minutes by the `ticker.yml` workflow, which dispatches `pipeline.yml`). The iOS app defaults to
 this URL; for development, point Settings at a local server such as `http://localhost:8787/trends.json`.
 
 **Site:** <https://taejunoh.com/seoulpulse/> · [Privacy Policy](https://taejunoh.com/seoulpulse/privacy/) ·
@@ -62,7 +62,7 @@ which one it is showing. To serve the sample payload without running the pipelin
 | `site/` | committed static pages (landing, `privacy/`, `support/`); `pipeline.yml` copies them into `public/` on every deploy |
 | `public/` | output directory; `trends.json` is written here (gitignored except `.gitkeep`) |
 | `docs/` | `SPEC.md`, the JSON contract `trends.schema.json`, a valid `trends.example.json`, `DEPLOY.md` |
-| `.github/workflows/` | `pipeline.yml` (cron run and GitHub Pages deploy), `backend-ci.yml` (tests on push and PR), `social-draft.yml` (daily draft issue) |
+| `.github/workflows/` | `ticker.yml` (dispatches the pipeline every 30 minutes), `pipeline.yml` (run and GitHub Pages deploy), `backend-ci.yml` (tests on push and PR), `social-draft.yml` (daily draft issue) |
 
 ## Data sources and legal stance
 

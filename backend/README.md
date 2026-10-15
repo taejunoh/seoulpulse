@@ -107,7 +107,7 @@ which `cold_start` turns `false`.
 - **cron** (every 30 minutes):
   `*/30 * * * * cd /path/to/repo/backend && SP_CONTACT=https://… /path/to/uv run seoulpulse run >> var/cron.log 2>&1`.
   Overlapping runs are safe: a second run finds the `var/run.lock` flock held and exits 0.
-- **GitHub Actions**: `.github/workflows/pipeline.yml` runs on `7,22,37,52 * * * *` and on `workflow_dispatch`. It
+- **GitHub Actions**: `.github/workflows/ticker.yml` (one long job, re-dispatching itself every ~5h30m) dispatches `pipeline.yml` every 30 minutes, because the `schedule` trigger is unreliable here; `pipeline.yml` also keeps a backstop cron `7,22,37,52 * * * *`. It
   restores `backend/var` (and `public/`) from the Actions cache, runs the pipeline and deploys `public/` to
   GitHub Pages. Set the repo variable `SP_CONTACT`, optionally the secrets `YOUTUBE_API_KEY`,
   `NAVER_CLIENT_ID` and `NAVER_CLIENT_SECRET` (and the variables `SP_YOUTUBE_DAILY_UNITS`, `SP_NAVER_ENDPOINT`),

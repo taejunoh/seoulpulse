@@ -8,7 +8,7 @@ real-device test and the submit button.
 
 **Backend (GitHub Actions + Pages)**
 - Feed is live: https://taejunoh.com/seoulpulse/trends.json
-- Cron is `7,22,37,52 * * * *`: off :00/:30, and denser than needed because GitHub skips many scheduled runs on new repos (only 2 of 14 expected runs fired in the first 7 hours on `7,37`).
+- Cadence is driven by `ticker.yml`, a long-running job that dispatches `pipeline.yml` every 30 minutes and re-dispatches itself at about 5h30m. GitHub's `schedule` trigger fired only 2 of 14 expected runs early on and 0 of 5 in 75 minutes later. Backstop crons remain: `41 */3 * * *` on the ticker and `7,22,37,52 * * * *` on the pipeline.
 - `SP_CONTACT` variable is set to the repo URL.
 - `YOUTUBE_API_KEY` secret is set, so the API pass is active (budget 9,000 units/day or less). Six channels stay
   RSS-only because their uploads playlist is not available to the API.
@@ -49,7 +49,10 @@ real-device test and the submit button.
 
 - Next TestFlight uploads: `ios/scripts/testflight.sh` (automatic build number, export retry). See
   [DEPLOY.md](DEPLOY.md#4-testflight).
-- GitHub disables scheduled workflows after 60 days without repo activity. Push a commit or re-enable the
-  workflow in the Actions tab if the feed stops updating.
+- Check the ticker: `gh run list --workflow ticker.yml --repo taejunoh/seoulpulse` (one run should be in progress)
+  and `gh run list --workflow pipeline.yml`. Restart with `gh workflow run ticker.yml --repo taejunoh/seoulpulse`.
+- GitHub disables scheduled workflows after 60 days without repo activity. The ticker chain itself does not depend on
+  `schedule`, but its restart cron and the pipeline backstop cron do. Push a commit or re-enable the workflows in the
+  Actions tab if the feed stops updating.
 - If the Actions cache is evicted (7 days unused), history resets and the feed returns to cold start until it
   recalibrates; the social drafts carry a warning while that lasts.

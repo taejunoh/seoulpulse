@@ -8,7 +8,12 @@ set, and the app has never been signed. The default path is GitHub Actions + Git
 - Repo: `taejunoh/seoulpulse` (public).
 - Hosting: GitHub Pages via Actions, serving <https://taejunoh.com/seoulpulse/trends.json>.
 - Repository variable `SP_CONTACT` = `https://github.com/taejunoh/seoulpulse`.
-- Schedule: cron every 30 minutes (`.github/workflows/pipeline.yml`).
+- Schedule: `.github/workflows/ticker.yml` is one long job that dispatches `pipeline.yml` every 30 minutes and
+  re-dispatches itself at about 5h30m (before the 6h job limit). GitHub's `schedule` trigger alone fired too few runs on
+  this repo. Backstops: the ticker's own sparse cron (`41 */3 * * *`) restarts the chain if it dies, and the pipeline's
+  cron (`7,22,37,52 * * * *`) stays as an extra. Stop: disable the ticker in the Actions tab or
+  `gh workflow disable ticker.yml --repo taejunoh/seoulpulse` (disable `pipeline.yml` too to stop its cron). Restart:
+  `gh workflow run ticker.yml --repo taejunoh/seoulpulse`.
 - The iOS app's built-in default feed URL is the Pages URL above.
 - Static pages from `site/` (landing, privacy policy, support) are deployed alongside the feed:
   <https://taejunoh.com/seoulpulse/>, <https://taejunoh.com/seoulpulse/privacy/>,
@@ -21,7 +26,7 @@ set, and the app has never been signed. The default path is GitHub Actions + Git
 gh repo create seoulpulse --public --source=. --push     # or --private, see below
 ```
 
-**Public vs private.** `pipeline.yml` runs on `7,22,37,52 * * * *` (off the top of the hour; GitHub skips many scheduled runs on new repos, so the schedule is denser than the ~30-minute cadence actually observed), i.e. up to 96 runs a day. Each run has two jobs
+**Public vs private.** The ticker occupies one runner continuously: free on a public repo, but on a private repo it would burn Actions minutes nonstop (disable it there). `pipeline.yml` also has a cron that runs on `7,22,37,52 * * * *` (off the top of the hour; GitHub skips many scheduled runs on new repos, so the schedule is denser than the ~30-minute cadence actually observed), i.e. up to 96 runs a day. Each run has two jobs
 (`run` and `deploy-pages`), and each job is billed in whole minutes, so expect roughly 100 or more minutes a day,
 well over the 2,000 free minutes/month of a private repo. Public repos get unlimited Actions minutes. GitHub Pages
 on a private repo also needs a paid plan. Pick one:
@@ -31,8 +36,9 @@ on a private repo also needs a paid plan. Pick one:
   and set `SP_INTERVAL_SEC` to match so `next_update_hint` stays honest), or
 - skip Actions and host elsewhere (section 5).
 
-Two GitHub behaviors to know: scheduled workflows are best-effort and can run 5 to 15 minutes late, and on public
-repos GitHub disables the schedule after 60 days without repo activity (re-enable it in the Actions tab).
+Two GitHub behaviors to know: scheduled workflows are best-effort and can run 5 to 15 minutes late (or not at all), and on public
+repos GitHub disables schedules after 60 days without repo activity (re-enable them in the Actions tab). The ticker chain
+itself does not depend on `schedule`; only its restart cron and the pipeline backstop cron do.
 
 ## 2. Configure the repository
 
