@@ -21,7 +21,7 @@ set, and the app has never been signed. The default path is GitHub Actions + Git
 gh repo create seoulpulse --public --source=. --push     # or --private, see below
 ```
 
-**Public vs private.** `pipeline.yml` runs on `7,37 * * * *` (off the top of the hour, where GitHub delays scheduled runs), i.e. 48 runs a day. Each run has two jobs
+**Public vs private.** `pipeline.yml` runs on `7,22,37,52 * * * *` (off the top of the hour; GitHub skips many scheduled runs on new repos, so the schedule is denser than the ~30-minute cadence actually observed), i.e. up to 96 runs a day. Each run has two jobs
 (`run` and `deploy-pages`), and each job is billed in whole minutes, so expect roughly 100 or more minutes a day,
 well over the 2,000 free minutes/month of a private repo. Public repos get unlimited Actions minutes. GitHub Pages
 on a private repo also needs a paid plan. Pick one:

@@ -39,7 +39,7 @@ PLAYLIST_ITEMS_URL = f"{API_BASE}/playlistItems"
 CHANNELS_URL = f"{API_BASE}/channels"
 KEY_HEADER = "X-Goog-Api-Key"
 BATCH = 50
-RUN_CAP = 200              # 48 runs/day x 200 = 9,600 < 10,000 even if the daily ledger were lost
+RUN_CAP = 200              # daily ledger (9,000) is the real guard; if it were lost, Google's quotaExceeded stops the day
 DISCOVERY_SHARE = 0.5      # discovery may spend at most half of a run's units; statistics get the rest
 DISCOVERY_SLOTS = 12       # a channel is re-discovered once per 12 slots...
 SLOT_SEC = 1800            # ...of 30 minutes = every 6 hours

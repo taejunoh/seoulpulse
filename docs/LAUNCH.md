@@ -8,7 +8,7 @@ real-device test and the submit button.
 
 **Backend (GitHub Actions + Pages)**
 - Feed is live: https://taejunoh.com/seoulpulse/trends.json
-- Cron is `7,37 * * * *`. It was moved off :00/:30 because GitHub delayed or dropped the earlier schedule.
+- Cron is `7,22,37,52 * * * *`: off :00/:30, and denser than needed because GitHub skips many scheduled runs on new repos (only 2 of 14 expected runs fired in the first 7 hours on `7,37`).
 - `SP_CONTACT` variable is set to the repo URL.
 - `YOUTUBE_API_KEY` secret is set, so the API pass is active (budget 9,000 units/day or less). Six channels stay
   RSS-only because their uploads playlist is not available to the API.
