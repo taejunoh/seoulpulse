@@ -124,7 +124,7 @@ class YouTubeFetcher:
                 cache.append(CacheEntry(url, resp.etag, resp.last_modified, ctx.observed()))
 
         detail = f"RSS {ok}/{total} channels"
-        status = multi_unit_status(ok, total)   # RSS is the base; the API pass only enriches it
+        units_ok = ok
         api_snaps: list[ApiSnapshot] = []
         usage: list[ApiUsage] = []
         uploads_state: list[UploadsState] = []
@@ -132,6 +132,13 @@ class YouTubeFetcher:
             from .youtube_api import fetch_api_pass
 
             api = fetch_api_pass(ctx, videos, failed)
+            # A channel whose RSS feed failed but whose uploads playlist the API read this run is covered: its
+            # new uploads were discovered and its tracked videos got exact counts. So an RSS outage that the API
+            # bridges reads `degraded`/`ok` instead of `error` (spec §3.3 Status).
+            bridged = len(api.covered & failed)
+            if bridged:
+                units_ok += bridged
+                detail = f"RSS {ok}/{total} + API {bridged} channels"
             if api.superseded:
                 # The exact API count replaces the coarse RSS count for this run (one snapshot, not two).
                 videos = [replace(v, views=None) if v.video_id in api.superseded else v for v in videos]
@@ -139,8 +146,10 @@ class YouTubeFetcher:
             api_snaps = api.snapshots
             usage = [api.usage] if api.usage else []
             uploads_state = api.uploads_state
-            detail += " · " + api.detail()
+            # Keep the bridged form inside the 80-character detail: "RSS 2/77 + API 71 channels · 84 units (…)".
+            detail += " · " + (api.detail().removeprefix("API ") if bridged else api.detail())
             errors.extend(api.errors)
-        result = make_result(self.source_id, status, started, ctx.observed(), ok, total, detail, errors)
+        result = make_result(self.source_id, multi_unit_status(units_ok, total), started, ctx.observed(),
+                             units_ok, total, detail, errors)
         return FetchOutput(result=result, videos=videos, api_snapshots=api_snaps, http_cache=cache,
                            api_usage=usage, uploads_state=uploads_state)

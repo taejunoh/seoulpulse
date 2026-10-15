@@ -30,6 +30,7 @@ NEWS_HALF = 12.0
 NEWS_WIN = 48.0
 K_BASE = 0.676
 KO_LEAD_H = 6.0
+KO_EN_LOOKBACK_H = 24.0  # E = English mentions published at or after t_ko − 24 h (§5.4)
 W_YT, W_ACCEL, W_NEW, W_WIKI, W_NEWS = 0.35, 0.15, 0.15, 0.20, 0.15
 KF_BONUS = 6.0
 MIN_SCORE = 3.0
@@ -54,6 +55,7 @@ def clamp(x: float, lo: float, hi: float) -> float:
 class Snapshot:
     observed_at: datetime
     views: int
+    source: str = "rss"     # "rss" (coarse, cached feed count) | "api" (exact Data API count); never paired across
 
 
 @dataclass(frozen=True)
@@ -113,12 +115,15 @@ class VideoCalc:
     estimated: bool
     stale_h: float
     e: float
+    t_P: datetime | None = None          # newer end of the velocity pair (t_L unless the pair fell back, §5.2)
+    pair_source: str | None = None
 
     def as_dict(self) -> dict[str, Any]:
         return {
             "video_id": self.video.video_id, "kind": self.video.kind, "published_at": iso(self.video.published_at),
             "t_L": iso(self.t_L), "V_L": self.V_L, "age_L": self.age_L, "c_life": self.c_life,
-            "pair": self.has_pair, "t_O": iso(self.t_O) if self.t_O else None, "V_O": self.V_O, "vph": self.vph,
+            "pair": self.has_pair, "t_O": iso(self.t_O) if self.t_O else None, "V_O": self.V_O,
+            "t_P": iso(self.t_P) if self.t_P else None, "pair_source": self.pair_source, "vph": self.vph,
             "age_mid": self.age_mid, "c_recent": self.c_recent, "c": self.c, "I_raw": self.I_raw, "I": self.I,
             "r": self.r, "display_vph": self.display_vph, "estimated": self.estimated, "stale_h": self.stale_h,
             "e": self.e,
@@ -128,6 +133,29 @@ class VideoCalc:
 def is_candidate(v: Video, now: datetime) -> bool:
     return v.kind != "short" and v.kind in KIND_W and v.artist_id is not None \
         and v.published_at >= now - timedelta(days=TRACK_DAYS)
+
+
+def velocity_pair(snaps: Sequence[Snapshot]) -> tuple[Snapshot, Snapshot] | None:
+    """The (older, newer) snapshots for the recent velocity (§5.2), never mixing count sources.
+
+    `snaps` is sorted by time. The pair lies in [t_L−6h, t_L], spans ≥25 min and must grow (`V_newer > V_older`).
+    RSS counts are cached and coarse while API counts are exact, so a pair across sources would measure the gap
+    between the two counters, not views. The latest snapshot's source is tried first (with one source this is
+    exactly the single-series rule); if it has no valid pair, e.g. on the first run after the API takes over or
+    falls back to RSS, the other source's own newest snapshot in the window ends the pair.
+    """
+    if not snaps:
+        return None
+    lo = snaps[-1].observed_at - VEL_WIN
+    by_source: dict[str, list[Snapshot]] = {}
+    for s in snaps:
+        by_source.setdefault(s.source, []).append(s)
+    for series in sorted(by_source.values(), key=lambda ss: ss[-1].observed_at, reverse=True):
+        end = series[-1]
+        window = [s for s in series if lo <= s.observed_at <= end.observed_at - MIN_GAP]
+        if window and end.views > window[0].views:
+            return window[0], end
+    return None
 
 
 def calc_video(v: Video, now: datetime) -> VideoCalc | None:
@@ -143,15 +171,14 @@ def calc_video(v: Video, now: datetime) -> VideoCalc | None:
     age_L = max(0.25, hours(t_L - v.published_at))
     c_life = V_L * (1 - P) / ((age_L + T0) ** (1 - P) - T0 ** (1 - P))
 
-    lo, hi = t_L - VEL_WIN, t_L - MIN_GAP
-    window = [s for s in snaps if lo <= s.observed_at <= hi]
-    pair = window[0] if window and V_L > window[0].views else None
+    found = velocity_pair(snaps)
+    pair, end = found if found is not None else (None, None)
 
     vph = age_mid = c_recent = None
-    if pair is not None:
-        span = hours(t_L - pair.observed_at)
-        vph = (V_L - pair.views) / span
-        mid = pair.observed_at + (t_L - pair.observed_at) / 2
+    if pair is not None and end is not None:
+        span = hours(end.observed_at - pair.observed_at)
+        vph = (end.views - pair.views) / span
+        mid = pair.observed_at + (end.observed_at - pair.observed_at) / 2
         age_mid = max(0.0, hours(mid - v.published_at))
         c_recent = vph * (age_mid + T0) ** P
     c = c_recent if c_recent is not None else c_life
@@ -175,7 +202,7 @@ def calc_video(v: Video, now: datetime) -> VideoCalc | None:
         video=v, t_L=t_L, V_L=V_L, age_L=age_L, c_life=c_life, has_pair=pair is not None,
         t_O=pair.observed_at if pair else None, V_O=pair.views if pair else None, vph=vph, age_mid=age_mid,
         c_recent=c_recent, c=c, I_raw=I_raw, I=I, r=r, display_vph=display, estimated=estimated,
-        stale_h=stale_h, e=e,
+        stale_h=stale_h, e=e, t_P=end.observed_at if end else None, pair_source=end.source if end else None,
     )
 
 
@@ -370,7 +397,10 @@ def mention_age(m: Mention, now: datetime) -> float:
     return max(0.0, hours(now - m.published_at))
 
 
-def news_signal(mentions: Sequence[Mention], now: datetime, first_run_at: datetime | None) -> NewsCalc:
+def news_signal(mentions: Sequence[Mention], now: datetime, first_run_at: datetime | None,
+                en_coverage_from: datetime | None = None) -> NewsCalc:
+    """`en_coverage_from`: the earliest English headline we hold (None = unrestricted). The Korean-lead test only
+    uses Korean mentions whose 24 h English lookback lies inside that coverage (§5.4)."""
     raw = 0.0
     for m in mentions:
         a = mention_age(m, now)
@@ -396,10 +426,15 @@ def news_signal(mentions: Sequence[Mention], now: datetime, first_run_at: dateti
     ko_lead = no_en = False
     lead_h: int | None = None
     t_ko: datetime | None = None
-    K = [m for m in mentions if m.lang == "ko" and mention_age(m, now) <= NEWS_WIN]
+    # "No English mention since t_ko − 24 h" is only evidence if we held English headlines over that span. Feed
+    # backlogs differ (Yonhap ~3 days, Soompi ~2, Koreaboo ~half a day), so right after a cold start older
+    # Korean mentions would otherwise "lead" English coverage we simply never saw.
+    lookback = timedelta(hours=KO_EN_LOOKBACK_H)
+    K = [m for m in mentions if m.lang == "ko" and mention_age(m, now) <= NEWS_WIN
+         and (en_coverage_from is None or m.published_at >= en_coverage_from + lookback)]
     if any(mention_age(m, now) <= 24 for m in K):
         t_ko = min(m.published_at for m in K)
-        E = [m for m in mentions if m.lang == "en" and m.published_at >= t_ko - timedelta(hours=24)]
+        E = [m for m in mentions if m.lang == "en" and m.published_at >= t_ko - lookback]
         if not E:
             ko_lead = no_en = True
         else:
@@ -510,6 +545,7 @@ def score_artist(
     now: datetime,
     first_run_at: datetime | None,
     search: SearchSignal | None = None,
+    en_coverage_from: datetime | None = None,
 ) -> ArtistScore:
     candidates = sorted((v for v in videos if is_candidate(v, now)), key=lambda v: v.video_id)
     calcs = [c for c in (calc_video(v, now) for v in candidates) if c is not None]
@@ -523,7 +559,7 @@ def score_artist(
     en = wiki_lang_signal("en", artist.wiki_en, wiki.get(("en", artist.wiki_en)) if artist.wiki_en else None, today)
     wiki_z, s_wiki = wiki_signal(ko, en)
 
-    news = news_signal(mentions, now, first_run_at)
+    news = news_signal(mentions, now, first_run_at, en_coverage_from)
     klw = ko_lead_wiki(ko, en)
     s_search = search.s_search if search is not None and not search.missing else 0.0
     kls = ko_lead_search(search, en)
@@ -547,8 +583,10 @@ def score_all(
     now: datetime,
     first_run_at: datetime | None,
     search_by_artist: Mapping[str, SearchSignal] | None = None,
+    en_coverage_from: datetime | None = None,
 ) -> list[ArtistScore]:
-    """`search_by_artist` is None when the Naver source is not configured (no search term at all)."""
+    """`search_by_artist` is None when the Naver source is not configured (no search term at all).
+    `en_coverage_from` is the earliest stored English headline (see `news_signal`); None = unrestricted."""
     def search_for(aid: str) -> SearchSignal | None:
         if search_by_artist is None:
             return None
@@ -556,7 +594,7 @@ def score_all(
 
     return [
         score_artist(a, videos_by_artist.get(a.id, ()), wiki, mentions_by_artist.get(a.id, ()), now, first_run_at,
-                     search_for(a.id))
+                     search_for(a.id), en_coverage_from)
         for a in artists
     ]
 

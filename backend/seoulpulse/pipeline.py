@@ -218,7 +218,7 @@ def load_scoring_inputs(store: Store, seed: Seed, matcher: AliasMatcher, now: da
         ch = channels.get(r.channel_id)
         videos_by_artist[r.artist_id].append(Video(
             video_id=r.video_id, artist_id=r.artist_id, kind=r.kind, title=r.title, published_at=r.published_at,
-            snapshots=tuple(Snapshot(t, v) for t, v in snaps.get(r.video_id, [])), url=r.url,
+            snapshots=tuple(Snapshot(t, v, src) for t, v, src in snaps.get(r.video_id, [])), url=r.url,
             channel_id=r.channel_id, channel_name=ch.display_name if ch else "",
         ))
     wiki = store.wiki_series((now - timedelta(days=20)).date())
@@ -319,7 +319,9 @@ def _run(config: Config, store: Store, seed: Seed, *, now, sources, publish, tra
         search = None
         if "naver" in optional:      # unconfigured: no search term at all, even if old rows linger
             search = {aid: search_signal(row, now) for aid, row in store.search_rows().items()}
-        scores = score_all(artist_infos(seed), videos_by_artist, wiki, mentions, now, first_run_at, search)
+        # No English headline stored yet means no English coverage at all: then no Korean mention can "lead".
+        en_from = store.earliest_headline_at("en") or now
+        scores = score_all(artist_infos(seed), videos_by_artist, wiki, mentions, now, first_run_at, search, en_from)
         ranked = rank_scores(scores)
         basis = store.rank_basis(now, config.rank_compare_hours)
         apply_rank_changes(ranked, basis_ranks(basis[1]) if basis else None)

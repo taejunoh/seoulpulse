@@ -84,6 +84,7 @@ Findings from building the roster, which are now design rules:
 - **Korean Wikipedia often uses Latin canonical titles** (`에스파` → `Aespa`, `스트레이 키즈` → `Stray_Kids`), and several Korean names (`더보이즈`, `레드벨벳`, `캣츠아이`, `백현`) are disambiguation pages. The pageviews API counts only the exact title, not redirects, so only canonical titles may be stored.
 - **Ambiguous Korean words must not be aliases.** The deny-list, where the validator hard-fails, is `있지 아이들 정국 지수 빌리 비비 아홉 청하 방탄 진 뷔`. Examples: `있지` (ITZY; "there is"), `아이들` ("children"), `정국` ("political situation"), `지수` ("index"), `아홉` (AHOF; "nine"). Use a group-prefixed form such as `방탄소년단 정국`, or the English alias only.
 - **English-word names need `case_sensitive: true`.** Examples: `TWICE`, `TREASURE`, `KISS OF LIFE`, `tripleS`, `Red Velvet`, `OH MY GIRL`, `Dreamcatcher`, `CLOSE YOUR EYES`. Otherwise "a national treasure" in a Soompi headline counts as a mention.
+- **Yonhap mixes scripts.** It writes `NCT 위시` and `NCT 드림`, not `엔시티 위시`/`NCT WISH`, so those mixed forms are aliases too (found in the live feed 2026-10-15: two NCT WISH headlines matched nobody).
 
 ### 2.2 `backend/data/channels.yaml` (label & broadcaster channels)
 ```yaml
@@ -106,11 +107,13 @@ Artist channels come from `artists[].youtube` and are kind `artist` with `owner 
 - **Video attribution:** a video on an `artist` channel goes to its owner. On a `label`/`broadcaster` channel, it goes to the artist of the accepted match with the smallest start offset. With no match, `artist_id = NULL` and the video is ignored in scoring. Attribution is recomputed every run for videos seen in the last 30 days, so alias fixes apply retroactively.
 - **`classify_video(title, url)`**, first rule wins, regexes case-insensitive on the normalized title:
   1. `short`: url contains `/shorts/`. Excluded from scoring entirely. (Label feeds are about 70% Shorts.)
-  2. `teaser`: `teaser|티저|trailer|트레일러|spoiler|스포일러|highlight medley|하이라이트 메들리|concept film|preview|sneak peek|coming soon`
+  1b. `other`: the acts' own variety series, `time to twice|going seventeen|to do x txt|skz code|run bts|bangtan bomb|dada-itzy`. An episode announced with "Teaser" is not a comeback teaser (live 2026-10-14: `[TIME TO TWICE] … Crossing Teaser` produced "New teaser out: comeback incoming").
+  2. `teaser`: `teaser|티저|trailer|트레일러|spoiler|스포일러|highlight medley|하이라이트 메들리|concept film|preview|sneak peek|coming soon|teasing (video|film|clip)` (HYBE titles comeback teasers "Teasing Video")
   3. `other`: `behind|비하인드|making|메이킹|reaction|리액션|vlog|브이로그|interview|인터뷰|unboxing`
   4. `mv`: `\bm/?v\b|music video|뮤직비디오|official video`
   5. `perf`: `performance|퍼포먼스|dance practice|안무|choreography|special video|visualizer|lyric video|official audio|live clip|relay dance|릴레이 댄스|fancam|직캠`
   6. `show`: `엠카운트다운|m countdown|인기가요|inkigayo|music bank|뮤직뱅크|음악중심|music core|show champion|쇼챔피언|the show|더쇼|studio choom|it's live|방송|ep\.\s?\d+`
+  6b. `perf`: `\bstage\b|스테이지`. A stage that is not a Korean music-show upload (a concert "Stage Video", "Stage Cam @ iHeartRadio", an overseas TV "stage @ CDTV") is a performance. It runs after rule 6, so "Comeback Stage | M COUNTDOWN" stays `show`, and "backstage" never matches.
   7. `other`: everything else
 - **`extract_song(title)`**: return the inner text of the first quoted segment, chosen by the earliest opening character among `‘’ “” 「」 『』 《》 <>`, ASCII `"…"`, and ASCII `'…'`. Labels mix quote styles (`‘DREAMSCAPE'`), so `‘` may close with `’` or `'`, and `“` with `”` or `"`. For ASCII `'…'`, use `'([^']+?)'(?![A-Za-z])`. If there is no quoted segment, take the text after ` _ ` (the 1theK form `[MV] IU(아이유) _ Love wins all`), else the text after ` - `, then strip any trailing `(…)` or `[…]`. Otherwise return `None`. Truncate to 24 characters with `…`.
 
@@ -182,7 +185,7 @@ Status rule for multi-unit sources: `ok` when all units succeeded, `degraded` wh
   | steady state: discovery ~7 (rotation) + statistics ~1–2.5k tracked ids / 50 | ~30–60 | ~1,500–2,900 |
   | hard caps | ≤200 | ≤9,000 (of 10,000) |
 - **Secrets.** The key is sent only as the `X-Goog-Api-Key` header, never as a `key=` URL parameter, so it cannot appear in URLs, logged exceptions, `source_runs.error`, the DB or `trends.json` (`redact()` remains as a backstop).
-- **Status.** The source status stays the RSS status (§3.2); API problems appear in `errors` and `detail`, e.g. `RSS 77/77 channels · API 41 units (2310/9000 today)`.
+- **Status.** Units are channels (§3.2). A channel counts as fetched when its RSS feed answered, or when its RSS feed failed but the API read its uploads playlist this run (its new uploads were discovered and its tracked videos got exact counts). So an RSS outage that the API bridges reads `ok`/`degraded`, not `error`, and `last_success_at` keeps moving; channels the API cannot read (`RSS-only`, discovery cap, deadline) still count as failed. API problems appear in `errors` and `detail`, e.g. `RSS 77/77 channels · API 41 units (2310/9000 today)`, or during an RSS outage `RSS 2/77 + API 71 channels · 84 units (393/9000 today) · 6 channels RSS-only`. Without a key the status is the RSS status, unchanged. (Live 2026-10-14 23:50 UTC on: YouTube's feed server answered 404 for every channel; the API kept all data fresh while the source read `error` for hours.)
 - **Terms.** YouTube API Services policies allow storing API data for at most 30 days without refreshing it: `source='api'` snapshots are deleted after 30 days, and videos only the API ever saw are deleted 30 days after their last refresh (§4).
 
 ### 3.4 Wikipedia pageviews (`source_id = "wikipedia"`)
@@ -286,7 +289,8 @@ For each eligible video, all of the following must hold:
 
 Define `t_L, V_L` as the latest snapshot and `age_L = max(0.25, hours(t_L − published_at))`.
 - Lifetime fit (the cold-start estimate): `c_life = V_L·(1−P) / ((age_L+T0)^(1−P) − T0^(1−P))`.
-- Recent pair: take the oldest snapshot `(t_O, V_O)` with `t_L−6h ≤ t_O ≤ t_L−25min`. It is valid only if `V_L > V_O`. The guard exists because RSS stats can freeze between polls, and a zero delta must not read as zero velocity. Then:
+- Recent pair: take the oldest snapshot `(t_O, V_O)` with `t_L−6h ≤ t_O ≤ t_L−25min`. It is valid only if `V_L > V_O`. The guard exists because RSS stats can freeze between polls, and a zero delta must not read as zero velocity.
+  - **One count source per pair.** Snapshots carry their source (`rss` = the feed's cached count, `api` = the exact Data API count, §4), and a pair never mixes them: across sources it would measure the gap between the two counters, not views. The pair is taken within the latest snapshot's source. If that source has no valid pair, as on the first run after the API takes over or when the API falls back to RSS (quota, key), the other source's newest snapshot `(t_P, V_P)` in `[t_L−6h, t_L]` ends the pair instead, with its own oldest `t_O ≥ t_L−6h`, `t_O ≤ t_P−25min` and `V_P > V_O`; below, read `t_L, V_L` as `t_P, V_P` for vph and age_mid only (c_life, staleness and the displayed views keep the latest snapshot). With one source (keyless, §5.8) this is exactly the single-series rule.
   - `vph = (V_L−V_O)/hours(t_L−t_O)`
   - `age_mid = hours((t_O+t_L)/2 − published_at)`
   - `c_recent = vph·(age_mid+T0)^P`
@@ -316,7 +320,8 @@ Define `t_L, V_L` as the latest snapshot and `age_L = max(0.25, hours(t_L − pu
   - At scoring time the stored row is missing if it has no z or `D < target − 2 d` (target = KST yesterday at `now`). `S_search = clamp(max(z_s, 0)/6, 0, 1)`; 0 when missing or not configured.
 
 ### 5.4 Korea-first flag
-- `ko_lead_news`: let K be the Korean mentions with age ≤48 h. At least one of them must have age ≤24 h. Let `t_ko = min(published_at over K)` and E be the English mentions with `published_at ≥ t_ko − 24h`. The flag is true when E is empty or `min(E.published_at) ≥ t_ko + 6h`.
+- `ko_lead_news`: let K be the Korean mentions with age ≤48 h **and `published_at ≥ en_from + 24h`**, where `en_from` is the `published_at` of the oldest stored English headline (`now` when there is none). At least one of them must have age ≤24 h. Let `t_ko = min(published_at over K)` and E be the English mentions with `published_at ≥ t_ko − 24h`. The flag is true when E is empty or `min(E.published_at) ≥ t_ko + 6h`.
+  - Why `en_from`: "no English mention since `t_ko − 24h`" is evidence only if we held English headlines over that span. The feeds' backlogs differ (Yonhap ~3 days, Soompi ~2, Koreaboo ~half a day), so after a cold start an old Yonhap item "led" English coverage that was never collected. Live 2026-10-14: BTS showed `Korean press led English by 20h` (+6, rank 1) for 10+ hours, from a Yonhap backlog item 38 h older than the first run, while Soompi had covered the actual story 9 h *before* Yonhap. Once the DB holds 3+ days of English headlines the rule is unchanged. Pure scoring calls without `en_from` (the §5.8 example) are unrestricted.
 - `ko_lead_wiki`: `z_ko ≥ 2.0` (after the gate) and (`z_en` is missing or `z_en < 1.0`).
 - `ko_lead_search` (only when configured): `z_s ≥ 2.0` and (`z_en` is missing or `z_en < 1.0`): a Korean search spike while English Wikipedia is quiet.
 - `korea_first = ko_lead_news or ko_lead_wiki or ko_lead_search`. `S_kf = 1` if true, else 0.
@@ -690,6 +695,7 @@ Korea-first K-pop Trends — TOP 5 (Oct 14, 18:00 KST)
 - `test_http.py`: 503 then 200 retries; `Retry-After` honored with a fake sleep; 404 is not retried.
 - `test_publish_contract.py`: a generated payload and `docs/trends.example.json` both validate against `docs/trends.schema.json`. Ranks are contiguous. The write is atomic: the temp file is used and the destination is never partially written.
 - `test_social.py`: golden strings from §9; weighted ≤280; ≤500.
+- `test_live_audit.py` (live-feed audit 2026-10-15): pairs never mix `rss`/`api` counts and fall back to the other source's own pair; an RSS outage bridged by the API is `ok`/`degraded`, not `error`; no Korean lead from mentions older than the English coverage; Yonhap's `NCT 위시`; stage videos → perf; "Teasing Video" → teaser; variety-series teasers → other.
 - `test_youtube_api.py`: no key → no calls; discovery + exact stats + RSS-count replacement; Shorts rule; rotation covers every channel once per 6 h; per-run and per-day caps are hard ceilings (ledger == calls); quota-exhausted and rejected-key stops; the key only in the `X-Goog-Api-Key` header and never in URLs, errors, the DB, `trends.json` or logs; 30-day API retention.
 - `test_naver.py`: absent/partial keys are a no-op (5 sources, no `signals.search`); end-to-end with a fake DataLab (17 batched requests, headers, body limits, 6th source, schema-valid, §5.9 worked example, R3S/R5S); no raw series and no secrets stored; daily cadence and 2 h re-poll; HUB→legacy fallback; rejected credentials, 429 and timeouts isolated; daily/run caps; Naver alone never counts as a successful run; the LLM never sees Naver values.
 - Manual live smoke run, not in CI: `resolve-channels` → `validate-seed --online` → `run`. It must produce ≥10 items in under 5 minutes, and a second run 30 minutes later must report `cold_start:false`.

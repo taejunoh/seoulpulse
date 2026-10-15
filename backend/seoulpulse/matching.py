@@ -109,9 +109,14 @@ class AliasMatcher:
 # ---------------------------------------------------------------------------- classify_video
 
 _RULES: tuple[tuple[str, re.Pattern[str]], ...] = (
+    # Addition to spec §2.3 (rule 1b): the acts' own variety series are `other` even when the episode is
+    # announced with a "Teaser" ("[TIME TO TWICE] 트둥의 숲 TDOONG's Crossing Teaser" read as a comeback teaser:
+    # "New teaser out: comeback incoming").
+    ("other", re.compile(
+        r"time to twice|going seventeen|to do x txt|skz code|run bts|bangtan bomb|dada-itzy", re.IGNORECASE)),
     ("teaser", re.compile(
         r"teaser|티저|trailer|트레일러|spoiler|스포일러|highlight medley|하이라이트 메들리|concept film"
-        r"|preview|sneak peek|coming soon", re.IGNORECASE)),
+        r"|preview|sneak peek|coming soon|teasing (?:video|film|clip)", re.IGNORECASE)),
     ("other", re.compile(
         r"behind|비하인드|making|메이킹|reaction|리액션|vlog|브이로그|interview|인터뷰|unboxing", re.IGNORECASE)),
     ("mv", re.compile(r"\bm/?v\b|music video|뮤직비디오|official video", re.IGNORECASE)),
@@ -126,6 +131,10 @@ _RULES: tuple[tuple[str, re.Pattern[str]], ...] = (
     ("show", re.compile(
         r"엠카운트다운|m\s?countdown|인기가요|inkigayo|music\s?bank|뮤직뱅크|음악중심|music\s?core|show!?\s?champion"
         r"|쇼챔피언|\bthe show\b|더쇼|studio choom|it['’]s live|방송", re.IGNORECASE)),
+    # Addition to spec §2.3 (rule 6b): a stage that is not a Korean music-show upload (concert "Stage Video",
+    # overseas TV "stage @ CDTV") is a performance, not "other". It runs after `show`, so "Comeback Stage |
+    # M COUNTDOWN" stays a music-show stage; "backstage" has no word boundary and never matches.
+    ("perf", re.compile(r"\bstage\b|스테이지", re.IGNORECASE)),
 )
 
 VIDEO_KINDS = ("short", "mv", "perf", "teaser", "show", "other")

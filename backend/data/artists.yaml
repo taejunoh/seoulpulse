@@ -48,13 +48,13 @@ artists:
   - id: nct-dream
     name: "NCT DREAM"
     name_ko: "엔시티 드림"
-    aliases: ["NCT DREAM", "엔시티 드림"]
+    aliases: ["NCT DREAM", "엔시티 드림", "NCT 드림"]
     youtube: ["@NCTDREAM"]
     wiki: {en: "NCT Dream", ko: "NCT DREAM"}
   - id: nct-wish
     name: "NCT WISH"
     name_ko: "엔시티 위시"
-    aliases: ["NCT WISH", "엔시티 위시"]
+    aliases: ["NCT WISH", "엔시티 위시", "NCT 위시"]
     youtube: ["@NCTWISH"]
     wiki: {en: "NCT Wish", ko: "NCT WISH"}
   - id: wayv

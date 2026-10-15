@@ -217,23 +217,25 @@ class Store:
     def update_video_attribution(self, video_id: str, kind: str, artist_id: str | None) -> None:
         self.conn.execute("UPDATE videos SET kind=?, artist_id=? WHERE video_id=?", (kind, artist_id, video_id))
 
-    def scoring_videos(self, since: datetime) -> tuple[list[VideoRow], dict[str, list[tuple[datetime, int]]]]:
+    def scoring_videos(self, since: datetime) -> tuple[list[VideoRow], dict[str, list[tuple[datetime, int, str]]]]:
+        """Scoring candidates and their snapshots as (observed_at, views, source), oldest first."""
         rows = self.conn.execute(
             "SELECT * FROM videos WHERE artist_id IS NOT NULL AND kind != 'short' AND published_at >= ?"
             " ORDER BY video_id",
             (iso(since),),
         ).fetchall()
         videos = [_video_row(r) for r in rows]
-        snaps: dict[str, list[tuple[datetime, int]]] = defaultdict(list)
+        snaps: dict[str, list[tuple[datetime, int, str]]] = defaultdict(list)
         if videos:
             snap_rows = self.conn.execute(
-                "SELECT s.video_id, s.observed_at, s.views FROM video_snapshots s JOIN videos v USING(video_id)"
+                "SELECT s.video_id, s.observed_at, s.views, s.source FROM video_snapshots s"
+                " JOIN videos v USING(video_id)"
                 " WHERE v.artist_id IS NOT NULL AND v.kind != 'short' AND v.published_at >= ?"
                 " ORDER BY s.video_id, s.observed_at",
                 (iso(since),),
             ).fetchall()
             for r in snap_rows:
-                snaps[r["video_id"]].append((parse_iso(r["observed_at"]), int(r["views"])))
+                snaps[r["video_id"]].append((parse_iso(r["observed_at"]), int(r["views"]), r["source"]))
         return videos, snaps
 
     def api_candidate_ids(self, now: datetime) -> tuple[str, ...]:
@@ -292,6 +294,11 @@ class Store:
             (h.headline_id, h.source_id, h.lang, h.title, h.url, iso(published), iso(first_seen)),
         )
         return cur.rowcount > 0
+
+    def earliest_headline_at(self, lang: str) -> datetime | None:
+        """published_at of the oldest stored headline in `lang`: where our coverage of that language starts."""
+        row = self.conn.execute("SELECT MIN(published_at) AS t FROM headlines WHERE lang=?", (lang,)).fetchone()
+        return parse_iso(row["t"]) if row and row["t"] else None
 
     def headlines_since(self, since: datetime) -> list[HeadlineRow]:
         rows = self.conn.execute(

@@ -209,6 +209,7 @@ class ApiPass:
     errors: list[str] = field(default_factory=list)
     flags: list[str] = field(default_factory=list)
     uploads_state: list[UploadsState] = field(default_factory=list)
+    covered: set[str] = field(default_factory=set)      # channels whose uploads playlist was read this run
     exhausted: bool = False
     day: date | None = None
 
@@ -340,6 +341,7 @@ def fetch_api_pass(ctx: RunContext, rss_videos: list[VideoObs], failed_channels:
             except (ValueError, UnicodeDecodeError, AttributeError) as exc:
                 p.errors.append(f"API uploads {cid}: bad JSON {exc}"[:200])
                 return "failed"
+            p.covered.add(cid)
             for up in found:
                 if (up.video_id in rss_ids or up.video_id in ctx.store.known_videos or up.video_id in uploads
                         or not (cutoff <= up.published_at <= ctx.now)
