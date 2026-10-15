@@ -14,6 +14,12 @@ set, and the app has never been signed. The default path is GitHub Actions + Git
   cron (`7,22,37,52 * * * *`) stays as an extra. Stop: disable the ticker in the Actions tab or
   `gh workflow disable ticker.yml --repo taejunoh/seoulpulse` (disable `pipeline.yml` too to stop its cron). Restart:
   `gh workflow run ticker.yml --repo taejunoh/seoulpulse`.
+- Staleness watchdog: before each dispatch the ticker fetches the live `trends.json` and checks `generated_at`. If it is
+  older than 75 minutes (or the fetch/parse fails) it opens one issue labelled `feed-stale` (title
+  `Feed stale: last update <time> (<N> min ago)`), adding a comment at most every 3 hours while it stays open. When the
+  feed is fresh again it comments "Recovered" and closes the issue. This needs the `issues: write` permission in
+  `ticker.yml`; watchdog errors never stop the dispatch loop. It only runs while the ticker is alive, so a dead chain is
+  still caught by the ticker's restart cron, not by the watchdog.
 - The iOS app's built-in default feed URL is the Pages URL above.
 - Static pages from `site/` (landing, privacy policy, support) are deployed alongside the feed:
   <https://taejunoh.com/seoulpulse/>, <https://taejunoh.com/seoulpulse/privacy/>,

@@ -51,6 +51,10 @@ real-device test and the submit button.
   [DEPLOY.md](DEPLOY.md#4-testflight).
 - Check the ticker: `gh run list --workflow ticker.yml --repo taejunoh/seoulpulse` (one run should be in progress)
   and `gh run list --workflow pipeline.yml`. Restart with `gh workflow run ticker.yml --repo taejunoh/seoulpulse`.
+- Watchdog: the ticker checks the live feed's `generated_at` before each dispatch and opens/closes a `feed-stale` GitHub
+  issue (stale = older than 75 minutes or unreadable; one open issue, a comment at most every 3 hours, auto-closed with
+  "Recovered" when fresh). Look at open `feed-stale` issues first when the feed seems stuck, then restart with the
+  commands above.
 - GitHub disables scheduled workflows after 60 days without repo activity. The ticker chain itself does not depend on
   `schedule`, but its restart cron and the pipeline backstop cron do. Push a commit or re-enable the workflows in the
   Actions tab if the feed stops updating.
