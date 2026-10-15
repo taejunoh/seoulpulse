@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import socket
+import threading
 from dataclasses import replace
 from datetime import UTC, datetime
 from pathlib import Path
@@ -60,18 +61,31 @@ def no_network(monkeypatch, request):
 
 
 class FakeClock:
-    """Monotonic clock + sleep that only advance when sleep() is called."""
+    """Monotonic clock + sleep that only advance when sleep() is called (or a test bumps `t`).
+
+    Each thread has its own timeline, so sleeps on concurrent threads overlap as they do on a real clock instead
+    of adding up. The thread that created the clock sleeps on the shared base `t`; any other thread (the
+    pipeline's fetcher threads) accumulates its sleeps privately on top of `t`, and never moves the time seen by
+    the creator or by its sibling threads. With one shared counter, the Wikipedia fetcher's fake retry backoff
+    landed inside whatever request another fetcher thread had in flight and tripped HttpClient's 20 s per-attempt
+    body budget whenever the GIL interleaved the threads that way.
+    """
 
     def __init__(self, start: float = 1000.0):
         self.t = start
         self.sleeps: list[float] = []
+        self._creator = threading.get_ident()
+        self._thread = threading.local()      # .elapsed: this (non-creator) thread's own sleeps
 
     def __call__(self) -> float:
-        return self.t
+        return self.t + getattr(self._thread, "elapsed", 0.0)
 
     def sleep(self, s: float) -> None:
         self.sleeps.append(s)
-        self.t += max(0.0, s)
+        if threading.get_ident() == self._creator:
+            self.t += max(0.0, s)
+        else:
+            self._thread.elapsed = getattr(self._thread, "elapsed", 0.0) + max(0.0, s)
 
 
 @pytest.fixture
