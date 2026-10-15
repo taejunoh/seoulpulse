@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-10-14T05:10:00Z",
+  "generated_at": "2026-10-15T04:15:00Z",
   "channels": {
     "@1theK": {
       "channel_id": "UCweOkPb1wVVH0Q0Tlj4a5Pw",
@@ -11,25 +11,20 @@
       "title": "aespa",
       "resolved_at": "2026-10-14T05:10:00Z"
     },
-    "@AHOF": {
-      "channel_id": "UCyCjqvqcQO5Q2wnazx8dkzA",
+    "@AHOF_official": {
+      "channel_id": "UCwoSFXX8kraikB-WClx2pVQ",
       "title": "AHOF",
-      "resolved_at": "2026-10-14T05:10:00Z"
+      "resolved_at": "2026-10-15T04:15:00Z"
     },
     "@AKMU": {
       "channel_id": "UCIcXK1CI8URMIqNO_1cehiQ",
       "title": "AKMU",
       "resolved_at": "2026-10-14T05:10:00Z"
     },
-    "@ALLDAYPROJECT": {
-      "channel_id": "UC97HzlnJULHjVHRKrw1MpYA",
-      "title": "ALL DAY PROJECT",
-      "resolved_at": "2026-10-14T05:10:00Z"
-    },
-    "@Apink": {
-      "channel_id": "UC3y-P13TIRCXu7rF8928KGA",
-      "title": "Apink",
-      "resolved_at": "2026-10-14T05:10:00Z"
+    "@ALLDAY_PROJECT": {
+      "channel_id": "UCKOY4n0sv1pAPs5E4LxtSXQ",
+      "title": "ALLDAY PROJECT",
+      "resolved_at": "2026-10-15T04:15:00Z"
     },
     "@ATEEZofficial": {
       "channel_id": "UC2e4Ukj5Pfr7cb3KpJAFBdQ",
@@ -76,11 +71,6 @@
       "title": "CRAVITY",
       "resolved_at": "2026-10-14T05:10:00Z"
     },
-    "@CUBEentertainment": {
-      "channel_id": "UCPdhGatSP8Enex8128Q4t-g",
-      "title": "Cube Entertainment",
-      "resolved_at": "2026-10-14T05:10:00Z"
-    },
     "@DAY6official": {
       "channel_id": "UCp-pqXsizklX3ZHvLxXyhxw",
       "title": "DAY6",
@@ -116,10 +106,10 @@
       "title": "IVE",
       "resolved_at": "2026-10-14T05:10:00Z"
     },
-    "@iznaofficial": {
-      "channel_id": "UCDdv5hfWUYWZEXbs2Nw3mjg",
-      "title": "IZNA",
-      "resolved_at": "2026-10-14T05:10:00Z"
+    "@izna_offcl": {
+      "channel_id": "UCfbYNlxgLuKJXQZEhkMmaCQ",
+      "title": "izna (이즈나)",
+      "resolved_at": "2026-10-15T04:15:00Z"
     },
     "@jennierubyjane": {
       "channel_id": "UCNYi_zGmR519r5gYdOKLTjQ",
@@ -131,20 +121,25 @@
       "title": "JYP Entertainment",
       "resolved_at": "2026-10-14T05:10:00Z"
     },
-    "@KATSEYE": {
-      "channel_id": "UC2ff-9LhZKnDnw9XWHUOc_A",
-      "title": "Katseye",
-      "resolved_at": "2026-10-14T05:10:00Z"
+    "@katseyeworld": {
+      "channel_id": "UCA61H4fWOMHikLcUFKyQUog",
+      "title": "KATSEYE",
+      "resolved_at": "2026-10-15T04:15:00Z"
     },
     "@kbskpop": {
       "channel_id": "UCeLPm9yH_a_QH8n6445G-Ow",
       "title": "KBS Kpop",
       "resolved_at": "2026-10-14T05:10:00Z"
     },
-    "@KiiiKiiiofficial": {
-      "channel_id": "UCTctR_Fwd1fxinR4xJJEA-A",
-      "title": "Kiiikiii",
-      "resolved_at": "2026-10-14T05:10:00Z"
+    "@kep1er_offcl": {
+      "channel_id": "UC8whlOg70m2Yr3qSMjUhh0g",
+      "title": "Kep1er",
+      "resolved_at": "2026-10-15T04:15:00Z"
+    },
+    "@KiiiKiii_starship": {
+      "channel_id": "UCaHwGJXFb28TekZMf7iFg5Q",
+      "title": "KiiiKiii",
+      "resolved_at": "2026-10-15T04:15:00Z"
     },
     "@KISSOFLIFE_official": {
       "channel_id": "UCvEEeBssb4XxIfWWIB8IjMw",
@@ -176,10 +171,10 @@
       "title": "MEOVV",
       "resolved_at": "2026-10-14T05:10:00Z"
     },
-    "@MnetKpop": {
-      "channel_id": "UCqJ3rYYs-n5blu6JxpciQjA",
+    "@Mnet": {
+      "channel_id": "UCbD8EppRX3ZwJSou-TVo90A",
       "title": "Mnet K-POP",
-      "resolved_at": "2026-10-14T05:10:00Z"
+      "resolved_at": "2026-10-15T04:15:00Z"
     },
     "@MONSTAX": {
       "channel_id": "UCZvCP6sWj75MwpUP4LVtpNw",
@@ -221,6 +216,11 @@
       "title": "i-dle (아이들)",
       "resolved_at": "2026-10-14T05:10:00Z"
     },
+    "@officialapink": {
+      "channel_id": "UCmW1Pq56lA-k-GWpX1z8WPg",
+      "title": "Apink (에이핑크)",
+      "resolved_at": "2026-10-15T04:15:00Z"
+    },
     "@OfficialBTOB": {
       "channel_id": "UCgB7A457ULlgm5c3948vr-w",
       "title": "BTOB 비투비 (Official YouTube Channel)",
@@ -241,10 +241,10 @@
       "title": "SEVENTEEN",
       "resolved_at": "2026-10-14T05:10:00Z"
     },
-    "@QWER_Band": {
-      "channel_id": "UCJYDRhbinaV44l7MskyCPdQ",
-      "title": "Qwer Band",
-      "resolved_at": "2026-10-14T05:10:00Z"
+    "@QWER_Band_official": {
+      "channel_id": "UCgD0APk2x9uBlLM0UsmhQjw",
+      "title": "QWER",
+      "resolved_at": "2026-10-15T04:15:00Z"
     },
     "@RedVelvet": {
       "channel_id": "UCk9GmdlDTBfgGRb7vXeRMoQ",
@@ -301,15 +301,20 @@
       "title": "SUPER JUNIOR",
       "resolved_at": "2026-10-14T05:10:00Z"
     },
-    "@TAEMIN": {
-      "channel_id": "UCkwHE8TVk8RGpW50dDUZw1Q",
-      "title": "taemin",
-      "resolved_at": "2026-10-14T05:10:00Z"
+    "@taemin_xoalsox": {
+      "channel_id": "UCa2YkG6KvkGXJd5UmvZbXGw",
+      "title": "태민 (TAEMIN)",
+      "resolved_at": "2026-10-15T04:15:00Z"
     },
     "@THEBLACKLABEL": {
       "channel_id": "UCg8ZzloDPTrOiGztK0C9txQ",
       "title": "THEBLACKLABEL",
       "resolved_at": "2026-10-14T05:10:00Z"
+    },
+    "@theunitedcube": {
+      "channel_id": "UC3lz95UPhKJW1aS3_za6SuQ",
+      "title": "United CUBE (CUBE Entertainment Official YouTube Channel)",
+      "resolved_at": "2026-10-15T04:15:00Z"
     },
     "@TREASURE": {
       "channel_id": "UCx9hXYOCvUYwrprEqe4ZQHA",
@@ -336,15 +341,10 @@
       "title": "TOMORROW X TOGETHER OFFICIAL",
       "resolved_at": "2026-10-14T05:10:00Z"
     },
-    "@UNIS": {
-      "channel_id": "UCU3s8CYosQHpV0fRbqi15wA",
+    "@unis_offcl": {
+      "channel_id": "UCspnElmzSLPhrZJDG9v7JWw",
       "title": "UNIS",
-      "resolved_at": "2026-10-14T05:10:00Z"
-    },
-    "@wakeone": {
-      "channel_id": "UCPm_zFkmbHXJKuKbgq2FSDg",
-      "title": "WAKE ONE",
-      "resolved_at": "2026-10-14T05:10:00Z"
+      "resolved_at": "2026-10-15T04:15:00Z"
     },
     "@WayV": {
       "channel_id": "UC-ZHt5Zgadfx-B1CM63Lqew",
@@ -354,11 +354,6 @@
     "@weareoneEXO": {
       "channel_id": "UCzCedBCSSltI1TFd3bKyN6g",
       "title": "EXO",
-      "resolved_at": "2026-10-14T05:10:00Z"
-    },
-    "@XdinaryHeroes": {
-      "channel_id": "UCDhnnyC4WIZuuaEXHdXtlXA",
-      "title": "Xdinary heroes",
       "resolved_at": "2026-10-14T05:10:00Z"
     },
     "@xikers_official": {
@@ -381,10 +376,10 @@
       "title": "ZEROBASEONE",
       "resolved_at": "2026-10-14T05:10:00Z"
     },
-    "@ZICO": {
-      "channel_id": "UCiLj5XN-EwMZnUzXaP_Flqg",
+    "@ZICOOFFICIAL": {
+      "channel_id": "UClOZoLNwJVdNzkEhzeevBSA",
       "title": "ZICO",
-      "resolved_at": "2026-10-14T05:10:00Z"
+      "resolved_at": "2026-10-15T04:15:00Z"
     }
   }
 }

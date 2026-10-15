@@ -7,10 +7,10 @@ from dataclasses import replace
 import httpx
 
 from seoulpulse.config import DEFAULT_CONTACT, load_config
-from seoulpulse.resolve import extract_channel, resolve_channels, title_matches, validate_seed
+from seoulpulse.resolve import extract_channel, feed_is_empty, resolve_channels, title_matches, validate_seed
 from seoulpulse.seed import load_seed
 
-from .conftest import DATA_DIR, FakeClock
+from .conftest import DATA_DIR, FakeClock, read_fixture
 
 PAGE = """<html><head>
 <link rel="canonical" href="https://www.youtube.com/channel/UC9GtSLeksfK4yuJ_g1lgQbg">
@@ -27,6 +27,26 @@ def test_committed_seed_loads_and_resolves_every_handle():
     assert kinds == {"artist", "label", "broadcaster"}
     assert seed.artist_channel_url("aespa") == "https://www.youtube.com/channel/UC9GtSLeksfK4yuJ_g1lgQbg"
     assert seed.artist_channel_url("enhypen") is None            # no own channel; label coverage only
+
+
+# Live 2026-10-15: these handles resolved (matching title, feed HTTP 200) to squatter or unrelated channels: six
+# without a single upload (so the YouTube API reported playlistNotFound for them), the others with a few stray
+# videos that artist-owned attribution credited to the act. None of them may come back.
+SQUATTER_IDS = {
+    "UC97HzlnJULHjVHRKrw1MpYA", "UCDdv5hfWUYWZEXbs2Nw3mjg", "UCDhnnyC4WIZuuaEXHdXtlXA",   # ALLDAY PROJECT, izna, XH
+    "UCPm_zFkmbHXJKuKbgq2FSDg", "UCTctR_Fwd1fxinR4xJJEA-A", "UCyCjqvqcQO5Q2wnazx8dkzA",   # "WAKE ONE", KiiiKiii, AHOF
+    "UCU3s8CYosQHpV0fRbqi15wA",                                                          # "UNIS" (a French channel)
+}
+
+
+def test_committed_seed_has_no_known_squatter_channels():
+    seed = load_seed(DATA_DIR)
+    ids = {c.channel_id for c in seed.resolved_channels()}
+    assert not ids & SQUATTER_IDS
+    assert seed.artist_channel_url("allday-project") == "https://www.youtube.com/channel/UCKOY4n0sv1pAPs5E4LxtSXQ"
+    assert seed.artist_channel_url("xdinary-heroes") == "https://www.youtube.com/channel/UCO9GhtdQcCRf67GIdSQ0HNQ"
+    assert seed.artist_channel_url("kep1er") == "https://www.youtube.com/channel/UC8whlOg70m2Yr3qSMjUhh0g"
+    assert "@wakeone" not in {c.handle for c in seed.channels}
 
 
 def test_validate_seed_offline_passes(capsys):
@@ -48,9 +68,12 @@ def test_resolve_writes_ok_and_skips_mismatch(tmp_path):
     (data / "artists.yaml").write_text(
         "version: 1\nartists:\n"
         "  - {id: aespa, name: aespa, name_ko: 에스파, aliases: [aespa, 에스파], youtube: ['@aespa'], wiki: {en: Aespa, ko: Aespa}}\n"
-        "  - {id: g-dragon, name: G-DRAGON, name_ko: 지드래곤, aliases: [G-DRAGON], youtube: ['@GD'], wiki: {en: G-Dragon, ko: null}}\n",
+        "  - {id: g-dragon, name: G-DRAGON, name_ko: 지드래곤, aliases: [G-DRAGON], youtube: ['@GD'], wiki: {en: G-Dragon, ko: null}}\n"
+        "  - {id: allday-project, name: ALLDAY PROJECT, name_ko: null, aliases: [ALL DAY PROJECT], youtube: ['@ALLDAYPROJECT'],"
+        " wiki: {en: null, ko: null}}\n",
         encoding="utf-8")
     (data / "channels.yaml").write_text("version: 1\nchannels: []\n", encoding="utf-8")
+    squatter = "UC97HzlnJULHjVHRKrw1MpYA"           # live 2026-10-15: matching title, 4 subscribers, no uploads
 
     def handler(req: httpx.Request) -> httpx.Response:
         if req.url.path == "/@aespa":
@@ -61,19 +84,31 @@ def test_resolve_writes_ok_and_skips_mismatch(tmp_path):
         if req.url.path == "/@GD":
             return httpx.Response(200, text=PAGE.replace("aespa &amp; friends", "Geometry Dash")
                                   .replace("UC9GtSLeksfK4yuJ_g1lgQbg", "UCaaaaaaaaaaaaaaaaaaaaaa"))
+        if req.url.path == "/@ALLDAYPROJECT":
+            return httpx.Response(200, text=PAGE.replace("aespa &amp; friends", "ALL DAY PROJECT")
+                                  .replace("UC9GtSLeksfK4yuJ_g1lgQbg", squatter))
         if req.url.path == "/feeds/videos.xml":
-            return httpx.Response(200, text="<feed/>")
+            if req.url.params["channel_id"] == squatter:
+                return httpx.Response(200, text='<feed xmlns="http://www.w3.org/2005/Atom"><title>x</title></feed>')
+            return httpx.Response(200, content=read_fixture("youtube_hybe_labels.xml"))
         return httpx.Response(404)
 
     cfg = replace(load_config({}, warn=False), data_dir=data)
     lines = []
     clock = FakeClock()
     code = resolve_channels(cfg, transport=httpx.MockTransport(handler), sleep=clock.sleep, out=lines.append)
-    assert code == 3                                              # @GD unresolved (MISMATCH)
+    assert code == 3                                              # @GD (MISMATCH) and @ALLDAYPROJECT (EMPTY)
     lock = json.loads((data / "channels.lock.json").read_text(encoding="utf-8"))["channels"]
     assert lock["@aespa"]["channel_id"] == "UC9GtSLeksfK4yuJ_g1lgQbg"
-    assert "@GD" not in lock                                      # MISMATCH is never written
+    assert "@GD" not in lock and "@ALLDAYPROJECT" not in lock     # MISMATCH / EMPTY are never written
     assert any(line.startswith("MISMATCH") and "@GD" in line for line in lines)
+    assert any(line.startswith("EMPTY") and squatter in line for line in lines)
+
+
+def test_feed_is_empty():
+    assert feed_is_empty(read_fixture("youtube_hybe_labels.xml")) is False
+    assert feed_is_empty(b'<feed xmlns="http://www.w3.org/2005/Atom"><title>x</title></feed>') is True
+    assert feed_is_empty(b"<html><body>consent</body></html>") is None
 
 
 def test_resolve_noop_when_lock_is_complete(tmp_path):

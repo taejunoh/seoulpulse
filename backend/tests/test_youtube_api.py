@@ -19,7 +19,7 @@ from seoulpulse.seed import load_seed
 from seoulpulse.store import Store
 
 from .conftest import DATA_DIR, FakeClock, utc
-from .fakenet import FakeNet
+from .fakenet import FakeNet, ok_feed
 
 NOW = utc(2026, 10, 14, 9, 0, 0)
 PT_DAY = date(2026, 10, 14)
@@ -57,12 +57,16 @@ STATS = {
 class FakeYouTubeApi:
     """googleapis.com YouTube Data API v3 double. Records every request."""
 
-    def __init__(self, error=None, *, missing=(), resolve=None, real_uploads=()):
+    def __init__(self, error=None, *, missing=(), resolve=None, real_uploads=(), video_counts=None, search=None,
+                 search_error=None):
         self.requests: list[httpx.Request] = []
         self.error = error          # (status, body) returned for every API call when set
         self.missing = set(missing)         # playlist ids answering 404 playlistNotFound
         self.resolve = resolve or {}        # channels.list: channel id -> its real uploads playlist id
         self.real_uploads = set(real_uploads)   # extra playlist ids that serve HYBE's uploads
+        self.video_counts = video_counts or {}  # channels.list: channel id -> statistics.videoCount
+        self.search = search or {}          # search.list: channel id -> result items
+        self.search_error = search_error    # (status, body) for search.list only
 
     def __call__(self, req: httpx.Request) -> httpx.Response:
         self.requests.append(req)
@@ -77,9 +81,23 @@ class FakeYouTubeApi:
             items = HYBE_UPLOADS if pid in ({"UU" + HYBE[2:]} | self.real_uploads) else []
             return httpx.Response(200, content=json.dumps({"items": items}).encode())
         if req.url.path == "/youtube/v3/channels":
-            items = [{"id": c, "contentDetails": {"relatedPlaylists": {"uploads": self.resolve[c]}}}
-                     for c in req.url.params["id"].split(",") if c in self.resolve]
+            items = []
+            for c in req.url.params["id"].split(","):
+                if c not in self.resolve and c not in self.video_counts:
+                    continue                                  # unknown (deleted/terminated) channel: no item
+                item = {"id": c, "contentDetails": {"relatedPlaylists": {}}}
+                if c in self.resolve:
+                    item["contentDetails"]["relatedPlaylists"]["uploads"] = self.resolve[c]
+                if c in self.video_counts:
+                    item["statistics"] = {"videoCount": str(self.video_counts[c]), "hiddenSubscriberCount": False}
+                items.append(item)
             return httpx.Response(200, content=json.dumps({"items": items}).encode())
+        if req.url.path == "/youtube/v3/search":
+            if self.search_error is not None:
+                return httpx.Response(self.search_error[0], content=json.dumps(self.search_error[1]).encode())
+            items = self.search.get(req.url.params["channelId"], [])
+            return httpx.Response(200, content=json.dumps({"kind": "youtube#searchListResponse",
+                                                           "items": items}).encode())
         if req.url.path == "/youtube/v3/videos":
             ids = req.url.params["id"].split(",")
             items = [{"id": i, "statistics": {"viewCount": STATS[i][0]}, "contentDetails": {"duration": STATS[i][1]}}
@@ -90,9 +108,18 @@ class FakeYouTubeApi:
     def calls(self, kind: str) -> list[httpx.Request]:
         return [r for r in self.requests if r.url.path.endswith("/" + kind)]
 
+    def units(self) -> int:
+        """What Google bills for the recorded requests: search.list 100, everything else 1."""
+        return sum(ya.SEARCH_COST if r.url.path.endswith("/search") else 1 for r in self.requests)
 
-def run(cfg, api: FakeYouTubeApi | None = None, now=NOW, **kw):
-    net = FakeNet()
+
+def rss_down(_: httpx.Request) -> httpx.Response:
+    """YouTube's feed server during the 2026-10-14 outage: 404 for every channel."""
+    return httpx.Response(404, content=b"Not Found")
+
+
+def run(cfg, api: FakeYouTubeApi | None = None, now=NOW, *, rss=None, **kw):
+    net = FakeNet(youtube=rss) if rss is not None else FakeNet()
     base = net.handler
 
     def handler(req: httpx.Request) -> httpx.Response:
@@ -400,10 +427,11 @@ def test_derived_playlist_404_resolves_via_channels_list_and_is_cached(config, c
     assert res.detail == "RSS 77/77 channels · API 80 units (80/9000 today)"
     assert db_rows(cfg, "SELECT units FROM api_usage") == [(80,)] and len(api.requests) == 80   # every call booked
     creq = api.calls("channels")[0]
-    assert creq.url.params["part"] == "contentDetails" and creq.url.params["id"] == HYBE
+    assert creq.url.params["part"] == "contentDetails,statistics" and creq.url.params["id"] == HYBE
     assert creq.headers["x-goog-api-key"] == KEY and KEY not in str(creq.url)
     assert [r.url.params["playlistId"] for r in api.calls("playlistItems")][-1] == REAL
-    assert db_rows(cfg, "SELECT channel_id, playlist_id, unavailable_until FROM yt_uploads") == [(HYBE, REAL, None)]
+    assert db_rows(cfg, "SELECT channel_id, playlist_id, unavailable_until, method FROM yt_uploads") == [
+        (HYBE, REAL, None, "resolved")]
     assert db_rows(cfg, "SELECT video_id FROM videos WHERE video_id='APIDISC0001'")      # discovered via REAL
     assert not warnings(caplog) and not any("playlistNotFound" in r.getMessage() for r in caplog.records)
 
@@ -414,42 +442,6 @@ def test_derived_playlist_404_resolves_via_channels_list_and_is_cached(config, c
     ids = [r.url.params["playlistId"] for r in api2.calls("playlistItems")]
     assert REAL in ids and DERIVED not in ids
     assert out2.results["youtube"].errors == []
-
-
-@pytest.mark.parametrize(("api_kw", "n_units"), [
-    ({}, 79),                                                    # channels.list knows nothing about it
-    ({"resolve": {HYBE: DERIVED}}, 79),                          # ...or returns the same id
-    ({"missing": {DERIVED, REAL}, "resolve": {HYBE: REAL}}, 80),  # ...or the resolved playlist is gone as well
-])
-def test_unresolvable_uploads_playlist_is_skipped_for_7_days(config, caplog, api_kw, n_units):
-    caplog.set_level(logging.INFO)
-    cfg = replace(config, youtube_api_key=KEY)
-    api = FakeYouTubeApi(**{"missing": {DERIVED}, **api_kw})
-    out, _ = run(cfg, api)
-    res = out.results["youtube"]
-    assert res.status == "ok" and res.errors == []                # a 404 never degrades the source
-    assert res.detail == f"RSS 77/77 channels · API {n_units} units ({n_units}/9000 today) · 1 channel RSS-only"
-    assert len(api.requests) == n_units
-    assert db_rows(cfg, "SELECT units FROM api_usage") == [(n_units,)]
-    assert db_rows(cfg, "SELECT channel_id, playlist_id, unavailable_until FROM yt_uploads") == [
-        (HYBE, None, "2026-10-21T09:00:00Z")]
-    assert not warnings(caplog)
-    infos = [r for r in caplog.records if r.levelno == logging.INFO and "no usable uploads playlist" in r.getMessage()]
-    assert len(infos) == 1 and KEY not in infos[0].getMessage()
-
-    # Inside the 7 days: no playlist, no channels.list call for this channel, still RSS-only and ok.
-    api2 = FakeYouTubeApi(**{"missing": {DERIVED}, **api_kw})
-    out2, _ = run(cfg, api2, now=hybe_slot_time(NOW + timedelta(minutes=30)))
-    assert all(r.url.params.get("playlistId") not in (DERIVED, REAL) for r in api2.calls("playlistItems"))
-    assert api2.calls("channels") == []
-    assert out2.results["youtube"].status == "ok" and out2.results["youtube"].errors == []
-    assert "1 channel RSS-only" in out2.results["youtube"].detail
-
-    # After the 7 days it is tried again (once, on its rotation slot).
-    api3 = FakeYouTubeApi(**{"missing": {DERIVED}, **api_kw})
-    run(cfg, api3, now=hybe_slot_time(NOW + timedelta(days=8)))
-    assert DERIVED in [r.url.params["playlistId"] for r in api3.calls("playlistItems")]
-    assert len(api3.calls("channels")) == 1
 
 
 def test_other_playlist_errors_still_count_as_errors(config):
@@ -481,4 +473,266 @@ def test_migration_adds_uploads_table_to_an_existing_db(tmp_path):
     assert st.conn.execute("SELECT COUNT(*) FROM videos").fetchone()[0] == 1
     assert st.view(NOW).uploads_state == states
     assert st.conn.execute("SELECT value FROM meta WHERE key='schema_version'").fetchone()[0] == "1"
+    st.close()
+
+
+# ---------------------------------------------------------------------------- empty, UULF and API-blind channels
+# Live 2026-10-15: six channels answered playlistNotFound for UU… and channels.list returned the same id. They were
+# squatter channels with no uploads at all (the seed handles were wrong), so neither UULF nor search.list could
+# find anything there; channels.list's videoCount now tells "empty" apart from a genuinely API-blind channel.
+
+ULF = "UULF" + HYBE[2:]
+
+
+def search_item(vid, title, published, *, channel=HYBE, live="none"):
+    return {"kind": "youtube#searchResult", "id": {"kind": "youtube#video", "videoId": vid},
+            "snippet": {"publishedAt": published, "channelId": channel, "title": title, "liveBroadcastContent": live,
+                        "thumbnails": {"high": {"url": f"https://i.ytimg.com/vi/{vid}/hqdefault.jpg"}}}}
+
+
+HYBE_SEARCH = [
+    search_item("SEARCH00001", "aespa 에스파 &#39;Search Light&#39; MV", "2026-10-13T12:00:00Z"),   # escaped title
+    search_item("SEARCH00002", "IVE 아이브 &#39;Found&#39; Dance Challenge", "2026-10-13T13:00:00Z"),  # 45 s → Short
+    search_item("SEARCH00003", "aespa 'Neon' Comeback Live", "2026-10-14T10:00:00Z", live="upcoming"),  # skipped
+    search_item("SEARCH00004", "NewJeans 'Other' MV", "2026-10-12T09:00:00Z", channel="UCx" + "0" * 21),  # not HYBE
+    search_item("SEARCH00005", "Office tour vlog", "2026-10-12T11:00:00Z"),                           # unattributed
+]
+STATS.update({"SEARCH00001": ("750000", "PT3M10S"), "SEARCH00002": ("80000", "PT45S")})
+
+
+def blind_api(**kw):
+    """HYBE LABELS with public videos but neither UU… nor UULF… readable: an API-blind channel."""
+    return FakeYouTubeApi(missing={DERIVED, ULF}, resolve={HYBE: DERIVED}, video_counts={HYBE: 3600},
+                          search={HYBE: HYBE_SEARCH}, **kw)
+
+
+def uploads_row(cfg):
+    return db_rows(cfg, "SELECT channel_id, playlist_id, unavailable_until, method, searched_at FROM yt_uploads")
+
+
+def test_search_and_channel_parsers():
+    found = ya.parse_search_items(json.dumps({"items": HYBE_SEARCH + [
+        {"id": {"kind": "youtube#channel", "channelId": HYBE}, "snippet": {"title": "x"}},   # not a video
+        {"id": "SEARCH00009", "snippet": {}}]}).encode(), HYBE)
+    assert [u.video_id for u in found] == ["SEARCH00001", "SEARCH00002", "SEARCH00005"]
+    assert found[0].title == "aespa 에스파 'Search Light' MV"                 # HTML entities decoded
+    assert found[0].published_at == utc(2026, 10, 13, 12, 0, 0)
+    assert found[0].thumbnail_url == "https://i.ytimg.com/vi/SEARCH00001/hqdefault.jpg"
+    info = ya.parse_channels(json.dumps({"items": [
+        {"id": HYBE, "contentDetails": {"relatedPlaylists": {"uploads": DERIVED}}, "statistics": {"videoCount": "0"}},
+        {"id": "UCnoStats", "contentDetails": {}}, {"statistics": {"videoCount": "4"}}]}).encode())
+    assert info == {HYBE: ya.ChannelInfo(DERIVED, 0), "UCnoStats": ya.ChannelInfo(None, None)}
+    assert ya.long_form_playlist_id(HYBE) == ULF
+    params = ya.search_params(HYBE, NOW)
+    assert params == {"part": "snippet", "channelId": HYBE, "type": "video", "order": "date",
+                      "publishedAfter": "2026-09-14T09:00:00Z", "maxResults": "50"}
+    # 09:00 UTC on 2026-10-14 is 02:00 PDT: 22 h of the quota day left, at one run per 20 min.
+    assert ya.runs_left_today(NOW) == 66 and ya.runs_left_today(utc(2026, 10, 15, 6, 50, 0)) == 0
+
+
+@pytest.mark.parametrize("api_kw", [
+    {"video_counts": {HYBE: 0}, "resolve": {HYBE: DERIVED}},   # live case: the channel has no public videos
+    {},                                                        # channels.list does not know the channel at all
+])
+def test_empty_channel_is_flagged_and_never_searched(config, caplog, api_kw):
+    caplog.set_level(logging.INFO)
+    cfg = replace(config, youtube_api_key=KEY)
+    api = FakeYouTubeApi(missing={DERIVED}, **api_kw)
+    out, _ = run(cfg, api)
+    res = out.results["youtube"]
+    # 77 playlists (one 404) + channels.list + videos.list; no UULF, no search: there is nothing to find
+    assert [len(api.calls(k)) for k in ("playlistItems", "channels", "search", "videos")] == [77, 1, 0, 1]
+    assert res.status == "ok" and res.errors == []
+    assert res.detail == "RSS 77/77 channels · API 79 units (79/9000 today) · 1 channel empty"
+    assert uploads_row(cfg) == [(HYBE, None, "2026-10-21T09:00:00Z", "empty", None)]
+    warned = warnings(caplog)
+    assert len(warned) == 1 and "has no public videos" in warned[0].getMessage() and KEY not in caplog.text
+
+    # During an RSS outage inside the 7 days: no playlist, no channels.list and no search for it.
+    api2 = FakeYouTubeApi(missing={DERIVED}, **api_kw)
+    out2, _ = run(cfg, api2, now=NOW + timedelta(minutes=30), rss=rss_down)
+    assert api2.calls("search") == [] and api2.calls("channels") == []
+    assert all(r.url.params["playlistId"] != DERIVED for r in api2.calls("playlistItems"))
+    assert out2.results["youtube"].units_ok == 76 and "1 channel empty" in out2.results["youtube"].detail
+
+    # After 7 days it is probed again (once, on its rotation slot).
+    api3 = FakeYouTubeApi(missing={DERIVED}, **api_kw)
+    run(cfg, api3, now=hybe_slot_time(NOW + timedelta(days=8)))
+    assert DERIVED in [r.url.params["playlistId"] for r in api3.calls("playlistItems")]
+    assert len(api3.calls("channels")) == 1
+
+
+def test_long_form_playlist_is_the_first_fallback_and_is_cached(config):
+    cfg = replace(config, youtube_api_key=KEY)
+    api = FakeYouTubeApi(missing={DERIVED}, resolve={HYBE: DERIVED}, video_counts={HYBE: 3600}, real_uploads={ULF})
+    out, _ = run(cfg, api)
+    res = out.results["youtube"]
+    assert [len(api.calls(k)) for k in ("playlistItems", "channels", "search", "videos")] == [78, 1, 0, 1]
+    assert [r.url.params["playlistId"] for r in api.calls("playlistItems")][-1] == ULF
+    assert res.detail == "RSS 77/77 channels · API 80 units (80/9000 today)" and res.errors == []
+    assert uploads_row(cfg) == [(HYBE, ULF, None, "uulf", None)]
+    assert db_rows(cfg, "SELECT kind, artist_id FROM videos WHERE video_id='APIDISC0001'") == [("mv", "aespa")]
+
+    api2 = FakeYouTubeApi(missing={DERIVED}, resolve={HYBE: DERIVED}, video_counts={HYBE: 3600}, real_uploads={ULF})
+    run(cfg, api2, now=hybe_slot_time(NOW + timedelta(minutes=30)))
+    ids = [r.url.params["playlistId"] for r in api2.calls("playlistItems")]
+    assert ULF in ids and DERIVED not in ids and api2.calls("channels") == []
+
+
+def test_api_blind_channel_is_searched_while_its_rss_fails(config):
+    cfg = replace(config, youtube_api_key=KEY)
+    # Run 1, RSS fine: the probe finds no readable playlist; RSS still lists the channel, so no search yet.
+    api = blind_api()
+    out, _ = run(cfg, api)
+    assert [len(api.calls(k)) for k in ("playlistItems", "channels", "search", "videos")] == [78, 1, 0, 1]
+    assert out.results["youtube"].detail == "RSS 77/77 channels · API 80 units (80/9000 today) · 1 channel via search"
+    assert uploads_row(cfg) == [(HYBE, None, "2026-10-21T09:00:00Z", "search", None)]
+
+    # Run 2, global RSS outage: every other channel is read through its playlist this run; HYBE through search.
+    t2 = NOW + timedelta(minutes=30)
+    api2 = blind_api()
+    out2, _ = run(cfg, api2, now=t2, rss=rss_down)
+    res = out2.results["youtube"]
+    assert len(api2.calls("playlistItems")) == 76 and len(api2.calls("search")) == 1
+    sreq = api2.calls("search")[0]
+    assert dict(sreq.url.params) == {**ya.search_params(HYBE, t2)}
+    assert sreq.headers["x-goog-api-key"] == KEY and KEY not in str(sreq.url)
+    assert res.status == "ok" and (res.units_ok, res.units_total) == (77, 77)        # search bridged HYBE too
+    units = api2.units()
+    assert units == 76 + 100 + len(api2.calls("videos"))
+    assert res.detail == f"RSS 0/77 + API 77 channels · {units} units ({80 + units}/9000 today) · 1 channel via search"
+    assert db_rows(cfg, "SELECT units FROM api_usage") == [(80 + units,)]               # every unit booked
+    # Search results take the same path as playlist uploads: attribution, Shorts rule, exact stats.
+    vids = [i for r in api2.calls("videos") for i in r.url.params["id"].split(",")]
+    assert "SEARCH00001" in vids and "SEARCH00002" in vids
+    assert not {"SEARCH00003", "SEARCH00004", "SEARCH00005"} & set(vids)
+    rows = {v: (k, a, u, ti) for v, k, a, u, ti in db_rows(cfg, "SELECT video_id, kind, artist_id, url, title FROM videos"
+                                                          " WHERE video_id LIKE 'SEARCH%'")}
+    assert rows == {
+        "SEARCH00001": ("mv", "aespa", "https://www.youtube.com/watch?v=SEARCH00001", "aespa 에스파 'Search Light' MV"),
+        "SEARCH00002": ("short", "ive", "https://www.youtube.com/shorts/SEARCH00002", "IVE 아이브 'Found' Dance Challenge"),
+    }
+    assert db_rows(cfg, "SELECT views, source FROM video_snapshots WHERE video_id='SEARCH00001'") == [(750000, "api")]
+    assert uploads_row(cfg)[0][3:] == ("search", "2026-10-14T09:30:00Z")
+
+    # Run 3, 30 min later, still no RSS: within 6 h the channel is not searched again (and counts as failed).
+    api3 = blind_api()
+    out3, _ = run(cfg, api3, now=t2 + timedelta(minutes=30), rss=rss_down)
+    assert api3.calls("search") == [] and out3.results["youtube"].units_ok == 76
+    # 6 h after the last search it is due again.
+    api4 = blind_api()
+    run(cfg, api4, now=t2 + timedelta(hours=6), rss=rss_down)
+    assert len(api4.calls("search")) == 1
+
+
+def seed_blind_state(cfg, *, used=0, searched_at=None):
+    st = Store(cfg.db_path)
+    with st.tx():
+        st.upsert_uploads_state(UploadsState(HYBE, None, NOW + timedelta(days=6), NOW - timedelta(days=1),
+                                             ya.METHOD_SEARCH, searched_at))
+        if used:
+            st.add_api_usage(ApiUsage("youtube", PT_DAY, used))
+    st.close()
+
+
+def test_search_waits_for_budget_headroom(config):
+    # 4,000 units used by 02:00 PDT: a search now would leave too little for the 66 runs still to come (~79 each).
+    cfg = replace(config, youtube_api_key=KEY)
+    seed_blind_state(cfg, used=4000)
+    api = blind_api()
+    out, _ = run(cfg, api, rss=rss_down)
+    assert api.calls("search") == [] and "search deferred" in out.results["youtube"].detail
+    assert uploads_row(cfg)[0][4] is None                       # not stamped: searched as soon as there is room
+    # Late in the quota day (23:30 PDT) the same ledger leaves plenty of room.
+    cfg2 = replace(cfg, db_path=cfg.db_path.with_name("late.db"))
+    seed_blind_state(cfg2, used=4000)
+    api2 = blind_api()
+    run(cfg2, api2, now=utc(2026, 10, 15, 6, 30, 0), rss=rss_down)
+    assert len(api2.calls("search")) == 1
+
+
+def test_search_units_ride_on_top_of_the_run_cap_and_are_booked_when_it_fails(config, monkeypatch):
+    monkeypatch.setattr(ya, "RUN_CAP", 120)                     # discovery cap 60 of the 76 failed channels
+    cfg = replace(config, youtube_api_key=KEY)
+    seed_blind_state(cfg)
+    body = {"error": {"code": 400, "errors": [{"reason": "badRequest"}], "message": "Invalid argument"}}
+    api = blind_api(search_error=(400, body))
+    out, _ = run(cfg, api, rss=rss_down)
+    res = out.results["youtube"]
+    assert len(api.calls("playlistItems")) == 60 and len(api.calls("search")) == 1
+    assert api.units() == 60 + 100 + len(api.calls("videos")) > ya.RUN_CAP        # regular work ≤ cap, + 1 search
+    assert db_rows(cfg, "SELECT units FROM api_usage") == [(api.units(),)]          # the failed search is billed
+    assert uploads_row(cfg)[0][4] == "2026-10-14T09:00:00Z"     # stamped: not retried every run
+    assert "discovery cap" in res.detail
+
+    # The failure is reported (seen here with only HYBE's feed down, so RSS errors do not fill the error list).
+    def hybe_down(req: httpx.Request) -> httpx.Response:
+        return rss_down(req) if req.url.params["channel_id"] == HYBE else ok_feed(req)
+
+    cfg2 = replace(cfg, db_path=cfg.db_path.with_name("one.db"))
+    seed_blind_state(cfg2)
+    api2 = blind_api(search_error=(400, body))
+    out2, _ = run(cfg2, api2, rss=hybe_down)
+    assert len(api2.calls("search")) == 1
+    assert any(e == f"API search {HYBE}: HTTP 400 badRequest" for e in out2.results["youtube"].errors)
+
+
+def test_rows_from_before_methods_are_probed_again(config):
+    cfg = replace(config, youtube_api_key=KEY)
+    st = Store(cfg.db_path)
+    with st.tx():                                               # what the 2026-10-14 code wrote ("RSS-only")
+        st.upsert_uploads_state(UploadsState(HYBE, None, NOW + timedelta(days=5), NOW - timedelta(days=2)))
+    st.close()
+    api = FakeYouTubeApi(missing={DERIVED}, resolve={HYBE: DERIVED}, video_counts={HYBE: 0})
+    run(cfg, api, rss=rss_down)                                 # RSS failure puts HYBE on this run's list
+    assert DERIVED in [r.url.params["playlistId"] for r in api.calls("playlistItems")]
+    assert uploads_row(cfg)[0][3] == "empty"
+
+
+def test_capped_outage_discovery_rotates_instead_of_starving_channels(config):
+    seed = load_seed(DATA_DIR)
+    channels = sorted(c.channel_id for c in seed.resolved_channels())
+    view = StoreView(channels_with_videos=frozenset(channels))
+    seen: set[str] = set()
+    firsts = []
+    for k in range(ya.DISCOVERY_SLOTS):
+        ctx = RunContext(now=NOW + timedelta(minutes=30 * k), http=None, seed=seed, config=config,  # type: ignore[arg-type]
+                         store=view, log=logging.getLogger("t"))
+        picked = ya.discovery_channels(ctx, set(channels))[:20]     # a cap that takes only 20 of 77 failures
+        firsts.append(picked[0])
+        seen |= set(picked)
+    assert seen == set(channels)                                    # nobody waits longer than 12 runs
+    assert len(set(firsts)) > 1
+
+
+def test_global_rss_outage_reads_every_channel_this_run_within_the_daily_budget(config):
+    cfg = replace(config, youtube_api_key=KEY)
+    api = FakeYouTubeApi()
+    out, _ = run(cfg, api, rss=rss_down)
+    assert len(api.calls("playlistItems")) == 77                    # every failed channel is read this run
+    per_run = api.units()
+    assert per_run <= ya.RUN_CAP and "cap" not in out.results["youtube"].detail
+    # 48 runs a day of this, plus four searches a day for each of six API-blind channels, fits 9,000.
+    assert 48 * per_run + 6 * 4 * ya.SEARCH_COST <= cfg.youtube_daily_units
+
+
+def test_migration_adds_method_columns_to_an_existing_uploads_table(tmp_path):
+    path = tmp_path / "old.sqlite"
+    st = Store(path)
+    with st.tx():
+        st.conn.execute("DROP TABLE yt_uploads")
+        st.conn.execute("CREATE TABLE yt_uploads (channel_id TEXT PRIMARY KEY, playlist_id TEXT,"
+                        " unavailable_until TEXT, checked_at TEXT NOT NULL)")       # the 2026-10-14 layout
+        st.conn.execute("INSERT INTO yt_uploads VALUES (?, NULL, '2026-10-21T09:00:00Z', '2026-10-14T09:00:00Z')",
+                        (HYBE,))
+    st.close()
+    st = Store(path)
+    assert st.uploads_states() == {HYBE: UploadsState(HYBE, None, NOW + timedelta(days=7), NOW)}
+    with st.tx():
+        st.upsert_uploads_state(UploadsState(HYBE, None, NOW + timedelta(days=7), NOW, "search", NOW))
+    st.close()
+    st = Store(path)                                                # idempotent
+    assert st.uploads_states()[HYBE].searched_at == NOW
+    st.apply_retention(NOW + timedelta(days=8))                     # expired marks go, so the channel is re-probed
+    assert st.uploads_states() == {}
     st.close()

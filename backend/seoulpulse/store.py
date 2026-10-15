@@ -60,8 +60,14 @@ CREATE TABLE IF NOT EXISTS api_usage (api TEXT NOT NULL, day TEXT NOT NULL, unit
 CREATE TABLE IF NOT EXISTS search_signal (artist_id TEXT PRIMARY KEY, target TEXT NOT NULL, landed INTEGER NOT NULL,
   day TEXT, z REAL, ratio REAL, baseline_n INTEGER NOT NULL, reason TEXT NOT NULL, fetched_at TEXT NOT NULL);
 CREATE TABLE IF NOT EXISTS yt_uploads (channel_id TEXT PRIMARY KEY, playlist_id TEXT, unavailable_until TEXT,
-  checked_at TEXT NOT NULL);
+  checked_at TEXT NOT NULL, method TEXT, searched_at TEXT);
 """
+# Columns added to existing tables after their first release: (table, column, type). migrate() adds the missing
+# ones in place, so a cached DB keeps its data and `schema_version` stays 1.
+ADDED_COLUMNS = (
+    ("yt_uploads", "method", "TEXT"),
+    ("yt_uploads", "searched_at", "TEXT"),
+)
 
 
 @dataclass(frozen=True)
@@ -122,7 +128,10 @@ class Store:
         with self.tx() as c:
             for stmt in [s.strip() for s in SCHEMA.split(";") if s.strip()]:
                 c.execute(stmt)
-            row = c.execute("SELECT value FROM meta WHERE key='schema_version'").fetchone()
+            for table, column, kind in ADDED_COLUMNS:
+                if column not in {r["name"] for r in c.execute(f"PRAGMA table_info({table})")}:
+                    c.execute(f"ALTER TABLE {table} ADD COLUMN {column} {kind}")
+            row =c.execute("SELECT value FROM meta WHERE key='schema_version'").fetchone()
             if row is None:
                 c.execute("INSERT INTO meta(key, value) VALUES ('schema_version', ?)", (str(SCHEMA_VERSION),))
             elif int(row["value"]) > SCHEMA_VERSION:
@@ -339,16 +348,23 @@ class Store:
 
     def upsert_uploads_state(self, u: UploadsState) -> None:
         self.conn.execute(
-            "INSERT INTO yt_uploads(channel_id, playlist_id, unavailable_until, checked_at) VALUES (?,?,?,?) "
+            "INSERT INTO yt_uploads(channel_id, playlist_id, unavailable_until, checked_at, method, searched_at)"
+            " VALUES (?,?,?,?,?,?) "
             "ON CONFLICT(channel_id) DO UPDATE SET playlist_id=excluded.playlist_id,"
-            " unavailable_until=excluded.unavailable_until, checked_at=excluded.checked_at",
-            (u.channel_id, u.playlist_id, iso(u.unavailable_until) if u.unavailable_until else None, iso(u.checked_at)),
+            " unavailable_until=excluded.unavailable_until, checked_at=excluded.checked_at,"
+            " method=excluded.method, searched_at=excluded.searched_at",
+            (u.channel_id, u.playlist_id, iso(u.unavailable_until) if u.unavailable_until else None, iso(u.checked_at),
+             u.method, iso(u.searched_at) if u.searched_at else None),
         )
 
     def uploads_states(self) -> dict[str, UploadsState]:
+        def when(v: str | None) -> datetime | None:
+            return parse_iso(v) if v else None
+
         return {r["channel_id"]: UploadsState(
-            r["channel_id"], r["playlist_id"], parse_iso(r["unavailable_until"]) if r["unavailable_until"] else None,
-            parse_iso(r["checked_at"])) for r in self.conn.execute("SELECT * FROM yt_uploads ORDER BY channel_id")}
+            r["channel_id"], r["playlist_id"], when(r["unavailable_until"]), parse_iso(r["checked_at"]),
+            r["method"], when(r["searched_at"]))
+            for r in self.conn.execute("SELECT * FROM yt_uploads ORDER BY channel_id")}
 
     # ------------------------------------------------------------------ Korean search signal (derived only)
 
@@ -468,7 +484,9 @@ class Store:
             c.execute("DELETE FROM video_snapshots WHERE video_id NOT IN (SELECT video_id FROM videos)")
             c.execute("DELETE FROM search_signal WHERE fetched_at < ?", (iso(now - timedelta(days=7)),))
             c.execute("DELETE FROM published WHERE generated_at < ?", (iso(now - timedelta(days=21)),))
-            c.execute("DELETE FROM yt_uploads WHERE playlist_id IS NULL AND unavailable_until < ?", (iso(now),))
+            # Expired "search"/"empty" marks are probed again; rows that only say "use the derived id" go too.
+            c.execute("DELETE FROM yt_uploads WHERE playlist_id IS NULL AND (unavailable_until IS NULL"
+                      " OR unavailable_until < ?)", (iso(now),))
             c.execute("DELETE FROM api_usage WHERE day < ?", (day_str((now - timedelta(days=40)).date()),))
 
 

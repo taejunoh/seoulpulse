@@ -120,10 +120,10 @@ def test_rss_outage_bridged_by_the_api_is_not_an_error(config):
 
 def test_channels_the_api_cannot_read_still_count_as_failed(config):
     cfg = replace(config, youtube_api_key=KEY)
-    out = run(cfg, FakeYouTubeApi(missing={DERIVED}))        # HYBE LABELS: no usable uploads playlist
+    out = run(cfg, FakeYouTubeApi(missing={DERIVED}))        # HYBE LABELS: no uploads playlist, unknown channel
     res = out.results["youtube"]
     assert res.status == "degraded" and res.units_ok == 76
-    assert res.detail.startswith("RSS 0/77 + API 76 channels") and "1 channel RSS-only" in res.detail
+    assert res.detail.startswith("RSS 0/77 + API 76 channels") and "1 channel empty" in res.detail
 
 
 def test_keyless_rss_outage_is_still_an_error(config):

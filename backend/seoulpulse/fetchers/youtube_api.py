@@ -6,37 +6,44 @@ With a key, each run after the RSS pass:
    RSS only lists a channel's latest 15 uploads, so this backfills uploads 16-50. It runs for channels whose
    RSS fetch failed this run, for channels with no stored videos yet (cold start), and for a rotating twelfth
    of all channels (so every channel is re-read about every 6 h). New, attributed, ≤30-day-old uploads are kept.
-   A few channels' real uploads playlist is not `UU` + id[2:]: on `playlistNotFound` the real one is resolved once
-   (`channels.list`, 1 unit) and stored; if none can be found the channel is skipped for 7 days (RSS-only).
+   When a channel's playlist answers `playlistNotFound`, `channels.list` (1 unit per 50 channels) tells why:
+   no public videos → "empty" (a seed error; logged as a warning, skipped for 7 days); a different uploads
+   playlist → read and stored ("resolved"); otherwise the long-form playlist `UULF…` is tried ("uulf"), and if
+   that is missing too the channel is "API-blind": while its RSS fails it is discovered through `search.list`
+   (100 units), at most once per 6 h per channel and once per run, and only when the day's budget can still
+   carry every remaining run's regular work.
 2. **Statistics** (`videos.list`, 1 unit per 50 ids, `part=statistics,contentDetails`): exact view counts for
    (a) tracked videos that are not in this run's RSS (they left the 15-item window), (b) newly discovered
    uploads, (c) RSS videos, whose coarse, cached RSS view count the API value then replaces for this run.
    `contentDetails.duration` classifies discovered uploads that RSS never showed (Shorts detection).
 
-Quota: 1 unit per call, at most `RUN_CAP` units per run and `SP_YOUTUBE_DAILY_UNITS` (default 9,000 of the free
-10,000) per Pacific-time day, enforced through the `api_usage` ledger. When the budget runs out the remaining
-work is skipped and RSS values stand. The key travels only in the `X-Goog-Api-Key` request header, never in a
-URL, so it cannot reach logs, error strings, the DB or trends.json.
+Quota: every call is booked before it is sent; regular calls are capped at `RUN_CAP` units per run, plus at most
+one `search.list` (`SEARCH_COST`), and `SP_YOUTUBE_DAILY_UNITS` (default 9,000 of the free 10,000) per
+Pacific-time day, enforced through the `api_usage` ledger. When the budget runs out the remaining work is
+skipped and RSS values stand. The key travels only in the `X-Goog-Api-Key` request header, never in a URL, so
+it cannot reach logs, error strings, the DB or trends.json.
 """
 
 from __future__ import annotations
 
+import html
 import json
 import re
 import zlib
-from dataclasses import dataclass, field
-from datetime import date, datetime, timedelta
+from dataclasses import dataclass, field, replace
+from datetime import UTC, date, datetime, time, timedelta
 from urllib.parse import urlencode
 
 from ..http import HttpError, Response, redact
 from ..matching import AliasMatcher, classify_video, normalize
-from ..timeutil import pacific_date, parse_iso
+from ..timeutil import PACIFIC, iso, pacific_date, parse_iso
 from .base import ApiSnapshot, ApiUsage, RunContext, UploadsState, VideoObs
 
 API_BASE = "https://www.googleapis.com/youtube/v3"
 VIDEOS_URL = f"{API_BASE}/videos"
 PLAYLIST_ITEMS_URL = f"{API_BASE}/playlistItems"
 CHANNELS_URL = f"{API_BASE}/channels"
+SEARCH_URL = f"{API_BASE}/search"
 KEY_HEADER = "X-Goog-Api-Key"
 BATCH = 50
 RUN_CAP = 200              # daily ledger (9,000) is the real guard; if it were lost, Google's quotaExceeded stops the day
@@ -44,7 +51,16 @@ DISCOVERY_SHARE = 0.5      # discovery may spend at most half of a run's units; 
 DISCOVERY_SLOTS = 12       # a channel is re-discovered once per 12 slots...
 SLOT_SEC = 1800            # ...of 30 minutes = every 6 hours
 TRACK_DAYS = 30
-UNAVAILABLE_DAYS = 7       # a channel without a usable uploads playlist is skipped (RSS-only) this long
+UNAVAILABLE_DAYS = 7       # an empty or API-blind channel keeps that method this long, then is probed again
+SEARCH_COST = 100          # search.list is billed 100 units per call (every other call here costs 1)
+SEARCH_EVERY = timedelta(hours=6)   # an API-blind channel is searched at most this often...
+SEARCH_PER_RUN = 1         # ...and at most one search per run, on top of RUN_CAP
+PACE_SEC = 1200            # the headroom check assumes a run every 20 min until the quota day ends (ticker: 30)
+METHOD_RESOLVED = "resolved"   # channels.list reported a different uploads playlist
+METHOD_UULF = "uulf"           # long-form uploads playlist UULF… (no Shorts, no live streams)
+METHOD_SEARCH = "search"       # no readable playlist: search.list while RSS fails
+METHOD_EMPTY = "empty"         # no public videos at all: nothing to discover (seed points at the wrong channel?)
+BLOCKING_METHODS = frozenset({METHOD_SEARCH, METHOD_EMPTY})
 SHORTS_MAX_S = 180         # Shorts can be up to 3 minutes long
 SHORT_CLIP_S = 60
 NOT_FOUND_REASONS = frozenset({"playlistNotFound"})
@@ -109,6 +125,12 @@ def parse_api_stats(content: bytes) -> dict[str, int]:
     return {vid: s.views for vid, s in parse_video_items(content).items() if s.views is not None}
 
 
+def _thumbnail(snippet: dict) -> str | None:
+    thumbs = snippet.get("thumbnails") or {}
+    return next((thumbs[k].get("url") for k in ("high", "medium", "default")
+                 if isinstance(thumbs.get(k), dict) and thumbs[k].get("url")), None)
+
+
 def parse_playlist_items(content: bytes, channel_id: str) -> list[Upload]:
     """Uploads from a playlistItems.list page. Private/deleted entries (no videoPublishedAt) are skipped."""
     data = json.loads(content.decode("utf-8"))
@@ -124,10 +146,35 @@ def parse_playlist_items(content: bytes, channel_id: str) -> list[Upload]:
             published = parse_iso(str(published_raw))
         except ValueError:
             continue
-        thumbs = snippet.get("thumbnails") or {}
-        thumb = next((thumbs[k].get("url") for k in ("high", "medium", "default")
-                      if isinstance(thumbs.get(k), dict) and thumbs[k].get("url")), None)
-        out.append(Upload(vid, channel_id, " ".join(str(snippet.get("title") or "").split()), published, thumb))
+        out.append(Upload(vid, channel_id, " ".join(str(snippet.get("title") or "").split()), published,
+                          _thumbnail(snippet)))
+    return out
+
+
+def parse_search_items(content: bytes, channel_id: str) -> list[Upload]:
+    """Videos from a search.list(part=snippet, type=video) page.
+
+    Search snippets carry HTML-escaped titles (`&#39;`, `&amp;`), so they are unescaped here. Live and upcoming
+    broadcasts are skipped: they have no duration yet, and a later search finds them once they are VODs. Items of
+    another channel are ignored (defensive; `channelId=` already filters)."""
+    data = json.loads(content.decode("utf-8"))
+    out: list[Upload] = []
+    for item in data.get("items", []) or []:
+        ident = item.get("id")
+        vid = ident.get("videoId") if isinstance(ident, dict) else None
+        snippet = item.get("snippet") or {}
+        if not isinstance(vid, str) or not _VIDEO_ID_RE.match(vid):
+            continue
+        if snippet.get("channelId") not in (None, channel_id):
+            continue
+        if snippet.get("liveBroadcastContent") in ("live", "upcoming"):
+            continue
+        try:
+            published = parse_iso(str(snippet.get("publishedAt") or ""))
+        except ValueError:
+            continue
+        title = " ".join(html.unescape(str(snippet.get("title") or "")).split())
+        out.append(Upload(vid, channel_id, title, published, _thumbnail(snippet)))
     return out
 
 
@@ -150,16 +197,44 @@ def uploads_playlist_id(channel_id: str) -> str:
     return "UU" + channel_id[2:]
 
 
-def parse_channel_uploads(content: bytes) -> dict[str, str]:
-    """channels.list(part=contentDetails) → {channel_id: uploads playlist id} for channels that report one."""
+def long_form_playlist_id(channel_id: str) -> str:
+    """The channel's long-form uploads playlist (its Videos tab: no Shorts, no live streams)."""
+    return "UULF" + channel_id[2:]
+
+
+@dataclass(frozen=True)
+class ChannelInfo:
+    uploads: str | None        # contentDetails.relatedPlaylists.uploads
+    video_count: int | None    # statistics.videoCount (public videos); None when not reported
+
+
+def parse_channels(content: bytes) -> dict[str, ChannelInfo]:
+    """channels.list(part=contentDetails,statistics) → {channel_id: ChannelInfo} for every channel returned."""
     data = json.loads(content.decode("utf-8"))
-    out: dict[str, str] = {}
+    out: dict[str, ChannelInfo] = {}
     for item in data.get("items", []) or []:
         cid = item.get("id")
+        if not isinstance(cid, str):
+            continue
         uploads = ((item.get("contentDetails") or {}).get("relatedPlaylists") or {}).get("uploads")
-        if isinstance(cid, str) and isinstance(uploads, str) and uploads:
-            out[cid] = uploads
+        raw = (item.get("statistics") or {}).get("videoCount")
+        try:
+            count = int(raw) if raw is not None else None
+        except (TypeError, ValueError):
+            count = None
+        out[cid] = ChannelInfo(uploads if isinstance(uploads, str) and uploads else None, count)
     return out
+
+
+def parse_channel_uploads(content: bytes) -> dict[str, str]:
+    """channels.list → {channel_id: uploads playlist id} for channels that report one."""
+    return {cid: info.uploads for cid, info in parse_channels(content).items() if info.uploads}
+
+
+def search_params(channel_id: str, now: datetime) -> dict[str, str]:
+    """search.list for a channel's newest videos of the tracking window (100 units however many come back)."""
+    return {"part": "snippet", "channelId": channel_id, "type": "video", "order": "date",
+            "publishedAfter": iso(now - timedelta(days=TRACK_DAYS)), "maxResults": str(BATCH)}
 
 
 def discovery_slot(channel_id: str) -> int:
@@ -168,6 +243,20 @@ def discovery_slot(channel_id: str) -> int:
 
 def current_slot(now: datetime) -> int:
     return int(now.timestamp() // SLOT_SEC) % DISCOVERY_SLOTS
+
+
+def runs_left_today(now: datetime) -> int:
+    """Runs still to come in this YouTube quota day (it ends at midnight Pacific), one per PACE_SEC."""
+    local = now.astimezone(PACIFIC)
+    midnight = datetime.combine(local.date() + timedelta(days=1), time(0), tzinfo=PACIFIC)
+    left = (midnight.astimezone(UTC) - now.astimezone(UTC)).total_seconds()
+    return max(0, int(left // PACE_SEC))
+
+
+def blocks_playlists(state: UploadsState | None, now: datetime) -> bool:
+    """True while a stored method says no playlist works for the channel ("search" or "empty")."""
+    return (state is not None and state.playlist_id is None and state.method in BLOCKING_METHODS
+            and state.unavailable_until is not None and state.unavailable_until > now)
 
 
 def is_api_short(title: str, duration_s: int | None) -> bool | None:
@@ -203,13 +292,14 @@ class ApiPass:
     budget: int
     used_before: int
     units: int = 0
+    search_units: int = 0                               # the part of `units` spent on search.list
     discovered: list[VideoObs] = field(default_factory=list)
     snapshots: list[ApiSnapshot] = field(default_factory=list)
     superseded: set[str] = field(default_factory=set)
     errors: list[str] = field(default_factory=list)
     flags: list[str] = field(default_factory=list)
     uploads_state: list[UploadsState] = field(default_factory=list)
-    covered: set[str] = field(default_factory=set)      # channels whose uploads playlist was read this run
+    covered: set[str] = field(default_factory=set)      # channels whose uploads were discovered this run
     exhausted: bool = False
     day: date | None = None
 
@@ -236,20 +326,27 @@ class ApiPass:
 
 
 class _Caller:
-    def __init__(self, ctx: RunContext, p: ApiPass, limit: int):
-        self.ctx, self.p, self.limit = ctx, p, limit
+    def __init__(self, ctx: RunContext, p: ApiPass, limit: int, remaining: int):
+        self.ctx, self.p = ctx, p
+        self.limit = limit             # regular calls this run: min(RUN_CAP, remaining)
+        self.remaining = remaining     # the day's budget left before this run
         self.headers = {KEY_HEADER: ctx.config.youtube_api_key or ""}
 
     def can_spend(self, cap: int) -> bool:
-        return self.p.units < min(cap, self.limit)
+        """Room for one more regular (1-unit) call under `cap`; search units do not count against RUN_CAP."""
+        regular = self.p.units - self.p.search_units
+        return regular < min(cap, self.limit) and self.p.units < self.remaining
 
     def get(self, base: str, params: dict[str, str], label: str,
-            soft_404: frozenset[str] = frozenset()) -> Response | None:
-        """One API call (1 unit, charged before sending: Google bills failed requests too).
+            soft_404: frozenset[str] = frozenset(), *, search: bool = False) -> Response | None:
+        """One API call, charged before sending (Google bills failed requests too): 1 unit, or SEARCH_COST.
 
         A 404 whose reason is in `soft_404` is an expected answer: the response is returned (status 404) without
         recording an error, so the caller decides what it means."""
-        self.p.units += 1
+        cost = SEARCH_COST if search else 1
+        self.p.units += cost
+        if search:
+            self.p.search_units += cost
         url = f"{base}?{urlencode(params)}"
         try:
             resp = self.ctx.http.get(url, headers=self.headers)
@@ -280,21 +377,29 @@ def _attributed(ctx: RunContext, matcher: AliasMatcher, channel_id: str, title: 
 
 
 def unavailable_channels(ctx: RunContext) -> set[str]:
-    """Channels whose uploads playlist is known to be missing right now (API discovery skipped, RSS continues)."""
-    return {cid for cid, s in ctx.store.uploads_state.items()
-            if s.unavailable_until is not None and s.unavailable_until > ctx.now}
+    """Channels playlist discovery skips right now ("search": search.list instead; "empty": nothing to find)."""
+    return {cid for cid, s in ctx.store.uploads_state.items() if blocks_playlists(s, ctx.now)}
 
 
 def discovery_channels(ctx: RunContext, failed: set[str]) -> list[str]:
-    """Channels to re-read this run: RSS failures, never-seen channels, then this slot's rotation share."""
+    """Channels to re-read this run: RSS failures, never-seen channels, then this slot's rotation share.
+
+    RSS failures come in rotation order starting at this run's slot, so when the discovery cap cannot take
+    them all (a long global RSS outage on a bigger roster) a different part is cut each run, never the same one.
+    """
     skip = unavailable_channels(ctx)
     resolved = sorted(ch.channel_id for ch in ctx.seed.resolved_channels() if ch.channel_id and ch.channel_id not in skip)
     slot = current_slot(ctx.now)
-    first = [c for c in resolved if c in failed]
+    first = sorted((c for c in resolved if c in failed),
+                   key=lambda c: ((discovery_slot(c) - slot) % DISCOVERY_SLOTS, c))
     unseen = [c for c in resolved if c not in failed and c not in ctx.store.channels_with_videos]
     rota = [c for c in resolved if c not in failed and c in ctx.store.channels_with_videos
             and discovery_slot(c) == slot]
     return first + unseen + rota
+
+
+def _plural(n: int, noun: str) -> str:
+    return f"{n} {noun}{'s' if n != 1 else ''}"
 
 
 def fetch_api_pass(ctx: RunContext, rss_videos: list[VideoObs], failed_channels: set[str]) -> ApiPass:
@@ -302,15 +407,17 @@ def fetch_api_pass(ctx: RunContext, rss_videos: list[VideoObs], failed_channels:
     day = pacific_date(ctx.now)
     used = ctx.store.api_units_used("youtube", day)
     p = ApiPass(budget=budget, used_before=used, day=day)
-    limit = min(RUN_CAP, max(0, budget - used))
+    remaining = max(0, budget - used)
+    limit = min(RUN_CAP, remaining)
     if not ctx.config.youtube_api_key:
         return p
     if limit <= 0:
         p.flag("daily budget used")
         return p
-    call = _Caller(ctx, p, limit)
+    call = _Caller(ctx, p, limit, remaining)
     matcher = AliasMatcher(ctx.seed.artists)
     cutoff = ctx.now - timedelta(days=TRACK_DAYS)
+    roster = {ch.channel_id for ch in ctx.seed.resolved_channels() if ch.channel_id}
 
     # Candidates from RSS (attributed, non-short, ≤30 d), as in the keyless scoring rules.
     rss_ids = {v.video_id for v in rss_videos}
@@ -326,10 +433,26 @@ def fetch_api_pass(ctx: RunContext, rss_videos: list[VideoObs], failed_channels:
     upgrade = set(rss_published) & with_rss_views
 
     uploads: dict[str, Upload] = {}
-    newly_unavailable: set[str] = set()
+    states: dict[str, UploadsState] = {}                  # this run's changes per channel; the last one wins
+    tried: dict[str, set[str]] = {}                       # playlists read (or found missing) this run
+
+    def state_of(cid: str) -> UploadsState | None:
+        return states.get(cid) or ctx.store.uploads_state.get(cid)
+
     try:
+        def keep(cid: str, found: list[Upload]) -> None:
+            """New, attributed, in-window, non-#shorts uploads go on to statistics (and the Shorts rule)."""
+            for up in found:
+                if (up.video_id in rss_ids or up.video_id in ctx.store.known_videos or up.video_id in uploads
+                        or not (cutoff <= up.published_at <= ctx.now)
+                        or "#shorts" in normalize(up.title).casefold()
+                        or not _attributed(ctx, matcher, cid, up.title)):
+                    continue
+                uploads[up.video_id] = up
+
         def discover(cid: str, playlist: str) -> str:
             """Read one uploads playlist. Returns "ok", "missing" (playlistNotFound) or "failed"."""
+            tried.setdefault(cid, set()).add(playlist)
             resp = call.get(PLAYLIST_ITEMS_URL, {"part": "snippet,contentDetails", "playlistId": playlist,
                                                  "maxResults": str(BATCH)}, f"uploads {cid}", NOT_FOUND_REASONS)
             if resp is None:
@@ -342,25 +465,24 @@ def fetch_api_pass(ctx: RunContext, rss_videos: list[VideoObs], failed_channels:
                 p.errors.append(f"API uploads {cid}: bad JSON {exc}"[:200])
                 return "failed"
             p.covered.add(cid)
-            for up in found:
-                if (up.video_id in rss_ids or up.video_id in ctx.store.known_videos or up.video_id in uploads
-                        or not (cutoff <= up.published_at <= ctx.now)
-                        or "#shorts" in normalize(up.title).casefold()
-                        or not _attributed(ctx, matcher, cid, up.title)):
-                    continue
-                uploads[up.video_id] = up
+            keep(cid, found)
             return "ok"
 
-        def mark_unavailable(cid: str, why: str) -> None:
+        def mark(cid: str, method: str, why: str) -> None:
             until = ctx.now + timedelta(days=UNAVAILABLE_DAYS)
-            p.uploads_state.append(UploadsState(cid, None, until, ctx.now))
-            newly_unavailable.add(cid)
-            ctx.log.info("youtube API: no usable uploads playlist for %s (%s); RSS-only until %s",
-                         cid, why, until.date())
+            prev = state_of(cid)
+            searched = prev.searched_at if prev is not None and prev.method == METHOD_SEARCH else None
+            states[cid] = UploadsState(cid, None, until, ctx.now, method, searched)
+            if method == METHOD_EMPTY:
+                ctx.log.warning("youtube API: channel %s has no public videos (%s): the seed most likely points at "
+                                "the wrong channel; API discovery skips it until %s", cid, why, until.date())
+            else:
+                ctx.log.info("youtube API: no readable uploads playlist for %s (%s); discovered through search.list "
+                             "while its RSS fails, until %s", cid, why, until.date())
 
-        # 1. discovery
+        # 1. discovery through the uploads playlist (derived UU…, or the stored resolved/UULF playlist)
         disc_cap = max(1, int(limit * DISCOVERY_SHARE))
-        pending: list[str] = []                               # derived uploads id answered playlistNotFound
+        pending: list[str] = []                               # playlist answered playlistNotFound: ask channels.list
         for cid in discovery_channels(ctx, failed_channels):
             if not call.can_spend(disc_cap):
                 p.flag("discovery cap")
@@ -371,12 +493,9 @@ def fetch_api_pass(ctx: RunContext, rss_videos: list[VideoObs], failed_channels:
             state = ctx.store.uploads_state.get(cid)
             stored = state.playlist_id if state else None
             if discover(cid, stored or uploads_playlist_id(cid)) == "missing":
-                if stored:
-                    mark_unavailable(cid, "resolved playlist not found")
-                else:
-                    pending.append(cid)
+                pending.append(cid)
 
-        # 1b. resolve the real uploads playlist once for channels whose derived id is not found
+        # 1b. why is it missing? channels.list (1 unit per 50 channels) → resolved playlist, UULF, search or empty
         for i in range(0, len(pending), BATCH):
             if not call.can_spend(disc_cap):
                 p.flag("discovery cap")
@@ -385,26 +504,81 @@ def fetch_api_pass(ctx: RunContext, rss_videos: list[VideoObs], failed_channels:
                 p.errors.append("API: deadline reached during discovery")
                 break
             chunk = pending[i : i + BATCH]
-            resp = call.get(CHANNELS_URL, {"part": "contentDetails", "id": ",".join(chunk)}, "channels")
+            resp = call.get(CHANNELS_URL, {"part": "contentDetails,statistics", "id": ",".join(chunk)}, "channels")
             if resp is None:
                 continue
             try:
-                real = parse_channel_uploads(resp.content)
+                info = parse_channels(resp.content)
             except (ValueError, UnicodeDecodeError, AttributeError) as exc:
                 p.errors.append(f"API channels: bad JSON {exc}"[:200])
                 continue
             for cid in chunk:
-                playlist = real.get(cid)
-                if not playlist or playlist == uploads_playlist_id(cid):
-                    mark_unavailable(cid, "channels.list has no different uploads playlist")
+                ci = info.get(cid)
+                if ci is None or ci.video_count == 0:
+                    mark(cid, METHOD_EMPTY, "not returned by channels.list" if ci is None else "videoCount 0")
                     continue
-                p.uploads_state.append(UploadsState(cid, playlist, None, ctx.now))   # cached for later runs
-                ctx.log.info("youtube API: resolved uploads playlist for %s (derived id not found)", cid)
-                if not call.can_spend(disc_cap):
-                    p.flag("discovery cap")
-                    continue
-                if discover(cid, playlist) == "missing":
-                    mark_unavailable(cid, "resolved playlist not found")
+                outcome = "missing"
+                for playlist in (ci.uploads, long_form_playlist_id(cid)):
+                    if not playlist or playlist in tried.get(cid, set()):
+                        continue
+                    if not call.can_spend(disc_cap):
+                        p.flag("discovery cap")
+                        outcome = "deferred"                  # probe again next run; no state change
+                        break
+                    outcome = discover(cid, playlist)
+                    if outcome == "ok":
+                        if playlist != uploads_playlist_id(cid):
+                            method = METHOD_UULF if playlist == long_form_playlist_id(cid) else METHOD_RESOLVED
+                            states[cid] = UploadsState(cid, playlist, None, ctx.now, method)   # cached for later runs
+                            ctx.log.info("youtube API: %s uploads read from %s (%s)", cid, playlist, method)
+                        elif state_of(cid) is not None:
+                            states[cid] = UploadsState(cid, None, None, ctx.now)   # the derived id works again
+                        break
+                    if outcome != "missing":
+                        break                                 # transport/HTTP error: try again next run
+                if outcome == "missing":
+                    mark(cid, METHOD_SEARCH, "uploads and long-form playlists not found")
+
+        # 1c. API-blind channels whose RSS failed this run: search.list, throttled and only with budget headroom
+        def headroom() -> bool:
+            planned = len(tracked | set(uploads) | upgrade)
+            stats_calls = -(-(planned + BATCH) // BATCH)      # ceil, plus one batch for what the search may find
+            regular = p.units - p.search_units + stats_calls
+            if regular > limit or p.units + SEARCH_COST + stats_calls > remaining:
+                return False
+            # Every remaining run of this quota day must still afford this run's regular work.
+            return used + p.units + SEARCH_COST + stats_calls + runs_left_today(ctx.now) * regular <= budget
+
+        def due(cid: str) -> bool:
+            st = state_of(cid)
+            return (cid in failed_channels and blocks_playlists(st, ctx.now) and st is not None
+                    and st.method == METHOD_SEARCH
+                    and (st.searched_at is None or ctx.now - st.searched_at >= SEARCH_EVERY))
+
+        epoch = datetime(1970, 1, 1, tzinfo=UTC)
+        blind = sorted((c for c in roster if due(c)),
+                       key=lambda c: (getattr(state_of(c), "searched_at", None) or epoch, c))
+        for cid in blind[:SEARCH_PER_RUN]:
+            if ctx.time_left() <= 0:
+                p.errors.append("API: deadline reached during search")
+                break
+            if not headroom():
+                p.flag("search deferred")
+                break
+            prev = state_of(cid)
+            if prev is None:                                  # unreachable: due() requires a stored method
+                continue
+            states[cid] = replace(prev, searched_at=ctx.now)  # stamped even if the call fails: never retried hot
+            resp = call.get(SEARCH_URL, search_params(cid, ctx.now), f"search {cid}", search=True)
+            if resp is None:
+                continue
+            try:
+                found = parse_search_items(resp.content, cid)
+            except (ValueError, UnicodeDecodeError, AttributeError) as exc:
+                p.errors.append(f"API search {cid}: bad JSON {exc}"[:200])
+                continue
+            p.covered.add(cid)
+            keep(cid, found)
 
         # 2. statistics, most valuable first
         def newest_first(ids, when):
@@ -456,7 +630,9 @@ def fetch_api_pass(ctx: RunContext, rss_videos: list[VideoObs], failed_channels:
     except _Stop:
         pass
     p.snapshots.sort(key=lambda s: s.video_id)
-    rss_only = (unavailable_channels(ctx) | newly_unavailable) & {c.channel_id for c in ctx.seed.resolved_channels()}
-    if rss_only:
-        p.flag(f"{len(rss_only)} channel{'s' if len(rss_only) != 1 else ''} RSS-only")
+    p.uploads_state = [states[c] for c in sorted(states)]
+    blocked = [st.method for st in map(state_of, sorted(roster)) if st is not None and blocks_playlists(st, ctx.now)]
+    for method, label in ((METHOD_SEARCH, "via search"), (METHOD_EMPTY, "empty")):
+        if n := blocked.count(method):
+            p.flag(f"{_plural(n, 'channel')} {label}")
     return p

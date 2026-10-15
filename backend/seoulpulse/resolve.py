@@ -15,7 +15,7 @@ import httpx
 
 from .config import Config
 from .fetchers.wikipedia import pageviews_url
-from .fetchers.youtube_rss import FEED_URL
+from .fetchers.youtube_rss import FEED_URL, parse_youtube_feed
 from .http import BROWSER_UA, HttpClient, HttpError, pace_interval
 from .matching import normalize
 from .seed import UC_RE, Seed, load_lock, load_seed
@@ -40,7 +40,7 @@ class Target:
 @dataclass(frozen=True)
 class Resolution:
     handle: str
-    status: str            # OK | MISMATCH | NOT_FOUND
+    status: str            # OK | MISMATCH | EMPTY | NOT_FOUND
     channel_id: str | None
     title: str | None
     note: str = ""
@@ -98,7 +98,23 @@ def resolve_one(http: HttpClient, t: Target) -> Resolution:
         return Resolution(t.handle, "NOT_FOUND", cid, title, f"feed: {exc}")
     if feed.status != 200:
         return Resolution(t.handle, "NOT_FOUND", cid, title, f"feed HTTP {feed.status}")
+    empty = feed_is_empty(feed.content)
+    if empty is None:
+        return Resolution(t.handle, "NOT_FOUND", cid, title, "feed is not an Atom feed")
+    if empty:
+        return Resolution(t.handle, "EMPTY", cid, title, "no uploads: squatter or wrong channel?")
     return Resolution(t.handle, "OK", cid, title)
+
+
+def feed_is_empty(content: bytes) -> bool | None:
+    """True when a channel feed lists no uploads, None when it is not a feed at all.
+
+    A title match alone let squatter channels in (2026-10-15: e.g. `@ALLDAYPROJECT`, 4 subscribers, no uploads,
+    instead of the group's `@ALLDAY_PROJECT`); an official artist or label channel always has uploads."""
+    try:
+        return not parse_youtube_feed(content, utcnow())
+    except Exception:  # noqa: BLE001 - any parse failure means "not a usable feed"
+        return None
 
 
 def resolve_channels(config: Config, *, force: bool = False, transport: httpx.BaseTransport | None = None,
@@ -177,6 +193,8 @@ def validate_seed(config: Config, *, online: bool = False, transport: httpx.Base
                     r = http.get(FEED_URL.format(ch.channel_id))
                     if r.status != 200:
                         report(f"channel {ch.handle} ({ch.channel_id}): feed HTTP {r.status}")
+                    elif feed_is_empty(r.content):
+                        report(f"channel {ch.handle} ({ch.channel_id}): feed lists no uploads (wrong channel?)")
                 except HttpError as exc:
                     report(f"channel {ch.handle}: {exc}")
             out(f"checked {len(channels)} channel feeds")

@@ -1,5 +1,7 @@
 # SeoulPulse seed roster — generated 2026-10-14 from a verified pass (see docs/SPEC.md §2).
 # youtube: only handles whose resolved channel title matched an alias. Others rely on label channels.
+#   A matching title is not enough: on 2026-10-15, 11 handles here pointed at squatter or unrelated channels
+#   (a few subscribers, some with no uploads at all) and were replaced by the official channels.
 # wiki: canonical titles (redirect-resolved). null = missing/disambiguation; fix via `validate-seed --online`.
 version: 1
 artists:
@@ -163,13 +165,13 @@ artists:
     name: "ALLDAY PROJECT"
     name_ko: "올데이 프로젝트"
     aliases: ["ALLDAY PROJECT", {term: "ALL DAY PROJECT", case_sensitive: true}, "올데이 프로젝트"]
-    youtube: ["@ALLDAYPROJECT"]
+    youtube: ["@ALLDAY_PROJECT"]
     wiki: {en: "AllDay Project", ko: "ALLDAY PROJECT"}
   - id: xdinary-heroes
     name: "Xdinary Heroes"
     name_ko: "엑스디너리 히어로즈"
     aliases: ["Xdinary Heroes", "엑스디너리 히어로즈"]
-    youtube: ["@XdinaryHeroes"]
+    youtube: ["UCO9GhtdQcCRf67GIdSQ0HNQ"]  # @xdinaryheroesofficial (its handle URL redirects to a 404)
     wiki: {en: "Xdinary Heroes", ko: "엑스디너리 히어로즈"}
   - id: btob
     name: "BTOB"
@@ -199,7 +201,7 @@ artists:
     name: "AHOF"
     name_ko: "아홉"
     aliases: ["AHOF"]
-    youtube: ["@AHOF"]
+    youtube: ["@AHOF_official"]
     wiki: {en: "AHOF", ko: "AHOF"}
     search: ["AHOF"]  # 아홉 = "nine"
   - id: g-dragon
@@ -321,37 +323,37 @@ artists:
     name: "izna"
     name_ko: "이즈나"
     aliases: ["izna", "이즈나"]
-    youtube: ["@iznaofficial"]
+    youtube: ["@izna_offcl"]
     wiki: {en: "Izna", ko: "Izna"}
   - id: katseye
     name: "KATSEYE"
     name_ko: "캣츠아이"
     aliases: ["KATSEYE", "캣츠아이"]
-    youtube: ["@KATSEYE"]
+    youtube: ["@katseyeworld"]
     wiki: {en: "Katseye", ko: null}
   - id: unis
     name: "UNIS"
     name_ko: "유니스"
     aliases: ["UNIS", "유니스"]
-    youtube: ["@UNIS"]
+    youtube: ["@unis_offcl"]
     wiki: {en: "Unis (group)", ko: "유니스 (음악 그룹)"}
   - id: kep1er
     name: "Kep1er"
     name_ko: "케플러"
     aliases: ["Kep1er", "케플러"]
-    youtube: []
+    youtube: ["@kep1er_offcl"]
     wiki: {en: "Kep1er", ko: "케플러 (음악 그룹)"}
   - id: qwer
     name: "QWER"
     name_ko: "큐더블유이알"
     aliases: ["QWER", "큐더블유이알"]
-    youtube: ["@QWER_Band"]
+    youtube: ["@QWER_Band_official"]
     wiki: {en: null, ko: "QWER"}
   - id: kiiikiii
     name: "KiiiKiii"
     name_ko: "키키"
     aliases: ["KiiiKiii", "키키"]
-    youtube: ["@KiiiKiiiofficial"]
+    youtube: ["@KiiiKiii_starship"]
     wiki: {en: "KiiiKiii", ko: null}
     search: ["KiiiKiii"]  # 키키 is a common name/word
   - id: artms
@@ -390,7 +392,7 @@ artists:
     name: "Apink"
     name_ko: "에이핑크"
     aliases: ["Apink", "에이핑크"]
-    youtube: ["@Apink"]
+    youtube: ["@officialapink"]
     wiki: {en: "Apink", ko: "에이핑크"}
   - id: iu
     name: "IU"
@@ -450,13 +452,13 @@ artists:
     name: "ZICO"
     name_ko: "지코"
     aliases: ["ZICO", "지코"]
-    youtube: ["@ZICO"]
+    youtube: ["@ZICOOFFICIAL"]
     wiki: {en: "Zico (rapper)", ko: null}
   - id: taemin
     name: "TAEMIN"
     name_ko: "태민"
     aliases: ["TAEMIN", "태민"]
-    youtube: ["@TAEMIN"]
+    youtube: ["@taemin_xoalsox"]
     wiki: {en: "Taemin", ko: "태민"}
   - id: baekhyun
     name: "BAEKHYUN"

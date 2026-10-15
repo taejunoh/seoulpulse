@@ -10,8 +10,9 @@ real-device test and the submit button.
 - Feed is live: https://taejunoh.com/seoulpulse/trends.json
 - Cadence is driven by `ticker.yml`, a long-running job that dispatches `pipeline.yml` every 30 minutes and re-dispatches itself at about 5h30m. GitHub's `schedule` trigger fired only 2 of 14 expected runs early on and 0 of 5 in 75 minutes later. Backstop crons remain: `41 */3 * * *` on the ticker and `7,22,37,52 * * * *` on the pipeline.
 - `SP_CONTACT` variable is set to the repo URL.
-- `YOUTUBE_API_KEY` secret is set, so the API pass is active (budget 9,000 units/day or less). Six channels stay
-  RSS-only because their uploads playlist is not available to the API.
+- `YOUTUBE_API_KEY` secret is set, so the API pass is active (budget 9,000 units/day or less). The six channels
+  that looked "RSS-only" on 2026-10-14 turned out to be squatter channels with no uploads behind wrong seed handles;
+  the seed was fixed on 2026-10-15 (SPEC §2.1), and empty channels are now flagged as `N channels empty`.
 - Daily social draft issue workflow runs at 13:17 UTC; the first issue (#1) exists.
 - Privacy and support pages: https://taejunoh.com/seoulpulse/privacy/ and https://taejunoh.com/seoulpulse/support/
 

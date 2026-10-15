@@ -103,16 +103,22 @@ class CacheEntry:
 
 @dataclass(frozen=True)
 class UploadsState:
-    """Per-channel uploads-playlist knowledge for the YouTube API pass (spec §3.3).
+    """Per-channel discovery method for the YouTube API pass (spec §3.3).
 
-    `playlist_id` is a resolved uploads playlist that differs from the derived `UU…` id (None: use the derived id);
-    `unavailable_until` marks a channel API discovery skips until then (RSS continues).
+    `playlist_id` is the playlist to read when it differs from the derived `UU…` id (None: use the derived id):
+    the one `channels.list` reports (method "resolved") or the long-form `UULF…` playlist (method "uulf").
+    `unavailable_until` (with `playlist_id` None) means no playlist works until then: method "search" (API-blind
+    channel, discovered through throttled `search.list` while its RSS fails) or "empty" (no public videos at all;
+    the seed most likely points at the wrong channel). `searched_at` is the last `search.list` call for it.
+    Rows from before methods existed (`method` None) are probed again.
     """
 
     channel_id: str
     playlist_id: str | None
     unavailable_until: datetime | None
     checked_at: datetime
+    method: str | None = None
+    searched_at: datetime | None = None
 
 
 @dataclass(frozen=True)

@@ -21,8 +21,8 @@ export SP_CONTACT="https://your-site.example/seoulpulse"   # strongly recommende
 | `uv run seoulpulse serve [--port 8787] [--seed-example]` | serve `../public/` on `127.0.0.1` with `Cache-Control: no-cache` |
 | `uv run seoulpulse dev` | `serve` in a thread + `run --loop` |
 | `uv run seoulpulse social [--input PATH] [--top 5] [--format x\|threads\|both]` | print X/Threads drafts (we never post) |
-| `uv run seoulpulse resolve-channels [--force]` | resolve `@handles` → `data/channels.lock.json` (title-checked) |
-| `uv run seoulpulse validate-seed [--online]` | roster checks; `--online` also verifies channel ids and canonical wiki titles |
+| `uv run seoulpulse resolve-channels [--force]` | resolve `@handles` → `data/channels.lock.json` (title-checked; channels with no uploads are rejected as `EMPTY`) |
+| `uv run seoulpulse validate-seed [--online]` | roster checks; `--online` also verifies channel feeds (reachable, with uploads) and canonical wiki titles |
 | `uv run pytest` | all tests, offline (real sockets are blocked) |
 
 `--sources` takes any of `youtube,wikipedia,yonhap,soompi,koreaboo` (plus `naver` when it is configured, see
@@ -56,11 +56,21 @@ are sent only as request headers and never appear in logs, errors, the database 
 What it adds (spec §3.3): each channel's uploads playlist is read about every 6 hours (50 uploads instead of
 RSS's 15), every tracked video gets an exact view count each run (replacing the coarse, cached RSS count), videos
 stay tracked after they leave the feed, and Shorts that RSS never showed are filtered by duration and title.
+When a channel's RSS feed fails (YouTube's feed server answered 404 for every channel from 2026-10-14 23:50 UTC),
+its playlist is read in that same run, so discovery keeps up through an outage.
 
-Quota: 1 unit per call; at most 200 units per run and `SP_YOUTUBE_DAILY_UNITS` (9,000) per Pacific-time day,
-tracked in the database. A normal day uses about 1,500–3,000 units. When the budget runs out the run falls back
-to RSS values, and the YouTube source `detail` says so (`API 41 units (2310/9000 today)`, `budget cap`,
-`quota exhausted`, `key rejected`).
+When the API cannot find a channel's uploads playlist, `channels.list` decides what to do, and the choice is kept
+in the `yt_uploads` table: a different uploads playlist or the long-form `UULF…` playlist is used instead; a
+channel with no public videos is reported as `N channels empty` with a warning (the seed handle is almost certainly
+wrong; fix it in `data/`); a channel with videos but no readable playlist is "API-blind" (`N channels via search`)
+and, while its RSS fails, is discovered through `search.list` at most every 6 hours, one search per run, and only
+when the day's budget still covers every remaining run.
+
+Quota: 1 unit per call (`search.list`: 100); at most 200 units per run (plus one search) and
+`SP_YOUTUBE_DAILY_UNITS` (9,000) per Pacific-time day, tracked in the database. A normal day uses about
+1,500–3,000 units; a day-long RSS outage about 4,300–6,200. When the budget runs out the run falls back to RSS
+values, and the YouTube source `detail` says so (`API 41 units (2310/9000 today)`, `budget cap`,
+`search deferred`, `quota exhausted`, `key rejected`).
 
 To get a key:
 1. In the [Google Cloud Console](https://console.cloud.google.com/), create a project (one dedicated to SeoulPulse
