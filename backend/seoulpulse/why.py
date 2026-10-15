@@ -24,6 +24,8 @@ log = logging.getLogger("seoulpulse.why")
 
 WHY_MAX = 60
 FALLBACK = "Buzzing across Korean sources"
+R8_UP = 1.5        # R8 says "views up Nx" from here (R2 takes r ≥ 2.0 first when S_yt ≥ 0.2)...
+R8_STEADY = 0.7    # ..."steady" in [0.7, 1.5), and "still pulling" below 0.7 (the video is slowing)
 LLM_TOP = 10
 LLM_MAX_CALLS = 10
 LLM_CACHE_TTL = timedelta(hours=6)
@@ -142,11 +144,23 @@ def template_why(s: ArtistScore, now: datetime) -> tuple[str, str]:
                     "New teaser out: comeback incoming")
         if t:
             return t, "R7"
-    # R8 MOMENTUM
+    # R8 MOMENTUM: the wording follows the top video's acceleration, so "steady" is never said of a video that
+    # is slowing sharply (r at the 0.25 floor) or clearly speeding up (r between R8_UP and R2's 2.0, or a small video).
     if s.top is not None:
         v = fmt(s.top.display_vph)
-        t = _render(extract_song(s.top.video.title), lambda song: f'"{song}" steady at {v} views/hr',
-                    f"Steady YouTube pull: {v} views/hr")
+        name = extract_song(s.top.video.title)
+        r_top = s.r_top
+        if r_top is not None and r_top >= R8_UP:
+            r = f"{r_top:.1f}"
+            noun = "MV" if s.top.video.kind == "mv" else "Video"
+            t = _render(name, lambda song: f'"{song}" views up {r}x vs. normal decay',
+                        f"{noun} views up {r}x vs. normal decay")
+        elif r_top is not None and r_top < R8_STEADY:
+            t = _render(name, lambda song: f'"{song}" still pulling {v} views/hr',
+                        f"Still pulling {v} views/hr on YouTube")
+        else:                                          # 0.7 ≤ r < 1.5, or no r (no pair yet, small or stale)
+            t = _render(name, lambda song: f'"{song}" steady at {v} views/hr',
+                        f"Steady YouTube pull: {v} views/hr")
         if t:
             return t, "R8"
     return FALLBACK, "R9"

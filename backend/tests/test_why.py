@@ -152,3 +152,52 @@ def test_every_rule_output_fits(age):
     s = score([vid("AAAAAAAAAA1", "mv", "X '" + "가" * 40 + "' MV", age, [(1, 10_000), (0, 999_999_999)])])
     text, _ = why(s)
     assert 1 <= len(text) <= 60
+
+
+# R8 wording follows the top video's acceleration r. Live 2026-10-15: Rosé, ALLDAY PROJECT and KickFlip read
+# '"…" steady at X views/hr' while their r sat at the 0.25 floor (views slowing sharply). Now r < 0.7 reads
+# "still pulling", 0.7 ≤ r < 1.5 (or no r) stays "steady", and r ≥ 1.5 uses R2's "views up" wording.
+AFTERGLOW = "SEVENTEEN (세븐틴) 'Afterglow' Performance Film"
+
+
+def perf(snaps, title=AFTERGLOW):
+    return score([vid("AAAAAAAAAA1", "perf", title, 48, snaps)])
+
+
+def test_r8_slowing_video_is_still_pulling_not_steady():
+    s = perf([(6, 900_000), (0, 902_000)])
+    assert s.r_top == 0.25
+    assert why(s) == ('"Afterglow" still pulling 333 views/hr', "R8")
+    s2 = perf([(6, 900_000), (0, 902_000)], title="SEVENTEEN Performance Film")
+    assert why(s2) == ("Still pulling 333 views/hr on YouTube", "R8")
+
+
+def test_r8_normal_decay_is_steady():
+    s = perf([(6, 900_000), (0, 950_000)])
+    assert 0.7 <= s.r_top < 1.5
+    assert why(s) == ('"Afterglow" steady at 8.3K views/hr', "R8")
+
+
+def test_r8_speeding_up_uses_the_views_up_line():
+    s = perf([(6, 900_000), (0, 1_000_000)])                 # r 1.88: below R2's 2.0
+    assert 1.5 <= s.r_top < 2.0
+    assert why(s) == ('"Afterglow" views up 1.9x vs. normal decay', "R8")
+    s2 = perf([(6, 900_000), (0, 1_000_000)], title="SEVENTEEN Performance Film")
+    assert why(s2) == ("Video views up 1.9x vs. normal decay", "R8")
+    small = perf([(6, 20_000), (0, 23_000)])                 # r 2.5 but S_yt < 0.2: R2 skips it, R8 says it
+    assert small.r_top >= 2.0 and small.s_yt < 0.2
+    assert why(small) == ('"Afterglow" views up 2.5x vs. normal decay', "R8")
+
+
+@pytest.mark.parametrize(("r", "expected"), [
+    (0.25, '"Afterglow" still pulling 8.3K views/hr'),
+    (0.699, '"Afterglow" still pulling 8.3K views/hr'),
+    (0.7, '"Afterglow" steady at 8.3K views/hr'),
+    (1.499, '"Afterglow" steady at 8.3K views/hr'),
+    (1.5, '"Afterglow" views up 1.5x vs. normal decay'),
+    (None, '"Afterglow" steady at 8.3K views/hr'),
+])
+def test_r8_band_edges(r, expected):
+    s = perf([(6, 900_000), (0, 950_000)])
+    s.r_top = r
+    assert why(s) == (expected, "R8")
