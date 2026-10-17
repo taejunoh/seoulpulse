@@ -1,8 +1,9 @@
 # Launch status
 
-Status as of 2026-10-15. Everything below was verified on 2026-10-14/15. The backend is live and the App Store draft is
-complete but **not submitted for review**. What remains is owner-only: legal attestations, contact details, a
-real-device test and the submit button.
+**2026-10-17: version 1.0.0 (build 1) submitted to App Review — status "Waiting for Review".** Release is set to
+**Manual**: after approval, press **Release** in App Store Connect to put it on the store. All required owner steps
+(license + Paid Applications Schedule, availability, content rights, review contact, real-device TestFlight test)
+are done; see issue [#2](https://github.com/taejunoh/seoulpulse/issues/2). Optional items remain.
 
 ## Done
 
@@ -37,17 +38,17 @@ real-device test and the submit button.
 
 Tracked with direct links in issue [#2](https://github.com/taejunoh/seoulpulse/issues/2).
 
-- [ ] **1. License agreement.** Account Holder accepts the updated Apple Developer Program License Agreement at
+- [x] **1. License agreement.** Account Holder accepts the updated Apple Developer Program License Agreement at
   developer.apple.com/account. Required before submitting new apps or updates.
-- [ ] **2. Availability.** App Store Connect, Pricing and Availability, App Availability, Set Up Availability,
+- [x] **2. Availability.** App Store Connect, Pricing and Availability, App Availability, Set Up Availability,
   All countries, Confirm. Left unconfirmed on purpose.
-- [ ] **3. Content Rights.** App Information, Content Rights: declare third-party content. The app shows
+- [x] **3. Content Rights.** App Information, Content Rights: declare third-party content. The app shows
   third-party headlines/titles and YouTube thumbnails via links. This is the owner's legal attestation.
-- [ ] **4. App Review Information.** On the version page, add the owner's contact phone and email, then paste the
+- [x] **4. App Review Information.** On the version page, add the owner's contact phone and email, then paste the
   review notes from `docs/appstore/metadata.md`. The notes did not persist without the contact fields.
-- [ ] **5. Real-device test.** Install through the TestFlight app on an iPhone and test the widgets, including the
+- [x] **5. Real-device test.** Install through the TestFlight app on an iPhone and test the widgets, including the
   Lock Screen widget (already verified on the simulator).
-- [ ] **6. Submit.** "Add for Review", then Submit.
+- [x] **6. Submit.** "Add for Review", then Submit.
 - [ ] **7. Optional: Naver DataLab.** Get a key via NAVER API HUB on Naver Cloud (needs a Naver Cloud account), then:
   `gh secret set NAVER_CLIENT_ID --repo taejunoh/seoulpulse` and
   `gh secret set NAVER_CLIENT_SECRET --repo taejunoh/seoulpulse`.
