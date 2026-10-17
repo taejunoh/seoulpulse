@@ -195,7 +195,7 @@ artists:
     name: "CLOSE YOUR EYES"
     name_ko: "클로즈 유어 아이즈"
     aliases: [{term: "CLOSE YOUR EYES", case_sensitive: true}, "클로즈 유어 아이즈"]
-    youtube: ["@CLOSEYOUREYES"]
+    youtube: ["@close.your.eyes.official"]  # @CLOSEYOUREYES is an unrelated music re-upload channel
     wiki: {en: "Close Your Eyes (group)", ko: null}
   - id: ahof
     name: "AHOF"
