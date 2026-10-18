@@ -30,7 +30,7 @@ from collections.abc import Sequence
 from datetime import date, datetime, timedelta
 
 from ..http import HttpError, Response
-from ..scoring import search_spike
+from ..scoring import SEARCH_STALE_D, search_spike
 from ..timeutil import kst_date
 from .base import ApiUsage, FetchOutput, RunContext, SearchRow, make_result, multi_unit_status
 
@@ -214,15 +214,29 @@ class NaverFetcher:
 
         total = len(artists)
         ok = sum(1 for aid, _ in artists if aid not in failed)
-        current = sum(1 for aid, _ in artists if (r := state.get(aid)) is not None and r.target >= target
-                      and r.landed)
+        held = [r for aid, _ in artists if (r := state.get(aid)) is not None]
+        current = sum(1 for r in held if r.target >= target and r.landed)
+        # `day` is the newest KST day with data (D), not the requested target: before DataLab publishes
+        # yesterday (KST morning) every row still ends the day before, which reads "0/82 current · day <target−1>".
+        newest = max((r.day for r in held if r.day is not None), default=None)
         ledger = max(units, DAY_CAP - used) if exhausted else units
-        detail = f"{current}/{total} current · day {target.isoformat()} · {units} calls ({used + ledger}/{DAY_CAP} today)"
+        calls = f"{units} calls ({used + ledger}/{DAY_CAP} today)"
+        status = multi_unit_status(ok, total)
+        if newest is not None and newest < target - timedelta(days=SEARCH_STALE_D):
+            # Every row is past the scorer's window (§5.3): Naver contributes nothing. If DataLab answered for
+            # this target and still had nothing newer, the delay is upstream.
+            lead = f"no DataLab data after {newest.isoformat()}"
+            asked = any(r.target >= target for r in held)
+            detail = f"{lead}{' (upstream delay)' if asked else ''} · {calls}"
+            errors.insert(0, f"{lead}: newest day trails {target.isoformat()} by {(target - newest).days} days")
+            if status == "ok":
+                status = "degraded"
+        else:
+            detail = f"{current}/{total} current · day {(newest or target).isoformat()} · {calls}"
         if locked == "developers":
             detail += " · legacy endpoint"
         for f in dict.fromkeys(flags):
             detail += f" · {f}"
         usage = [ApiUsage("naver", today, ledger)] if ledger > 0 else []
-        result = make_result(self.source_id, multi_unit_status(ok, total), started, ctx.observed(), ok, total,
-                             detail, errors)
+        result = make_result(self.source_id, status, started, ctx.observed(), ok, total, detail, errors)
         return FetchOutput(result=result, search=rows, api_usage=usage)

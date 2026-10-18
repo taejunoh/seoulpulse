@@ -2,7 +2,10 @@
 
 from __future__ import annotations
 
+import json
+import re
 from collections.abc import Callable
+from datetime import date, datetime, timedelta
 
 import httpx
 
@@ -24,6 +27,26 @@ def ok_feed(_: httpx.Request) -> httpx.Response:
 
 def wiki_404(_: httpx.Request) -> httpx.Response:
     return httpx.Response(404, content=read_fixture("pageviews_404.json"))
+
+
+_RANGE_RE = re.compile(r"/daily/(\d{8})00/(\d{8})00$")
+
+
+def wiki_flat(views: int = 1000, through: date | None = None) -> Responder:
+    """Pageviews for every article: a flat `views` per day over the requested range, ending at `through` when it
+    is earlier than the requested end (Wikimedia's answer while it has not published the later days yet)."""
+    def respond(req: httpx.Request) -> httpx.Response:
+        m = _RANGE_RE.search(req.url.raw_path.decode())
+        assert m, req.url
+        start, end = (datetime.strptime(g, "%Y%m%d").date() for g in m.groups())
+        if through is not None:
+            end = min(end, through)
+        days = [start + timedelta(days=i) for i in range((end - start).days + 1)]
+        if not days:
+            return wiki_404(req)
+        items = [{"timestamp": d.strftime("%Y%m%d00"), "views": views} for d in days]
+        return httpx.Response(200, content=json.dumps({"items": items}).encode())
+    return respond
 
 
 def news_ok(req: httpx.Request) -> httpx.Response:

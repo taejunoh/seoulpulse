@@ -202,6 +202,7 @@ Status rule for multi-unit sources: `ok` when all units succeeded, `degraded` wh
 `GET https://wikimedia.org/api/rest_v1/metrics/pageviews/per-article/{lang}.wikipedia/all-access/user/{quote(title.replace(' ','_'), safe='')}/daily/{start}00/{end}00`
 `end` is yesterday (UTC). With no stored data, `start = end − 29 d` (backfill, so wiki has no cold start). Otherwise `start = latest_stored − 2 d`. Skip the article if `latest_stored == yesterday`. After the first run, a cron run therefore makes almost no requests.
 Response `items[].{timestamp:"YYYYMMDD00", views}` becomes `WikiDay(lang, title, day, views)`. A 404 is a unit error ("no data/not found"). Yesterday's data usually lands between 01:00 and 06:00 UTC.
+**Freshness.** The expected day is yesterday (UTC), the newest day Wikimedia normally has published. A day `D` is usable while it trails the expected day by at most `WIKI_MAX_LAG_D = 1` day (so `D ≥ today − 2 d`): that covers the hours before publication and a short delay. When even the newest day held for any article (stored or fetched this run) is older, nothing is usable: the scorer ignores it (§5.3) and the source is `degraded` although every request answered, with `detail` `no Wikimedia data after 2026-10-15 (upstream delay) · 146 articles` and the same fact first in `errors`. "(upstream delay)" is said only when Wikimedia answered this run; if the requests failed too, the unit status (usually `error`) stands and `detail` reads `no Wikimedia data after D · ok/total articles`. One day behind stays `ok` with the usual `0/146 articles current (day D)`. Live 2026-10-18: Wikimedia published no daily data after 2026-10-15 for 3+ days (per-article 404 for 10-16 and 10-17) while the source still read `ok · 0/146 articles current (day 2026-10-15)`.
 
 ### 3.5 Headlines (`soompi`, `koreaboo`: lang `en`; `yonhap`: lang `ko`)
 URLs: `https://www.soompi.com/feed`, `https://www.koreaboo.com/feed/`, `https://www.yna.co.kr/rss/entertainment.xml`. All three are RSS 2.0. Volume is about 60, 10, and 120 items respectively. Yonhap covers all entertainment, not only K-pop. The alias matcher filters it.
@@ -235,7 +236,7 @@ Runs only when **both** `NAVER_CLIENT_ID` and `NAVER_CLIENT_SECRET` are set. Wit
 
 **Fetch.** `target` = yesterday in KST; request `[target−27 d, target]`, `timeUnit=date`, one keyword group per artist (`groupName` = artist id; keywords = `Artist.search_keywords()`, §2.1), 5 groups per request in roster order → 17 requests for 82 acts. Data is daily, so an artist is requested only when its stored row is for an older target, or for this target but without data for `target` yet (`landed=false`) and fetched ≥1 h 55 min ago. In practice ~17 calls a day plus a few morning re-polls. Per response, each group's series goes through `search_spike()` (§5.3) in memory.
 **Caps.** ≤20 calls per run, ≤300 per KST day (ledger `api_usage`); after 3 consecutive failed requests the run stops asking. `48 × 20 = 960/day` stays under the legacy 1,000/day and `300 × 31 = 9,300/month` under the HUB's 50,000 even with retries. A 429 books the rest of the day (`quota exhausted`); credentials rejected by every endpoint → `credentials rejected`.
-**Status/detail.** Multi-unit over artists with keywords (§3.2): `82/82 current · day 2026-10-13 · 17 calls (17/300 today)`, plus ` · legacy endpoint` when the developers.naver.com endpoint answered.
+**Status/detail.** Multi-unit over artists with keywords (§3.2): `82/82 current · day 2026-10-13 · 17 calls (17/300 today)`, plus ` · legacy endpoint` when the developers.naver.com endpoint answered. `current` counts artists whose row has data for `target` (KST yesterday); `day` is the newest KST day with data among the rows (D, the day the scores use), not the target. Before DataLab has published KST yesterday (the KST morning), `0/82 current · day <target − 1>` is normal and still scored (D ≥ target − 2 d, §5.3). (Until 2026-10-18 `day` printed the target, so the first morning with Naver enabled read `0/82 current · day 2026-10-18` while the data ended on 10-17.) When the newest D of every row is older than `target − SEARCH_STALE_D`, Naver contributes nothing: the source is `degraded` with `no DataLab data after D (upstream delay) · N calls (…)`, "(upstream delay)" only if DataLab answered for this target.
 **Storage (compliance by design).** Naver's ratio series is never written: only our derived values, one row per artist in `search_signal` (latest `day` D, `z`, `ratio = x_D/μ`, `baseline_n`, `reason`, fetch bookkeeping), deleted after 7 days. Naver-derived numbers elsewhere (`artist_scores.components_json`, the `published` payloads) are kept ≤14 and ≤21 days. All of this is under the strictest 21-day reading. (Copies of the DB inside GitHub Actions cache entries can outlive this by up to the cache's 7-day eviction window.)
 
 ## 4. Storage — SQLite (`backend/var/seoulpulse.db`)
@@ -290,6 +291,7 @@ Keyed-API data: `source='api'` snapshots older than 30 days; videos that have on
 | weights | yt 0.35 · accel 0.15 · new 0.15 · wiki 0.20 · news 0.15 · kf bonus +6 | final combination |
 | `W_SEARCH`, `SEARCH_Z_FULL` | 0.10 (additive), 6 | Korean search term, only when `naver` is configured (§5.3) |
 | `SEARCH_SIGMA_FLOOR`, `SEARCH_MIN_MU`, `SEARCH_STALE_D`, `SEARCH_KF_Z` | 0.25, 0.01, 2 d, 2.0 | search spike guards and the Korea-first threshold |
+| `WIKI_MAX_LAG_D`, `EN_QUIET_Z` | 1 d, 1.0 | a wiki day may trail yesterday (UTC) by 1 day (§3.4); English Wikipedia is "quiet" below z 1.0 on fresh data (§5.4) |
 
 ### 5.2 Per-video intensity
 For each eligible video, all of the following must hold:
@@ -315,7 +317,7 @@ Define `t_L, V_L` as the latest snapshot and `age_L = max(0.25, hours(t_L − pu
 - **Accel:** `S_accel = clamp(log2(r_top)/2, −0.5, 1)` if `r_top` exists, else 0. The gate `g = clamp(S_yt/0.4, 0, 1)` keeps tiny videos from earning accel points.
 - **New release:** `S_new = max(0, max over mv of (1 − age_now/48), max over teaser of 0.4·(1 − age_now/72))`, where `age_now = hours(now − published_at)`, terms are floored at 0, and the result is 0 if there are none.
 - **Wikipedia,** per lang L ∈ {ko, en}:
-  - `D` = the latest stored day for the article. It must be ≥ today−2 d, else the signal is missing.
+  - `D` = the latest stored day for the article. It must be ≥ today−2 d (at most `WIKI_MAX_LAG_D` behind yesterday, §3.4), else the signal is missing (`stale`): a stale day contributes nothing to `wiki_z`, fires no wiki why-line (R3, R5) and is not published as a metric (§7).
   - Baseline: days `D−14 … D−1`, with at least 7 present, else missing.
   - `μ` = mean and `σ` = population std over the present baseline days. `σ_eff = max(σ, 0.25·μ, 10)`.
   - `z_L = clamp((x_D − μ)/σ_eff, −3, 10)`. If `z_L > 0`, apply the volume gate `z_L ← z_L·min(1, x_D/200)`. `ratio_L = x_D / max(μ, 1)`.
@@ -332,8 +334,10 @@ Define `t_L, V_L` as the latest snapshot and `age_L = max(0.25, hours(t_L − pu
 ### 5.4 Korea-first flag
 - `ko_lead_news`: let K be the Korean mentions with age ≤48 h **and `published_at ≥ en_from + 24h`**, where `en_from` is the `published_at` of the oldest stored English headline (`now` when there is none). At least one of them must have age ≤24 h. Let `t_ko = min(published_at over K)` and E be the English mentions with `published_at ≥ t_ko − 24h`. The flag is true when E is empty or `min(E.published_at) ≥ t_ko + 6h`.
   - Why `en_from`: "no English mention since `t_ko − 24h`" is evidence only if we held English headlines over that span. The feeds' backlogs differ (Yonhap ~3 days, Soompi ~2, Koreaboo ~half a day), so after a cold start an old Yonhap item "led" English coverage that was never collected. Live 2026-10-14: BTS showed `Korean press led English by 20h` (+6, rank 1) for 10+ hours, from a Yonhap backlog item 38 h older than the first run, while Soompi had covered the actual story 9 h *before* Yonhap. Once the DB holds 3+ days of English headlines the rule is unchanged. Pure scoring calls without `en_from` (the §5.8 example) are unrestricted.
-- `ko_lead_wiki`: `z_ko ≥ 2.0` (after the gate) and (`z_en` is missing or `z_en < 1.0`).
-- `ko_lead_search` (only when configured): `z_s ≥ 2.0` and (`z_en` is missing or `z_en < 1.0`): a Korean search spike while English Wikipedia is quiet.
+- **English Wikipedia is quiet** (`en_wiki_quiet`) when the EN signal is fresh and `z_en < 1.0`, or when the act has no English article (`wiki.en: null` in the seed: a fact, not a data gap). EN that is `stale`, has `no data` or a `short baseline` is **unknown, not quiet**, and never supports a Korean lead.
+- `ko_lead_wiki`: `z_ko ≥ 2.0` (after the gate) and English Wikipedia is quiet.
+- `ko_lead_search` (only when configured): `z_s ≥ 2.0` and English Wikipedia is quiet (a Korean search spike while English attention is low).
+  - Why "unknown is not quiet": until 2026-10-18 a missing `z_en` counted as quiet. When Wikimedia stopped publishing (§3.4) every EN signal went `stale`, so every Naver spike became Korea-first: live #1 KATSEYE and #3 ILLIT read `Korean searches 1.9x normal, EN quiet` (+6 each) with no English data at all. Now such an act keeps its search points and reads R5S (`Korean searches 1.9x normal`) without the bonus. With fresh data nothing changes (§5.8, §5.9).
 - `korea_first = ko_lead_news or ko_lead_wiki or ko_lead_search`. `S_kf = 1` if true, else 0.
 
 ### 5.5 Combination, eligibility, ranking
@@ -405,11 +409,11 @@ Ratios and r use `{:.1f}x`. Headline text is **never** included.
 |---|---|---|---|
 | R1 | NEW_MV | an eligible `mv` with `age_now ≤ 48h` (newest one) | `New MV "{song}" at {fmt(vph)} views/hr` · (`New MV out, {fmt(vph)} views/hr`) |
 | R2 | ACCEL | `r_top ≥ 2.0` and `S_yt ≥ 0.2` | `"{song}" views up {r}x vs. normal decay` · (`MV views up {r}x vs. normal decay`; use `Video` instead of `MV` if top kind ≠ mv) |
-| R3 | KO_WIKI | `ko_lead_wiki` | `Korean Wikipedia views {ratio_ko}x normal, EN quiet` |
-| R3S | KO_SEARCH | `ko_lead_search` (Naver configured) | `Korean searches {ratio_s}x normal, EN quiet` |
+| R3 | KO_WIKI | `ko_lead_wiki` (EN known quiet, §5.4) | `Korean Wikipedia views {ratio_ko}x normal, EN quiet` |
+| R3S | KO_SEARCH | `ko_lead_search` (Naver configured; EN known quiet, §5.4) | `Korean searches {ratio_s}x normal, EN quiet` |
 | R4 | KO_NEWS | `ko_lead_news` | no EN mention: `{n_ko} Korean headline(s), no English coverage yet` (`1 Korean headline, …` / `2 Korean headlines, …`); else `Korean press led English by {h}h` |
 | R5 | WIKI | `max(z_ko, z_en) ≥ 2.0` | `{Korean\|English} Wikipedia views {ratio}x the 2-week avg` (higher z; tie → Korean) |
-| R5S | SEARCH | `z_s ≥ 2.0` (Naver configured) | `Korean searches {ratio_s}x normal` |
+| R5S | SEARCH | `z_s ≥ 2.0` (Naver configured) | `Korean searches {ratio_s}x normal` (also the line for a search spike while EN is unknown) |
 | R6 | NEWS | `headlines_24h ≥ 2` | `{n} headlines in 24h ({n_ko} Korean)`; drop the parenthetical if `n_ko = 0` |
 | R7 | TEASER | `teaser` with `age_now ≤ 72h` | `New teaser "{song}": comeback incoming` · (`New teaser out: comeback incoming`) |
 | R8 | MOMENTUM | `top_video` exists; wording by `r_top` | `r_top ≥ 1.5`: R2's text, `"{song}" views up {r}x vs. normal decay` · (`MV`/`Video views up {r}x vs. normal decay`) — `0.7 ≤ r_top < 1.5` or no `r_top`: `"{song}" steady at {fmt(vph)} views/hr` · (`Steady YouTube pull: {fmt(vph)} views/hr`) — `r_top < 0.7`: `"{song}" still pulling {fmt(vph)} views/hr` · (`Still pulling {fmt(vph)} views/hr on YouTube`) |
@@ -442,7 +446,7 @@ UTF-8 JSON with `ensure_ascii=False`, 2-space indent, keys in the order shown. A
 - `image_url` (`https://i.ytimg.com/vi/{top_video.video_id}/hqdefault.jpg` | null)
 - `metrics`:
   - `yt_views_per_hour` (int|null), `yt_views_per_hour_estimated` (bool), `yt_accel` (number 2 dp | null)
-  - `wiki_day` (`YYYY-MM-DD` | null; the latest D used), `wiki_ko_views` (int|null), `wiki_ko_ratio` (2 dp | null), `wiki_en_views`, `wiki_en_ratio`
+  - `wiki_day` (`YYYY-MM-DD` | null; the latest D used), `wiki_ko_views` (int|null), `wiki_ko_ratio` (2 dp | null), `wiki_en_views`, `wiki_en_ratio`. Only fresh days are used (§5.3): while Wikimedia is behind, all five are null, `signals.wiki` is 0, and the `wikipedia` source (`degraded`) names the last published day in its `detail`.
   - `headlines_24h` (int), `headlines_ko_24h` (int)
 - `signals` (3 dp): `youtube` (0–1), `accel` (−0.5–1), `new_release`, `wiki`, `news` (0–1). These are S_yt, S_accel, S_new, S_wiki, S_news. Optional `search` (0–1, S_search) only when `naver` is configured. Naver's ratio is not published as a metric (data minimization); it appears only inside an R3S/R5S `why`.
 - `top_video` (null | `{video_id, title, url: https://www.youtube.com/watch?v=…, kind: mv|perf|teaser|show|other, published_at, views (latest), channel_name}`)
@@ -699,6 +703,7 @@ Korea-first K-pop Trends — TOP 5 (Oct 14, 18:00 KST)
 - `test_parse_youtube.py`: fixture with 4 entries in the real HYBE LABELS feed structure (a feed-level channelId without `UC`, one `/shorts/` link, one entry missing statistics).
 - `test_parse_rss.py`: soompi, koreaboo and yonhap fixtures, each with 3–5 items: synthetic titles, a CDATA title, and a `+0900` pubDate. Each fixture contains a `<description>`, and the test asserts it appears nowhere in the outputs. No real article text goes into fixtures.
 - `test_parse_pageviews.py`: 200 response, 404 → unit error, URL encoding of Korean titles and of `Kiss_of_Life_(group)`.
+- `test_freshness.py` (live 2026-10-18): the wiki freshness window (one day behind ok, two stale); a stale day scores 0, fires no wiki why-line and publishes no `wiki_day`; Korean leads need known-quiet English Wikipedia (stale / no data / short baseline → no lead, no article → quiet); a Naver spike with stale EN reads R5S without Korea-first; a Naver row older than `target − 2 d` adds nothing; an upstream delay degrades the source with `no Wikimedia data after D (upstream delay)`.
 - `test_scoring_worked_example.py`: §5.8 exactly. `test_cold_start.py`: one snapshot per video, empty history and empty wiki → items produced, `cold_start=true`, order by lifetime intensity, no exceptions.
 - `test_rank_change.py`: basis ≥6 h; fallback to oldest; empty → all `new`; up/down/same/amount.
 - `test_why.py`: every rule R1–R9 fires; long song titles truncate; 60-character limit enforced; Korean song title.
@@ -708,7 +713,7 @@ Korea-first K-pop Trends — TOP 5 (Oct 14, 18:00 KST)
 - `test_social.py`: golden strings from §9; weighted ≤280; ≤500.
 - `test_live_audit.py` (live-feed audit 2026-10-15): pairs never mix `rss`/`api` counts and fall back to the other source's own pair; an RSS outage bridged by the API is `ok`/`degraded`, not `error`; no Korean lead from mentions older than the English coverage; Yonhap's `NCT 위시`; stage videos → perf; "Teasing Video" → teaser; variety-series, live-viewing and broadcaster teasers → other.
 - `test_youtube_api.py`: no key → no calls; discovery + exact stats + RSS-count replacement; Shorts rule; rotation covers every channel once per 6 h; per-run and per-day caps are hard ceilings (ledger == calls); quota-exhausted and rejected-key stops; the key only in the `X-Goog-Api-Key` header and never in URLs, errors, the DB, `trends.json` or logs; 30-day API retention.
-- `test_naver.py`: absent/partial keys are a no-op (5 sources, no `signals.search`); end-to-end with a fake DataLab (17 batched requests, headers, body limits, 6th source, schema-valid, §5.9 worked example, R3S/R5S); no raw series and no secrets stored; daily cadence and 2 h re-poll; HUB→legacy fallback; rejected credentials, 429 and timeouts isolated; daily/run caps; Naver alone never counts as a successful run; the LLM never sees Naver values.
+- `test_naver.py`: absent/partial keys are a no-op (5 sources, no `signals.search`); end-to-end with a fake DataLab (17 batched requests, headers, body limits, 6th source, schema-valid, §5.9 worked example, R3S/R5S); no raw series and no secrets stored; daily cadence and 2 h re-poll (`day` = the data day); stale DataLab data → `degraded`; a Naver spike with 3-day-stale Wikipedia end-to-end (no Korea-first, R5S); HUB→legacy fallback; rejected credentials, 429 and timeouts isolated; daily/run caps; Naver alone never counts as a successful run; the LLM never sees Naver values.
 - Manual live smoke run, not in CI: `resolve-channels` → `validate-seed --online` → `run`. It must produce ≥10 items in under 5 minutes, and a second run 30 minutes later must report `cold_start:false`.
 
 **iOS:**

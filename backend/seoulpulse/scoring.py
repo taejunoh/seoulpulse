@@ -41,7 +41,13 @@ SEARCH_Z_FULL = 6.0      # S_search = clamp(z_search / 6, 0, 1)
 SEARCH_SIGMA_FLOOR = 0.25  # σ_eff = max(σ, 0.25·μ): a 2x day can score at most z = 4
 SEARCH_MIN_MU = 0.01     # baseline mean in Naver's batch-relative units; below it rounding noise dominates
 SEARCH_STALE_D = 2       # D must be ≥ target − 2 days (target = yesterday in KST)
-SEARCH_KF_Z = 2.0        # ko_lead_search: z_search ≥ 2 while English Wikipedia is quiet (z_en < 1 or missing)
+SEARCH_KF_Z = 2.0        # ko_lead_search: z_search ≥ 2 while English Wikipedia is quiet (en_wiki_quiet)
+# Wikipedia freshness (§3.4, §5.3). Wikimedia publishes UTC day D during D+1 (normally 01:00-06:00 UTC), so the
+# newest day we can expect at `now` is yesterday (UTC). D may trail it by WIKI_MAX_LAG_D (the hours before
+# publication, or a short upstream delay); an older D is stale: not scored, not "current", and the source is
+# reported `degraded` (live 2026-10-18: Wikimedia published nothing after 2026-10-15 for 3+ days).
+WIKI_MAX_LAG_D = 1
+EN_QUIET_Z = 1.0         # English Wikipedia is "quiet" below this z (fresh data only)
 
 
 def clamp(x: float, lo: float, hi: float) -> float:
@@ -264,13 +270,23 @@ class WikiLang:
         }
 
 
+def wiki_expected_day(today: date) -> date:
+    """The newest pageviews day Wikimedia normally has published on UTC day `today`: yesterday."""
+    return today - timedelta(days=1)
+
+
+def wiki_day_fresh(day: date, today: date) -> bool:
+    """D is usable: at most WIKI_MAX_LAG_D days behind the expected day (i.e. D ≥ today − 2 d)."""
+    return day >= wiki_expected_day(today) - timedelta(days=WIKI_MAX_LAG_D)
+
+
 def wiki_lang_signal(lang: str, title: str | None, series: Mapping[date, int] | None, today: date) -> WikiLang:
     if not title:
         return WikiLang(lang, title, True, "no title")
     if not series:
         return WikiLang(lang, title, True, "no data")
     D = max(series)
-    if D < today - timedelta(days=2):
+    if not wiki_day_fresh(D, today):
         return WikiLang(lang, title, True, "stale", day=D)
     base = [series[D - timedelta(days=k)] for k in range(1, 15) if (D - timedelta(days=k)) in series]
     if len(base) < 7:
@@ -283,6 +299,15 @@ def wiki_lang_signal(lang: str, title: str | None, series: Mapping[date, int] | 
     z = z_raw * min(1.0, x / 200) if z_raw > 0 else z_raw
     return WikiLang(lang, title, False, "", day=D, x=x, mu=mu, sigma=sigma, sigma_eff=sigma_eff,
                     z_raw=z_raw, z=z, ratio=x / max(mu, 1.0), baseline_n=len(base))
+
+
+def en_wiki_quiet(en: WikiLang) -> bool:
+    """English Wikipedia is quiet: fresh EN data with z_en < 1, or the act has no English article at all (the seed
+    says `wiki.en: null`, a fact rather than a data gap). EN data that is stale, absent or has a short baseline is
+    *unknown*, not quiet, so it can never support a Korean lead (§5.4)."""
+    if en.missing:
+        return en.reason == "no title"
+    return en.z is not None and en.z < EN_QUIET_Z
 
 
 def wiki_signal(ko: WikiLang, en: WikiLang) -> tuple[float, float]:
@@ -364,7 +389,7 @@ def search_signal(row: SearchRow | None, now: datetime) -> SearchSignal:
 def ko_lead_search(search: SearchSignal | None, en: WikiLang) -> bool:
     if search is None or search.missing or search.z is None or search.z < SEARCH_KF_Z:
         return False
-    return en.missing or en.z is None or en.z < 1.0
+    return en_wiki_quiet(en)
 
 
 @dataclass(frozen=True)
@@ -452,7 +477,7 @@ def news_signal(mentions: Sequence[Mention], now: datetime, first_run_at: dateti
 def ko_lead_wiki(ko: WikiLang, en: WikiLang) -> bool:
     if ko.missing or ko.z is None or ko.z < 2.0:
         return False
-    return en.missing or en.z is None or en.z < 1.0
+    return en_wiki_quiet(en)
 
 
 # ---------------------------------------------------------------------------- per-artist score (§5.5)

@@ -1,4 +1,9 @@
-"""Wikipedia pageviews (spec §3.4). Keyless; backfills 30 days on first sight of an article."""
+"""Wikipedia pageviews (spec §3.4). Keyless; backfills 30 days on first sight of an article.
+
+Freshness: `end` (yesterday, UTC) is the newest day Wikimedia normally has published. When even the newest day we
+hold trails it by more than `WIKI_MAX_LAG_D`, the scorer ignores the data (§5.3) and the source reads `degraded`,
+naming the last day Wikimedia published, even though every request answered (an upstream delay, not our failure).
+"""
 
 from __future__ import annotations
 
@@ -7,6 +12,7 @@ from datetime import date, datetime, timedelta
 from urllib.parse import quote
 
 from ..http import HttpError
+from ..scoring import wiki_day_fresh, wiki_expected_day
 from .base import FetchOutput, RunContext, WikiDay, make_result, multi_unit_status
 
 PAGEVIEWS_URL = (
@@ -62,7 +68,8 @@ class WikipediaFetcher:
 
     def fetch(self, ctx: RunContext) -> FetchOutput:
         started = ctx.observed()
-        end = ctx.now.date() - timedelta(days=1)
+        today = ctx.now.date()
+        end = wiki_expected_day(today)
         articles: list[tuple[str, str]] = []
         seen: set[tuple[str, str]] = set()
         for artist in ctx.seed.artists:
@@ -76,6 +83,7 @@ class WikipediaFetcher:
         errors: list[str] = []
         days: list[WikiDay] = []
         latest_seen: date | None = None
+        answered = 0               # articles Wikimedia answered (200) this run
         rate_limited = False
         ordered = article_order(articles, ctx.store)
         for i, (lang, title) in enumerate(ordered):
@@ -119,16 +127,29 @@ class WikipediaFetcher:
                 errors.append(f"{lang}:{title}: bad JSON {exc}"[:200])
                 continue
             ok += 1
+            answered += 1
             days.extend(got)
             newest = max((d.day for d in got), default=latest)
             if newest is not None:
                 latest_seen = newest if latest_seen is None else max(latest_seen, newest)
                 if newest >= end:
                     current += 1
-        day_label = (latest_seen or end).isoformat()
-        detail = f"{current}/{total} articles current (day {day_label})"
+        status = multi_unit_status(ok, total)
+        # The newest day held for any article, stored or fetched now (articles that failed this run included).
+        held = [ctx.store.wiki_latest_day(*a) for a in articles] + [latest_seen]
+        newest_held = max((d for d in held if d is not None), default=None)
+        if newest_held is not None and not wiki_day_fresh(newest_held, today):
+            # Nothing usable anywhere: every article trails yesterday by 2+ days. If Wikimedia answered and still
+            # had nothing newer, the delay is upstream; the scorer ignores these days (§5.3).
+            lead = f"no Wikimedia data after {newest_held.isoformat()}"
+            detail = f"{lead} (upstream delay) · {total} articles" if answered else f"{lead} · {ok}/{total} articles"
+            errors.insert(0, f"{lead}: newest day trails {end.isoformat()} by {(end - newest_held).days} days")
+            if status == "ok":
+                status = "degraded"
+        else:
+            day_label = (latest_seen or end).isoformat()
+            detail = f"{current}/{total} articles current (day {day_label})"
         if rate_limited:
             detail += " · rate limited"
-        result = make_result(self.source_id, multi_unit_status(ok, total), started, ctx.observed(),
-                             ok, total, detail, errors)
+        result = make_result(self.source_id, status, started, ctx.observed(), ok, total, detail, errors)
         return FetchOutput(result=result, wiki=days)

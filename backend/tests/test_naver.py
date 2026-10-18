@@ -31,7 +31,7 @@ from seoulpulse.store import Store
 from seoulpulse.why import apply_llm_whys, llm_input, template_why
 
 from .conftest import DATA_DIR, SCHEMA_PATH, FakeClock, utc
-from .fakenet import FakeNet
+from .fakenet import FakeNet, wiki_flat
 from .test_scoring_worked_example import ARTISTS, BASIS, FIRST_RUN, MENTIONS, VIDEOS, WIKI
 from .test_scoring_worked_example import NOW as EX_NOW
 
@@ -58,9 +58,10 @@ def series_for(group: str, end: date, *, spike: str) -> list[dict]:
 class FakeNaver:
     """Both DataLab endpoints. Records every request; statuses are per endpoint."""
 
-    def __init__(self, hub=200, developers=200, *, spike="lim-young-woong", landed=True, exc=None):
+    def __init__(self, hub=200, developers=200, *, spike="lim-young-woong", landed=True, lag=None, exc=None):
         self.status = {"hub": hub, "developers": developers}
-        self.spike, self.landed, self.exc = spike, landed, exc
+        self.spike, self.exc = spike, exc
+        self.lag = lag if lag is not None else (0 if landed else 1)     # days the data trails `endDate`
         self.requests: list[tuple[str, httpx.Request]] = []
 
     def __call__(self, req: httpx.Request) -> httpx.Response:
@@ -74,7 +75,7 @@ class FakeNaver:
                 else {"errorMessage": "Authentication failed", "errorCode": "024"}
             return httpx.Response(status, content=json.dumps(body).encode())
         body = json.loads(req.content)
-        end = date.fromisoformat(body["endDate"]) - (timedelta(days=0) if self.landed else timedelta(days=1))
+        end = date.fromisoformat(body["endDate"]) - timedelta(days=self.lag)
         results = [{"title": g["groupName"], "keywords": g["keywords"],
                     "data": series_for(g["groupName"], end, spike=self.spike)} for g in body["keywordGroups"]]
         return httpx.Response(200, content=json.dumps({"startDate": body["startDate"], "endDate": body["endDate"],
@@ -220,7 +221,7 @@ def test_configured_run_end_to_end(config, caplog):
     caplog.set_level(logging.DEBUG)
     cfg = naver_config(config)
     naver = FakeNaver()
-    out = run(cfg, naver)
+    out = run(cfg, naver, net=FakeNet(wiki=wiki_flat()))      # fresh, flat Wikipedia: EN quiet is known (z 0)
     assert out.exit_code == 0
     reqs = naver.calls()
     assert len(reqs) == 17                                    # 82 artists, 5 keyword groups per request
@@ -275,13 +276,57 @@ def test_configured_run_end_to_end(config, caplog):
 def test_not_landed_yet_repolls_every_two_hours(config):
     cfg = naver_config(config)
     out = run(cfg, FakeNaver(landed=False))
-    assert out.payload["sources"][5]["detail"].startswith("0/82 current")
+    src = out.payload["sources"][5]
+    # Normal before DataLab publishes KST yesterday: `day` names the data day in use (target − 1), not the target.
+    assert (src["status"], src["detail"]) == ("ok", "0/82 current · day 2026-10-12 · 17 calls (17/300 today)")
     later = FakeNaver()
     run(cfg, later, now=NOW + timedelta(hours=1))
     assert later.requests == []
     later = FakeNaver()
     run(cfg, later, now=NOW + timedelta(hours=2))
     assert len(later.requests) == 17
+
+
+def test_stale_datalab_degrades_the_source_and_scores_nothing(config):
+    """DataLab answers but its newest day trails the target by 3 days (> SEARCH_STALE_D): no row is usable."""
+    cfg = naver_config(config)
+    out = run(cfg, FakeNaver(lag=3))
+    src = out.payload["sources"][5]
+    assert src["status"] == "degraded"
+    assert src["detail"] == "no DataLab data after 2026-10-10 (upstream delay) · 17 calls (17/300 today)"
+    assert out.results["naver"].errors[0].startswith("no DataLab data after 2026-10-10")
+    for it in out.payload["items"]:
+        assert it["signals"]["search"] == 0.0 and "searches" not in it["why"]
+    lyw = next((it for it in out.payload["items"] if it["id"] == "lim-young-woong"), None)
+    assert lyw is None or lyw["korea_first"] is False
+    jsonschema.validate(out.payload, schema())
+    # Two days behind is still inside the window: used, and the source stays ok.
+    cfg2 = replace(cfg, db_path=cfg.db_path.with_name("lag2.db"))
+    out2 = run(cfg2, FakeNaver(lag=2, spike="none"))
+    assert (out2.payload["sources"][5]["status"], out2.payload["sources"][5]["detail"]) == (
+        "ok", "0/82 current · day 2026-10-11 · 17 calls (17/300 today)")
+
+
+def test_naver_spike_with_stale_english_wikipedia_is_not_korea_first(config):
+    """Live 2026-10-18: Wikimedia published nothing for 3 days; KATSEYE and ILLIT read "Korean searches 1.9x
+    normal, EN quiet" (+6) although English Wikipedia was unknown, not quiet. Stale EN must never read as quiet."""
+    cfg = naver_config(config)
+    out = run(cfg, FakeNaver(), net=FakeNet(wiki=wiki_flat(through=date(2026, 10, 11))))   # D = today − 3
+    wiki = out.payload["sources"][1]
+    n_articles = len({(lang, t) for a in load_seed(DATA_DIR).artists for lang in ("ko", "en")
+                      if (t := a.wiki_title(lang))})
+    assert wiki["status"] == "degraded"
+    assert wiki["detail"] == f"no Wikimedia data after 2026-10-11 (upstream delay) · {n_articles} articles"
+    assert out.results["wikipedia"].units_ok == n_articles            # every request answered: upstream delay
+    lyw = next(it for it in out.payload["items"] if it["id"] == "lim-young-woong")
+    assert lyw["signals"]["search"] == 0.867                          # the fresh Naver spike still counts...
+    assert lyw["korea_first"] is False                                # ...but no Korea-first from unknown EN
+    assert lyw["why"] == "Korean searches 2.3x normal"                # R5S, never "EN quiet"
+    for it in out.payload["items"]:
+        assert "EN quiet" not in it["why"] and "Wikipedia" not in it["why"]
+        assert it["signals"]["wiki"] == 0.0 and it["metrics"]["wiki_day"] is None
+        assert it["metrics"]["wiki_ko_ratio"] is None and it["metrics"]["wiki_en_ratio"] is None
+    jsonschema.validate(out.payload, schema())
 
 
 def test_auto_falls_back_to_developers_endpoint(config):
