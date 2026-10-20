@@ -188,7 +188,7 @@ struct SettingsView: View {
         Section("About") {
             LabeledContent("Version", value: AppConfig.appVersion)
                 .foregroundStyle(Theme.textPrimary)
-            Text("SeoulPulse ranks K-pop acts by what is moving in Korea first: YouTube view velocity, Korean and English Wikipedia pageviews, and headline counts from Yonhap, Soompi and Koreaboo. It shows only headline text, links, source names, publish times and metrics it computes itself. Korean headlines are shown as published, untranslated. Fan-made; not affiliated with any artist, label or publisher.")
+            Text("Seoul Rising ranks K-pop acts by what is moving in Korea first: YouTube view velocity, Korean and English Wikipedia pageviews, and headline counts from Yonhap, Soompi and Koreaboo. It shows only headline text, links, source names, publish times and metrics it computes itself. Korean headlines are shown as published, untranslated. Fan-made; not affiliated with any artist, label or publisher.")
                 .font(.footnote)
                 .foregroundStyle(Theme.textSecondary)
                 .fixedSize(horizontal: false, vertical: true)

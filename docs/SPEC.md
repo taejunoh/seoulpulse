@@ -1,4 +1,7 @@
-# SeoulPulse — Product & Engineering Spec (v1)
+# Seoul Rising — Product & Engineering Spec (v1)
+
+> The product was called SeoulPulse until 2026-10-19. Only what users see changed (display name, wordmark, social
+> hashtag, site and store text). Code identifiers below keep `seoulpulse` / `SeoulPulse` on purpose.
 
 Korea-first K-pop trends for US fans: an iOS widget plus a small app. The data comes from a keyless Python pipeline that writes one static JSON file.
 This spec is the contract that the backend and iOS agents build against. They work in parallel. **Normative artifacts:** this file,
@@ -502,7 +505,7 @@ Excerpt from `docs/trends.example.json`. The sample data uses `[Sample]` headlin
 | `SeoulPulseWidget` | app-extension (WidgetKit) | `com.taejunoh.seoulpulse.widget` | `SeoulPulseWidget/`, `Shared/` |
 | `SeoulPulseTests` | bundle.unit-test (host: app) | `com.taejunoh.seoulpulse.tests` | `SeoulPulseTests/` |
 
-- App Group `group.com.taejunoh.seoulpulse`, set in both entitlements. URL scheme `seoulpulse`.
+- App Group `group.com.taejunoh.seoulpulse`, set in both entitlements. URL scheme `seoulpulse`, plus `seoulrising` as an alias (registered and parsed; links the app builds always use `seoulpulse://`).
 - Signing: `CODE_SIGN_STYLE: Automatic`, `DEVELOPMENT_TEAM: 3BMF4LM6TM`, and `CODE_SIGN_IDENTITY[sdk=iphonesimulator*]: "-"`. The simulator honors App Group entitlements under ad-hoc signing.
 - If `containerURL(forSecurityApplicationGroupIdentifier:)` returns nil, fall back to each process's own Caches directory.
 
@@ -523,10 +526,10 @@ targets:
     info:
       path: SeoulPulse/Info.plist
       properties:
-        CFBundleDisplayName: SeoulPulse
+        CFBundleDisplayName: Seoul Rising
         SPTrendsURL: http://localhost:8787/trends.json
         SPAppGroupID: group.com.taejunoh.seoulpulse
-        CFBundleURLTypes: [{CFBundleURLName: com.taejunoh.seoulpulse, CFBundleURLSchemes: [seoulpulse]}]
+        CFBundleURLTypes: [{CFBundleURLName: com.taejunoh.seoulpulse, CFBundleURLSchemes: [seoulpulse, seoulrising]}]
         NSAppTransportSecurity: {NSAllowsLocalNetworking: true}
         UILaunchScreen: {}
         UIUserInterfaceStyle: Dark
@@ -539,7 +542,7 @@ targets:
                    properties: {com.apple.security.application-groups: [group.com.taejunoh.seoulpulse]}}
     info:
       path: SeoulPulseWidget/Info.plist
-      properties: {CFBundleDisplayName: SeoulPulse, NSExtension: {NSExtensionPointIdentifier: com.apple.widgetkit-extension},
+      properties: {CFBundleDisplayName: Seoul Rising, NSExtension: {NSExtensionPointIdentifier: com.apple.widgetkit-extension},
                    SPTrendsURL: http://localhost:8787/trends.json, SPAppGroupID: group.com.taejunoh.seoulpulse,
                    NSAppTransportSecurity: {NSAllowsLocalNetworking: true}}
     settings: {base: {PRODUCT_BUNDLE_IDENTIFIER: com.taejunoh.seoulpulse.widget}}
@@ -581,9 +584,9 @@ schemes:
     - On a network success, `refresh = clamp(nextUpdateHint + 120s, now+15min, now+60min)`.
     - Otherwise, `refresh = now + 15min`.
 - Layouts. Every family uses `containerBackground(for: .widget) { Theme.ink }`. No images in widgets.
-  - **Small, top 3:** wordmark row ("SeoulPulse" plus a pink pulse dot). Three rows of rank numeral, name (1 line), change badge, and a cyan dot if KR-first. Footer: `Text(generatedAt, style: .relative)`. Tap target `.widgetURL(seoulpulse://item/<top1 id>)`.
+  - **Small, top 3:** wordmark row ("Seoul Rising" plus a pink pulse dot). Three rows of rank numeral, name (1 line), change badge, and a cyan dot if KR-first. Footer: `Text(generatedAt, style: .relative)`. Tap target `.widgetURL(seoulpulse://item/<top1 id>)`.
   - **Medium, top 6:** two columns × 3 rows of the same row style. Each row is a `Link` to `seoulpulse://item/<id>`.
-  - **Large, top 10:** header (wordmark, "Korea-first K-pop", updated time). Rows 1–3 are 2 lines (name + badges, then `why` in caption). Rows 4–10 are 1 line. Each row is a `Link`. The rough height budget is header 28 + 3×40 + 7×26 + padding.
+  - **Large, top 10:** header (wordmark, "Korea-first K-pop", updated time; the subtitle shows only when the status is short, the content box is at least 316 pt wide and text is at the default size or smaller, so 6.1-inch and smaller iPhones drop it). Rows 1–3 are 2 lines (name + badges, then `why` in caption). Rows 4–10 are 1 line. Each row is a `Link`. The rough height budget is header 28 + 3×40 + 7×26 + padding.
   - **Accessory rectangular, top 1:** line 1 is `#1 {name} {▲2}`, and `why` follows on up to 2 lines. Use system fonts and `.widgetAccentable()` on the rank. Tap target `widgetURL` to item 1.
 - Footer states: `Sample data` when origin is `.sample`; `Offline` when origin is `.cache`; `Stale` in amber when `generatedAt` is more than 3 h old.
 
@@ -592,6 +595,7 @@ schemes:
   - `seoulpulse://item/<id>` → `[.item(id)]`
   - `seoulpulse://settings` → `[.settings]`
   - `seoulpulse://widget-gallery` → `[.widgetGallery]`
+  - `seoulrising://…` parses the same way (alias)
   - anything else → home
 - **Home:**
   - Header: wordmark, "Korea-first K-pop trends", and "Updated 8m ago".
@@ -607,7 +611,7 @@ schemes:
   - **Headlines list:** each row shows a source pill (`Yonhap · KR`), the headline exactly as given, and a relative time.
   - **Links:** YouTube channel, Wikipedia EN, Wikipedia KO.
   - Every external link opens Safari via `@Environment(\.openURL)`.
-  - Footnote: "Headlines link to the original publishers. SeoulPulse shows headlines and its own metrics only."
+  - Footnote: "Headlines link to the original publishers. Seoul Rising shows headlines and its own metrics only."
   - If the id is unknown, show "This trend isn't in the latest snapshot" with a "Back to top trends" button.
 - **Settings:**
   - Feed URL text field, validated inline as http(s) with a host. Save writes the App Group default and reloads the widgets. "Reset to default" and "Test connection" (fetch and decode, then show `OK · 20 items · generated 18:00 KST` or the error) are alongside it.
@@ -652,7 +656,7 @@ schemes:
 - Take the top N (default 5). Date: `generated_at` in Asia/Seoul as `%b %-d` (and `%H:%M`). Delta tokens are `NEW`, `▲n`, `▼n`, or empty for same. KR-first items get a ` 🇰🇷` suffix. Item text is `why` exactly as given; no headlines ever appear.
 - **X variant, ≤280 weighted.**
   - Weight per code point: 1 for U+0000–10FF, 2000–200D, 2010–201F, 2032–2037; 2 for everything else. This is conservative versus X's counter.
-  - Lines: `Korea-first K-pop TOP {N} · {date}`, blank, `{rank}. {name}[ {delta}][ 🇰🇷]` per item, blank, `🇰🇷 = Korea moved first`, `#kpop #SeoulPulse`.
+  - Lines: `Korea-first K-pop TOP {N} · {date}`, blank, `{rank}. {name}[ {delta}][ 🇰🇷]` per item, blank, `🇰🇷 = Korea moved first`, `#kpop #SeoulRising`.
   - Greedy: for item 1..N in order, append ` — {why}` to that item's line. If the total then exceeds 280, undo that append and stop.
 - **Threads variant, ≤500 code points.**
   - Header `Korea-first K-pop Trends — TOP {N} ({date}, {HH:MM} KST)`, blank. Then per item, `{rank}. {name}[ ({name_ko})][ {delta}][ 🇰🇷]` followed by `   {why}`. Then a blank line and the footer.
@@ -661,8 +665,8 @@ schemes:
     2. without `name_ko`, long footer
     3. short footer `🇰🇷 = Korea moved first · fan-made, not affiliated`
     4. as (3), with whys truncated to 40 characters plus `…`
-- Output: both variants with headers `=== X (265/280) ===` and `=== Threads (412/500) ===`.
-- **Golden output for `docs/trends.example.json`** (test must match exactly). X (weighted 265):
+- Output: both variants with headers `=== X (266/280) ===` and `=== Threads (412/500) ===`.
+- **Golden output for `docs/trends.example.json`** (test must match exactly). X (weighted 266):
 ```
 Korea-first K-pop TOP 5 · Oct 14
 
@@ -673,7 +677,7 @@ Korea-first K-pop TOP 5 · Oct 14
 5. LE SSERAFIM ▲2
 
 🇰🇷 = Korea moved first
-#kpop #SeoulPulse
+#kpop #SeoulRising
 ```
 Threads (412 chars; variant 3 was the first to fit):
 ```

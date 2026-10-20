@@ -4,7 +4,7 @@
 # Prerequisites (manual, one-time):
 #   1. Xcode is signed in to the Apple Developer team account (Xcode > Settings > Accounts, team 3BMF4LM6TM).
 #   2. An app record exists in App Store Connect with bundle ID com.taejunoh.seoulpulse
-#      (app "SeoulPulse", Apple ID 6822836898).
+#      (app "Seoul Rising", created as "SeoulPulse", Apple ID 6822836898).
 #
 # Usage: ios/scripts/testflight.sh
 #   The build number (CFBundleVersion) is generated automatically as a UTC timestamp (YYYYMMDDHHMM), so each

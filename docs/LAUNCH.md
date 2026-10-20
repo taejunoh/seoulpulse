@@ -5,6 +5,15 @@
 (license + Paid Applications Schedule, availability, content rights, review contact, real-device TestFlight test)
 are done; see issue [#2](https://github.com/taejunoh/seoulpulse/issues/2). Optional items remain.
 
+**2026-10-19: renamed SeoulPulse → Seoul Rising.** The @seoulpulse handle was taken on Instagram and Threads; the new
+handles are @seoulrising on X, Instagram, Threads and TikTok. Everything users see changed: the app and widget
+display names, the in-app and widget wordmark, the About text, the site pages, the App Store metadata draft, the
+social draft hashtag (`#SeoulRising`) and the App Store screenshots `01-list` and `03-widgets` (`02-detail` shows no
+product name and was kept). Internal identifiers were kept so nothing
+breaks: bundle IDs, the App Group, the `seoulpulse://` URL scheme (`seoulrising://` is now also accepted), Xcode
+targets and the Swift module, the `seoulpulse` Python package and CLI, the GitHub repo, the HTTP User-Agent token
+and every URL under `https://taejunoh.com/seoulpulse/` (feed, privacy, support).
+
 ## Done
 
 **Backend (GitHub Actions + Pages)**
@@ -18,7 +27,8 @@ are done; see issue [#2](https://github.com/taejunoh/seoulpulse/issues/2). Optio
 - Privacy and support pages: https://taejunoh.com/seoulpulse/privacy/ and https://taejunoh.com/seoulpulse/support/
 
 **App Store Connect**
-- App "SeoulPulse": Apple ID 6822836898, bundle `com.taejunoh.seoulpulse`, SKU `seoulpulse-ios`.
+- App record: Apple ID 6822836898, bundle `com.taejunoh.seoulpulse`, SKU `seoulpulse-ios`. Created as "SeoulPulse";
+  App Name "Seoul Rising" from the 2026-10-19 rename (see `docs/appstore/metadata.md`).
 - TestFlight: build 1.0.0 (1) processed. Internal group "Internal" (auto-distribution), account holder as tester.
 - Version 1.0.0 draft is filled in:
   - subtitle, promotional text, description, keywords, support and marketing URLs, copyright

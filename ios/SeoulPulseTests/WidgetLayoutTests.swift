@@ -32,7 +32,7 @@ final class WidgetLayoutTests: XCTestCase {
         var checked = 0
         for (payloadName, snapshot) in payloads {
             for family in WidgetPreviewFamily.allCases {
-                for (metricsName, metrics) in [("spec", family.specMetrics), ("device", family.deviceMetrics)] {
+                for (metricsName, metrics) in Self.metricSets(family) {
                     for scenario in scenarios {
                         let context = "\(family.rawValue)/\(metricsName)/\(scenario.name)/\(payloadName)"
                         let frames = try layout(family, metrics: metrics, snapshot: snapshot, scenario: scenario)
@@ -42,14 +42,15 @@ final class WidgetLayoutTests: XCTestCase {
                 }
             }
         }
-        XCTAssertEqual(checked, 2 * 4 * 2 * scenarios.count)
+        let sets = WidgetPreviewFamily.allCases.map { Self.metricSets($0).count }.reduce(0, +)
+        XCTAssertEqual(checked, payloads.count * sets * scenarios.count)
     }
 
     func testEmptyStateLayout() throws {
         var snapshot = try TestSupport.sampleSnapshot()
         snapshot.items = []
         for family in [WidgetPreviewFamily.small, .medium, .large] {
-            for metrics in [family.specMetrics, family.deviceMetrics] {
+            for (_, metrics) in Self.metricSets(family) {
                 let frames = try layout(family, metrics: metrics, snapshot: snapshot, scenario: scenarios[0])
                 XCTAssertNotNil(frames["empty"], "\(family) empty message missing")
                 assertSound(frames, family: family, metrics: metrics, context: "\(family.rawValue)/empty")
@@ -57,13 +58,41 @@ final class WidgetLayoutTests: XCTestCase {
         }
     }
 
-    /// The large subtitle only appears when the status is short, so the header never has to squeeze.
+    /// The large subtitle only appears when the status is short and the widget is wide enough, so the header
+    /// never has to squeeze.
     func testLargeSubtitleRule() throws {
         let snapshot = try TestSupport.sampleSnapshot()
         let m = WidgetPreviewFamily.large.deviceMetrics
         XCTAssertNotNil(try layout(.large, metrics: m, snapshot: snapshot, scenario: scenarios[0])["subtitle"])
+        XCTAssertNotNil(try layout(.large, metrics: WidgetPreviewFamily.large.specMetrics, snapshot: snapshot,
+                                   scenario: scenarios[0])["subtitle"])
         XCTAssertNil(try layout(.large, metrics: m, snapshot: snapshot, scenario: scenarios[2])["subtitle"])
         XCTAssertNil(try layout(.large, metrics: m, snapshot: snapshot, scenario: scenarios[3])["subtitle"])
+        XCTAssertNil(try layout(.large, metrics: Self.compactMetrics(.large), snapshot: snapshot,
+                                scenario: scenarios[0])["subtitle"], "6.1-inch large widget is too narrow for the subtitle")
+        XCTAssertFalse(LargeTrendsView.showsSubtitle(snapshot: snapshot, origin: .network,
+                                                     now: snapshot.generatedAt.addingTimeInterval(8 * 60),
+                                                     contentWidth: m.contentRect.width, typeSize: .xLarge))
+    }
+
+    /// On the Home Screen the large header's short status is live text such as "59 minutes ago", wider than
+    /// the "8m ago" these tests render. The subtitle threshold has to leave room for that next to the real
+    /// wordmark and subtitle, and the Pro Max sizes have to stay above it.
+    func testSubtitleThresholdCoversLiveStatus() throws {
+        let snapshot = try TestSupport.sampleSnapshot()
+        let m = WidgetPreviewFamily.large.deviceMetrics
+        let frames = try layout(.large, metrics: m, snapshot: snapshot, scenario: scenarios[0])
+        let wordmark = try XCTUnwrap(frames["wordmark"])
+        let subtitle = try XCTUnwrap(frames["subtitle"])
+        let renderer = ImageRenderer(content: Text("59 minutes ago").font(.caption2).lineLimit(1).fixedSize())
+        let liveStatus = try XCTUnwrap(renderer.uiImage).size.width
+        XCTAssertGreaterThan(liveStatus, 60, "live status text not measured")
+        let needed = wordmark.width + 8 + subtitle.width + 8 + liveStatus
+        XCTAssertLessThanOrEqual(needed + 8, LargeTrendsView.subtitleMinContentWidth,
+                                 "header needs \(needed) pt; raise subtitleMinContentWidth")
+        XCTAssertGreaterThanOrEqual(WidgetPreviewFamily.large.specMetrics.contentRect.width,
+                                    LargeTrendsView.subtitleMinContentWidth)
+        XCTAssertGreaterThanOrEqual(m.contentRect.width, LargeTrendsView.subtitleMinContentWidth)
     }
 
     /// Guards the WidgetKit-specific failure: containers that measure ideal sizes, and `fixedSize` on the
@@ -86,6 +115,37 @@ final class WidgetLayoutTests: XCTestCase {
     }
 
     // MARK: Helpers
+
+    /// Every size a family is checked at: the SPEC size, the measured iPhone 17 Pro Max Home Screen, a 6.1-inch
+    /// iPhone and, for small and large, an iPhone SE. The SE medium widget (148 pt tall, 116 pt of content)
+    /// is left out: a header plus three rows doesn't fit that height, which is a known gap unrelated to width.
+    private static func metricSets(_ family: WidgetPreviewFamily) -> [(String, WidgetMetrics)] {
+        var sets = [("spec", family.specMetrics), ("device", family.deviceMetrics), ("compact", compactMetrics(family))]
+        if family == .small || family == .large { sets.append(("se", seMetrics(family))) }
+        return sets
+    }
+
+    /// 6.1-inch iPhone widget sizes (iPhone 16e and other 390/393 pt wide screens) with the default 16 pt margins.
+    private static func compactMetrics(_ family: WidgetPreviewFamily) -> WidgetMetrics {
+        let m = EdgeInsets(top: 16, leading: 16, bottom: 16, trailing: 16)
+        switch family {
+        case .small: return WidgetMetrics(size: CGSize(width: 158, height: 158), margins: m, cornerRadius: 22)
+        case .medium: return WidgetMetrics(size: CGSize(width: 338, height: 158), margins: m, cornerRadius: 22)
+        case .large: return WidgetMetrics(size: CGSize(width: 338, height: 354), margins: m, cornerRadius: 22)
+        case .rectangular: return family.specMetrics
+        }
+    }
+
+    /// iPhone SE (375 x 667 pt) widget sizes with the default 16 pt margins: the smallest Home Screen widgets
+    /// on an iOS 18 phone.
+    private static func seMetrics(_ family: WidgetPreviewFamily) -> WidgetMetrics {
+        let m = EdgeInsets(top: 16, leading: 16, bottom: 16, trailing: 16)
+        switch family {
+        case .small: return WidgetMetrics(size: CGSize(width: 148, height: 148), margins: m, cornerRadius: 22)
+        case .large: return WidgetMetrics(size: CGSize(width: 321, height: 324), margins: m, cornerRadius: 22)
+        case .medium, .rectangular: return family.specMetrics   // not checked; see metricSets
+        }
+    }
 
     private func layout(_ family: WidgetPreviewFamily, metrics: WidgetMetrics, snapshot: TrendsSnapshot,
                         scenario: Scenario) throws -> [String: CGRect] {

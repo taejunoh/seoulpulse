@@ -81,7 +81,7 @@ def build_x(snapshot: Mapping[str, Any], top: int = 5) -> str:
 
     def render(lines: Sequence[str]) -> str:
         return "\n".join([f"Korea-first K-pop TOP {len(items)} · {date_label(dt)}", "", *lines, "",
-                          f"{FLAG} = Korea moved first", "#kpop #SeoulPulse"])
+                          f"{FLAG} = Korea moved first", "#kpop #SeoulRising"])
 
     lines = list(heads)
     for i, it in enumerate(items):

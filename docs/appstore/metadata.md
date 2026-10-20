@@ -1,20 +1,23 @@
-# SeoulPulse: App Store metadata draft (US English, version 1.0)
+# Seoul Rising: App Store metadata draft (US English, version 1.0)
 
 Draft only. Nothing here has been uploaded. Character counts are measured (Python `len`); limits are App Store Connect's.
 
+Renamed from SeoulPulse to Seoul Rising on 2026-10-19 (see `docs/LAUNCH.md`). The product name in the App Name,
+description, review notes and screenshot captions changed; the subtitle, promotional text and URLs did not.
+
 | Field | Limit | Used |
 |---|---|---|
-| App Name | 30 | 10 |
+| App Name | 30 | 12 |
 | Subtitle | 30 | 24 |
 | Promotional Text | 170 | 163 |
-| Keywords | 100 | 96 |
-| Description | 4000 | 2753 |
-| Copyright | n/a | 15 |
+| Keywords | 100 | 89 |
+| Description | 4000 | 2765 |
+| Copyright | n/a | 14 |
 
-## App Name (10/30)
+## App Name (12/30)
 
 ```
-SeoulPulse
+Seoul Rising
 ```
 
 ## Subtitle (24/30)
@@ -29,12 +32,12 @@ Korea-first K-pop trends
 See what's spiking in Korea right now. A live K-pop ranking built from YouTube momentum, Wikipedia attention and Korean and English headlines, on your Home Screen.
 ```
 
-## Description (2753/4000)
+## Description (2765/4000)
 
 ```
-SeoulPulse shows what is spiking in K-pop right now, and flags when Korea moves before the English-language internet does.
+Seoul Rising shows what is spiking in K-pop right now, and flags when Korea moves before the English-language internet does.
 
-Most K-pop news reaches US fans hours after Korean media and fans have already moved on. SeoulPulse watches Korean sources directly and ranks the artists gaining the most momentum, so you can see what is trending before it reaches your feed.
+Most K-pop news reaches US fans hours after Korean media and fans have already moved on. Seoul Rising watches Korean sources directly and ranks the artists gaining the most momentum, so you can see what is trending before it reaches your feed.
 
 WHAT YOU GET
 - A live ranking of the top 20 K-pop acts by current momentum, with how far each one moved since the last snapshot
@@ -44,7 +47,7 @@ WHAT YOU GET
 - Pull to refresh in the app; the data itself is refreshed about every 30 minutes
 
 HOW THE RANKING WORKS
-SeoulPulse combines public signals, with no black box and no paid placements:
+Seoul Rising combines public signals, with no black box and no paid placements:
 - YouTube view velocity: how fast recent videos from official channels are gaining views compared with their normal pace
 - Wikipedia attention: English and Korean Wikipedia pageviews compared with each article's own recent baseline
 - Headlines: how many Korean and English headlines mention an act in the last 24 hours
@@ -64,20 +67,20 @@ WIDGETS
 Widgets show when the data was last updated and tell you if it is stale or offline.
 
 PRIVACY
-No account, no sign-in, no ads and no tracking. SeoulPulse does not collect any personal data. The app only downloads a public data file and a few video thumbnails. Headline and video links open in your browser, and SeoulPulse shows only headlines and its own computed numbers, never full articles.
+No account, no sign-in, no ads and no tracking. Seoul Rising does not collect any personal data. The app only downloads a public data file and a few video thumbnails. Headline and video links open in your browser, and Seoul Rising shows only headlines and its own computed numbers, never full articles.
 
-SeoulPulse is an independent fan-made project. It is not affiliated with, endorsed by or sponsored by any artist, agency, record label or media outlet. All artist names, titles and trademarks belong to their respective owners and are used only to identify the subjects of public trend data. Rankings are computed automatically from public data and are not an official chart.
+Seoul Rising is an independent fan-made project. It is not affiliated with, endorsed by or sponsored by any artist, agency, record label or media outlet. All artist names, titles and trademarks belong to their respective owners and are used only to identify the subjects of public trend data. Rankings are computed automatically from public data and are not an official chart.
 
 Questions or feedback: taejunoh.com/seoulpulse/support
 ```
 
-## Keywords (96/100)
+## Keywords (89/100)
 
 ```
-kpop,korean,idol,ranking,charts,music,news,widget,hallyu,fandom,momentum,hangul,headlines,rising
+kpop,korean,idol,ranking,charts,music,news,widget,hallyu,fandom,momentum,hangul,headlines
 ```
 
-Rules followed: comma-separated, no spaces, no word from the name or subtitle repeated (SeoulPulse, Korea-first, K-pop, trends), no artist, label or app names, no competitor names, no "best" or "#1" claims. "kpop" (no hyphen) is a different token from "K-pop" and is what many people type. The description's "no tracking" and "no account" lines match `PrivacyInfo.xcprivacy` (tracking false, no collected data types).
+Rules followed: comma-separated, no spaces, no word from the name or subtitle repeated (Seoul, Rising, Korea-first, K-pop, trends), no artist, label or app names, no competitor names, no "best" or "#1" claims. "kpop" (no hyphen) is a different token from "K-pop" and is what many people type. "rising" was dropped on 2026-10-19 because it is now part of the App Name, which the App Store already indexes; that leaves 11 characters free (for example `,comeback`, which would make 98/100). The description's "no tracking" and "no account" lines match `PrivacyInfo.xcprivacy` (tracking false, no collected data types).
 
 ## URLs
 
@@ -140,7 +143,7 @@ Verification from the code:
 ## App Review notes
 
 ```
-No sign-in is needed. SeoulPulse has no accounts, no in-app purchases and no ads. Open the app and the ranking appears immediately.
+No sign-in is needed. Seoul Rising has no accounts, no in-app purchases and no ads. Open the app and the ranking appears immediately.
 
 What it is: a ranking of K-pop acts by current momentum, with optional Home Screen and Lock Screen widgets. It is an independent fan-made project and is not affiliated with any artist, agency or label.
 
@@ -148,7 +151,7 @@ Data source: the app downloads one public JSON file, https://taejunoh.com/seoulp
 
 If the feed is unreachable the app shows its last cached data, then bundled sample data, and labels which one it is showing (Live, Offline or Sample data), so it never shows an empty screen.
 
-Widgets: touch and hold the Home Screen, tap Add Widget, choose SeoulPulse. There is also a preview of all widget sizes in the app under Settings > Widget preview.
+Widgets: touch and hold the Home Screen, tap Add Widget, choose Seoul Rising. There is also a preview of all widget sizes in the app under Settings > Widget preview.
 
 Settings has an optional "Feed URL" field for developers who run their own copy of the backend. Leave it empty to use the built-in feed.
 
@@ -170,11 +173,15 @@ Not needed for 1.0.
 
 ## Screenshot set (6.9" iPhone, 1320x2868, no alpha)
 
+`01-list` and `03-widgets` were retaken on 2026-10-19 with the Seoul Rising name (live data, iPhone 17 Pro Max simulator on iOS 26.5;
+6.3" copies in `6.3in/` via `sips -z 2622 1206`). `02-detail` (2026-10-14) was kept: it shows no product name, and every
+item in the live feed on 2026-10-19 had a top video, so a retake would have added a YouTube thumbnail (see 5.2 above).
+
 Files are in `docs/appstore/screenshots/`. Recommended upload order: 01-list, 03-widgets, 02-detail; 04-settings is optional (add it as a fourth if you want to show feed and source status).
 
 | File | Shows |
 |---|---|
 | `01-list.png` | Home: Live ranking with a KR FIRST entry |
 | `02-detail.png` | Detail view of a KR FIRST item (CORTIS) with Korean headlines and no video thumbnail |
-| `03-widgets.png` | Clean Home Screen with a Medium and a Large SeoulPulse widget on live data; only stock Apple dock icons |
+| `03-widgets.png` | Clean Home Screen with a Medium and a Large Seoul Rising widget on live data; only stock Apple dock icons |
 | `04-settings.png` | Settings with feed and source status (optional) |

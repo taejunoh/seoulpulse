@@ -1,13 +1,13 @@
 import SwiftUI
 
-/// Gradient wordmark "SeoulPulse" + pink pulse dot.
+/// Gradient wordmark "Seoul Rising" + pink pulse dot.
 struct Wordmark: View {
     var font: Font = Theme.wordmarkFont
     var dotSize: CGFloat = 6
 
     var body: some View {
         HStack(alignment: .center, spacing: dotSize * 0.6) {
-            Text("SeoulPulse")
+            Text("Seoul Rising")
                 .font(font)
                 .foregroundStyle(Theme.pulseGradient)
                 .lineLimit(1)
@@ -18,7 +18,7 @@ struct Wordmark: View {
                 .shadow(color: Theme.pulsePink.opacity(0.9), radius: dotSize * 0.6)
         }
         .accessibilityElement(children: .ignore)
-        .accessibilityLabel("SeoulPulse")
+        .accessibilityLabel("Seoul Rising")
     }
 }
 

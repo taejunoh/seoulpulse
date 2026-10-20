@@ -1,9 +1,13 @@
-# SeoulPulse
+# Seoul Rising
 
 Korea-first K-pop trends for US fans: an iOS widget plus a small app. A keyless Python pipeline watches YouTube
 channel feeds, Wikipedia pageviews and Yonhap/Soompi/Koreaboo headlines, scores artist momentum (flagging when
 Korea moves before English-language coverage), and writes one static file, `public/trends.json`. The iOS app
 and WidgetKit extension read that file. No server, no accounts, no API keys required.
+
+Seoul Rising was called SeoulPulse until 2026-10-19. Identifiers that users don't see keep the old name: the repo,
+the `seoulpulse` Python package and CLI, bundle IDs, the App Group, the `seoulpulse://` URL scheme, the Xcode
+targets and the `/seoulpulse/` URLs.
 
 **Live feed:** <https://taejunoh.com/seoulpulse/trends.json> (refreshed every 30 minutes by the `ticker.yml` workflow, which dispatches `pipeline.yml`). The iOS app defaults to
 this URL; for development, point Settings at a local server such as `http://localhost:8787/trends.json`.

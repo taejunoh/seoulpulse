@@ -37,7 +37,7 @@ struct RectangularTrendView: View {
                     .minimumScaleFactor(0.8)
                     .layoutProbe("rect-why")
             } else {
-                Text("SeoulPulse").font(.headline).widgetAccentable()
+                Text("Seoul Rising").font(.headline).widgetAccentable()
                 Text("No trends yet").font(.caption).foregroundStyle(.secondary)
             }
         }

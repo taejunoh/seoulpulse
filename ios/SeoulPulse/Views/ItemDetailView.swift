@@ -24,7 +24,7 @@ struct ItemDetailView: View {
                         if !item.links.isEmpty {
                             LinksCard(links: item.links)
                         }
-                        Text("Headlines link to the original publishers. SeoulPulse shows headlines and its own metrics only.")
+                        Text("Headlines link to the original publishers. Seoul Rising shows headlines and its own metrics only.")
                             .font(.caption2)
                             .foregroundStyle(Theme.textTertiary)
                             .fixedSize(horizontal: false, vertical: true)

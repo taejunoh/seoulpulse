@@ -1,6 +1,6 @@
 # Going live
 
-Step-by-step for publishing SeoulPulse. Nothing here has been run for you: no repo exists yet, no secrets are
+Step-by-step for publishing Seoul Rising (called SeoulPulse until 2026-10-19; internal identifiers keep that name). Nothing here has been run for you: no repo exists yet, no secrets are
 set, and the app has never been signed. The default path is GitHub Actions + GitHub Pages (free, no server).
 
 ## Current deployment
@@ -122,7 +122,7 @@ Requires a paid Apple Developer Program membership. The project is already confi
 (automatic signing) with bundle IDs `com.taejunoh.seoulpulse` (app) and `com.taejunoh.seoulpulse.widget` (widget)
 and App Group `group.com.taejunoh.seoulpulse`.
 
-**Current state.** The app record exists in App Store Connect: app "SeoulPulse", Apple ID 6822836898, bundle ID
+**Current state.** The app record exists in App Store Connect: app "Seoul Rising" (created as "SeoulPulse"), Apple ID 6822836898, bundle ID
 `com.taejunoh.seoulpulse`. Build 1.0.0 (1) was the first upload. There is an internal TestFlight group named
 "Internal" with automatic distribution, so every processed build goes to its testers without further steps.
 

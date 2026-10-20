@@ -1,6 +1,11 @@
-# SeoulPulse iOS (app + widget)
+# Seoul Rising iOS (app + widget)
 
 SwiftUI app and WidgetKit extension for `trends.json` (contract: `../docs/trends.schema.json`, spec: `../docs/SPEC.md` §8). iOS 18+, Swift 5 language mode, dark-only.
+
+The app shows the name **Seoul Rising** (`CFBundleDisplayName` of the app and the widget extension, the `Wordmark`
+view, the Lock Screen empty state and the About text). Targets, folders, the Swift module, bundle IDs, the App Group
+and the `seoulpulse://` scheme keep the old SeoulPulse name on purpose; `seoulrising://` is also registered and
+parsed as an alias, but links the app builds still use `seoulpulse://`.
 
 ## Build, test, run
 
@@ -9,7 +14,7 @@ cd ios
 xcodegen generate
 xcodebuild -project SeoulPulse.xcodeproj -scheme SeoulPulse \
   -destination 'platform=iOS Simulator,name=iPhone 17 Pro Max' -derivedDataPath build/DD build
-# tests (52, incl. widget snapshots + widget layout checks). -collect-test-diagnostics never avoids a 10-minute
+# tests (56, incl. widget snapshots + widget layout checks). -collect-test-diagnostics never avoids a 10-minute
 # post-run stall on failure with Xcode 27 + the iOS 26.5 simulator.
 xcodebuild ... -collect-test-diagnostics never test
 
@@ -22,7 +27,7 @@ Bundle IDs are `com.taejunoh.seoulpulse` (app) and `com.taejunoh.seoulpulse.widg
 
 ## TestFlight
 
-Prerequisite: Xcode signed in to the team account. The App Store Connect app record exists ("SeoulPulse", Apple ID 6822836898, bundle ID `com.taejunoh.seoulpulse`), and the internal group "Internal" gets every processed build automatically.
+Prerequisite: Xcode signed in to the team account. The App Store Connect app record exists (Apple ID 6822836898, bundle ID `com.taejunoh.seoulpulse`; created as "SeoulPulse", App Name "Seoul Rising" since the 2026-10-19 rename), and the internal group "Internal" gets every processed build automatically.
 
 ```sh
 ios/scripts/testflight.sh   # xcodegen, Release archive to build/SeoulPulse.xcarchive, export + upload via ExportOptions.plist
@@ -58,4 +63,5 @@ Widget snapshot PNGs go to `$SP_SNAPSHOT_DIR`, or `ios/build/snapshots/` if unse
 - **WidgetKit lays out live date text greedily.** Time text (`.relative`, `.timer`, iOS 18 `.reference`) takes all the width it is offered and reports an unbounded ideal width. A `Spacer` next to it collapses, and `fixedSize`/`ViewThatFits` around it overflow the margins. ImageRenderer doesn't behave like this. So `WidgetStatusLine` is a single `Text` that always takes the remaining width and aligns itself with `multilineTextAlignment`.
 - **The harness emulates this.** The `widgetKitTextEmulation` environment flag reproduces it in tests, and `WidgetLayoutTests` asserts every element stays inside the content margins, nothing overlaps, and header status text is right-aligned. A lint test bans `ViewThatFits` and `AnyLayout` in widget views, and `fixedSize` on the status line.
 - **Real metrics differ from the spec's.** On the iPhone 17 Pro Max (iOS 26.5) Home Screen, content margins are 19.4 pt on every side. Content boxes are 138×138 (small), 339×138 (medium) and 339×355 (large). These were measured via `\.widgetContentMargins` and live in `WidgetPreviewFamily.deviceMetrics`. The `-device` snapshots and the layout tests use both these and the spec sizes with 16 pt margins.
+- **The tests render "8m ago"; the Home Screen says "59 minutes ago".** The large header's subtitle is therefore gated on width (`LargeTrendsView.subtitleMinContentWidth`, 316 pt of content), and `testSubtitleThresholdCoversLiveStatus` measures the real wordmark, subtitle and a live-length status against it. Layout tests also run at 6.1-inch (338 pt large) and iPhone SE (small and large) sizes; the SE medium widget is too short for a header plus three rows and is not covered.
 - **WidgetKit truncates where ImageRenderer shrinks.** Long names hit `minimumScaleFactor` in snapshots but truncate on the Home Screen. Small and medium rows therefore only reserve the KR-first dot column when a visible row needs it.

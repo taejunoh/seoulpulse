@@ -18,7 +18,7 @@ GOLDEN_X = """Korea-first K-pop TOP 5 · Oct 14
 5. LE SSERAFIM ▲2
 
 🇰🇷 = Korea moved first
-#kpop #SeoulPulse"""
+#kpop #SeoulRising"""
 
 GOLDEN_THREADS = """Korea-first K-pop Trends — TOP 5 (Oct 14, 18:00 KST)
 
@@ -44,7 +44,7 @@ def example():
 def test_x_golden(example):
     x = build_x(example)
     assert x == GOLDEN_X
-    assert x_weight(x) == 265
+    assert x_weight(x) == 266
     assert x_weight(x) <= 280
 
 
@@ -57,7 +57,7 @@ def test_threads_golden(example):
 
 def test_render_headers(example):
     out = render_drafts(example)
-    assert out.startswith("=== X (265/280) ===\n" + GOLDEN_X + "\n\n=== Threads (412/500) ===\n")
+    assert out.startswith("=== X (266/280) ===\n" + GOLDEN_X + "\n\n=== Threads (412/500) ===\n")
     assert out.endswith(GOLDEN_THREADS + "\n")
 
 
@@ -90,5 +90,5 @@ def test_empty_items_nothing_to_post(example, tmp_path, capsys):
 def test_cli_social_prints_both(capsys):
     assert main(["social", "--input", str(EXAMPLE_PATH), "--format", "both"]) == 0
     out = capsys.readouterr().out
-    assert "=== X (265/280) ===" in out and "=== Threads (412/500) ===" in out
+    assert "=== X (266/280) ===" in out and "=== Threads (412/500) ===" in out
     assert "[Sample]" not in out           # no headlines ever appear

@@ -23,13 +23,13 @@ targets:
     info:
       path: SeoulPulse/Info.plist
       properties:
-        CFBundleDisplayName: SeoulPulse
+        CFBundleDisplayName: Seoul Rising
         CFBundleShortVersionString: $(MARKETING_VERSION)
         CFBundleVersion: $(CURRENT_PROJECT_VERSION)
         ITSAppUsesNonExemptEncryption: false
         SPTrendsURL: https://taejunoh.com/seoulpulse/trends.json
         SPAppGroupID: group.com.taejunoh.seoulpulse
-        CFBundleURLTypes: [{CFBundleURLName: com.taejunoh.seoulpulse, CFBundleURLSchemes: [seoulpulse]}]
+        CFBundleURLTypes: [{CFBundleURLName: com.taejunoh.seoulpulse, CFBundleURLSchemes: [seoulpulse, seoulrising]}]
         NSAppTransportSecurity: {NSAllowsLocalNetworking: true}
         UILaunchScreen: {UIColorName: LaunchBackground}
         UIUserInterfaceStyle: Dark
@@ -50,7 +50,7 @@ targets:
     info:
       path: SeoulPulseWidget/Info.plist
       properties:
-        CFBundleDisplayName: SeoulPulse
+        CFBundleDisplayName: Seoul Rising
         CFBundleShortVersionString: $(MARKETING_VERSION)
         CFBundleVersion: $(CURRENT_PROJECT_VERSION)
         ITSAppUsesNonExemptEncryption: false

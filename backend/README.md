@@ -1,4 +1,4 @@
-# SeoulPulse backend
+# Seoul Rising backend
 
 A keyless Python pipeline that collects YouTube channel RSS, Wikipedia pageviews and Yonhap/Soompi/Koreaboo
 headlines. It scores Korea-first K-pop momentum and writes one static file, `../public/trends.json`.
@@ -73,7 +73,7 @@ values, and the YouTube source `detail` says so (`API 41 units (2310/9000 today)
 `search deferred`, `quota exhausted`, `key rejected`).
 
 To get a key:
-1. In the [Google Cloud Console](https://console.cloud.google.com/), create a project (one dedicated to SeoulPulse
+1. In the [Google Cloud Console](https://console.cloud.google.com/), create a project (one dedicated to Seoul Rising
    keeps the 10,000-unit quota to itself).
 2. APIs & Services → Library → **YouTube Data API v3** → Enable.
 3. APIs & Services → Credentials → Create credentials → **API key**.
@@ -95,7 +95,7 @@ Where to get credentials (status as of 2026-10-14):
   apply for **NAVER API HUB** (Services → Application Service → NAVER API HUB), register an *Application* that
   includes **검색어 트렌드 (Search Trend)**, and copy that Application's Client ID and Client Secret (Application →
   API 관리 → 인증 정보). An NCP account IAM access key does not work. The HUB allows 50,000 calls/month and is
-  free for now; Naver has said metering may start later. SeoulPulse makes about 17 calls a day.
+  free for now; Naver has said metering may start later. Seoul Rising makes about 17 calls a day.
 - **Existing developers.naver.com keys** (applied for by 2026-07-30, with the DataLab search trend API enabled)
   keep working until 2027-06-30 with `SP_NAVER_ENDPOINT=auto` or `developers`. The two kinds of credentials are
   not interchangeable.

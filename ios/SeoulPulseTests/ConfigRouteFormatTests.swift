@@ -83,6 +83,18 @@ final class RouteTests: XCTestCase {
         XCTAssertEqual(parse("seoulpulse://item/aespa/extra"), [.item("aespa")])
     }
 
+    func testSeoulRisingAlias() {
+        XCTAssertEqual(parse("seoulrising://item/aespa"), [.item("aespa")])
+        XCTAssertEqual(parse("SeoulRising://settings"), [.settings])
+        XCTAssertEqual(parse("seoulrising://widget-gallery"), [.widgetGallery])
+        XCTAssertEqual(parse("seoulrising://unknown"), [])
+        // Every parsed scheme is registered with the system, and the canonical one is what links use.
+        let types = Bundle.main.object(forInfoDictionaryKey: "CFBundleURLTypes") as? [[String: Any]] ?? []
+        let registered = Set(types.flatMap { $0["CFBundleURLSchemes"] as? [String] ?? [] })
+        XCTAssertEqual(registered, Route.acceptedSchemes)
+        XCTAssertEqual(Route.itemURL("aespa").scheme, "seoulpulse")
+    }
+
     func testScreens() {
         XCTAssertEqual(parse("seoulpulse://settings"), [.settings])
         XCTAssertEqual(parse("seoulpulse://widget-gallery"), [.widgetGallery])
