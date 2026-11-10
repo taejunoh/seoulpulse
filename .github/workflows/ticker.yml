@@ -1,0 +1,143 @@
+# THIS FILE LIVES IN THE PUBLIC OUTPUT REPO (taejunoh/seoulpulse), at .github/workflows/ticker.yml on `main`.
+# The source repo keeps it under infra/public-repo/ticker.yml and does not run it. Public repos get free Actions
+# minutes, which is why the always-on ticker job stays here while the pipeline runs in the private source repo.
+#
+# Keeps the pipeline on a ~30-minute cadence without relying on GitHub's `schedule` trigger,
+# which skips most runs (0 of 5 expected runs fired in 75 minutes on a 15-minute cron).
+#
+# One long job dispatches the pipeline workflow in the private source repo every 30 minutes, then re-dispatches
+# this workflow before the 6-hour job limit so the chain continues. The cross-repo dispatch needs a token the
+# built-in one cannot provide: secret SEOULRISING_DISPATCH_TOKEN, a fine-grained PAT limited to the source repo with
+# "Actions: read and write". It is used for that one command only. The self-chain and the issue operations use the
+# built-in token, which may trigger workflow_dispatch (the documented exception to "events from GITHUB_TOKEN
+# don't start new runs").
+# `cancel-in-progress` keeps exactly one ticker alive: a new ticker replaces the old one.
+# The sparse cron below only restarts the chain if it ever dies.
+name: ticker
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "41 */3 * * *"
+
+concurrency:
+  group: ticker
+  cancel-in-progress: true
+
+permissions:
+  actions: write # re-dispatch ticker.yml (the pipeline dispatch uses SEOULRISING_DISPATCH_TOKEN)
+  contents: read
+  issues: write # staleness watchdog opens / comments on / closes the `feed-stale` issue
+
+jobs:
+  tick:
+    runs-on: ubuntu-latest
+    timeout-minutes: 358
+    env:
+      GH_TOKEN: ${{ github.token }} # self-chain and the feed-stale issue; never the dispatch token
+      GH_REPO: ${{ github.repository }}
+      INTERVAL_SECONDS: 1800
+      CHAIN_AFTER_SECONDS: 19800 # last dispatch at 5h, hand off at ~5h30m (job timeout 5h58m)
+      FEED_URL: https://taejunoh.com/seoulpulse/trends.json
+      STALE_AFTER_MINUTES: 75
+      COMMENT_COOLDOWN_SECONDS: 10800 # at most one "still stale" comment per 3 hours
+    steps:
+      - name: Dispatch pipeline every 30 minutes
+        env:
+          SEOULRISING_DISPATCH_TOKEN: ${{ secrets.SEOULRISING_DISPATCH_TOKEN }}
+        run: |
+          # Staleness watchdog: runs before each dispatch. Best effort only; it must never break the loop.
+          # Feed too old (or unreadable) -> open one `feed-stale` issue (comment again at most every 3h).
+          # Feed fresh again -> comment "Recovered" and close the open issue.
+          watchdog() {
+            local now body info generated age num last title
+            now=$(date +%s)
+            body=$(curl -fsS --max-time 20 --retry 1 -H 'Cache-Control: no-cache' "${FEED_URL}?t=${now}" 2>/dev/null) || body=""
+            # Prints "<generated_at> <age_minutes>" or "unknown unknown" when the fetch or parse fails.
+            info=$(printf '%s' "$body" | python3 -c '
+          import sys, json
+          from datetime import datetime, timezone
+          try:
+              g = json.load(sys.stdin)["generated_at"]
+              t = datetime.fromisoformat(str(g).replace("Z", "+00:00"))
+              if t.tzinfo is None:
+                  t = t.replace(tzinfo=timezone.utc)
+              print(g, int((datetime.now(timezone.utc) - t).total_seconds() // 60))
+          except Exception:
+              print("unknown unknown")
+          ' 2>/dev/null) || info="unknown unknown"
+            generated=${info%% *}
+            age=${info##* }
+            echo "watchdog: generated_at=${generated} age=${age} min (limit ${STALE_AFTER_MINUTES})"
+
+            num=$(timeout 60 gh issue list --label feed-stale --state open --limit 1 --json number --jq '.[0].number // empty' 2>/dev/null) || {
+              echo "::warning::watchdog could not list feed-stale issues; skipping"
+              return 0
+            }
+
+            if [ "$age" = "unknown" ] || [ "$age" -gt "$STALE_AFTER_MINUTES" ]; then
+              if [ -z "$num" ]; then
+                timeout 60 gh label create feed-stale --color B60205 \
+                  --description "trends.json has not been updated recently" >/dev/null 2>&1 || true
+                if [ "$age" = "unknown" ]; then
+                  title="Feed stale: last update unreadable (fetch or parse failed)"
+                else
+                  title="Feed stale: last update ${generated} (${age} min ago)"
+                fi
+                # Public issue: keep it generic. No run listings and no restart commands from the source repo.
+                {
+                  echo "The ticker watchdog checks \`${FEED_URL}\` before every pipeline dispatch and opens this issue when \`generated_at\` is older than ${STALE_AFTER_MINUTES} minutes (or the feed cannot be fetched or parsed)."
+                  echo
+                  echo "Last \`generated_at\`: ${generated} (${age} min ago)"
+                  echo
+                  echo "The feed is built and published by a separate automated job."
+                  echo "This issue closes automatically once the feed is fresh again."
+                } > "${RUNNER_TEMP:-/tmp}/feed-stale-body.md"
+                timeout 60 gh issue create --title "$title" --label feed-stale \
+                  --body-file "${RUNNER_TEMP:-/tmp}/feed-stale-body.md" \
+                  && echo "watchdog: opened feed-stale issue" \
+                  || echo "::warning::watchdog could not open the feed-stale issue"
+              else
+                last=$(timeout 60 gh issue view "$num" --json comments,createdAt \
+                  --jq '(([.comments[].createdAt] | max) // .createdAt) | fromdateiso8601' 2>/dev/null) || last=""
+                if [ -n "$last" ] && [ $(( now - last )) -ge "$COMMENT_COOLDOWN_SECONDS" ]; then
+                  timeout 60 gh issue comment "$num" \
+                    --body "Still stale at $(date -u +%H:%M:%SZ): last update ${generated} (${age} min ago)." \
+                    && echo "watchdog: commented on #${num}" \
+                    || echo "::warning::watchdog could not comment on #${num}"
+                else
+                  echo "watchdog: #${num} already open, comment cooldown active"
+                fi
+              fi
+            elif [ -n "$num" ]; then
+              timeout 60 gh issue comment "$num" --body "Recovered: feed updated ${generated}" \
+                && timeout 60 gh issue close "$num" \
+                && echo "watchdog: closed #${num}" \
+                || echo "::warning::watchdog could not close #${num}"
+            fi
+          }
+
+          start=$(date +%s)
+          while :; do
+            watchdog || true
+            # Cross-repo dispatch: the only command that uses the PAT (the token is masked in logs).
+            if [ -z "$SEOULRISING_DISPATCH_TOKEN" ]; then
+              echo "::warning::secret SEOULRISING_DISPATCH_TOKEN is not set; cannot dispatch the pipeline"
+            elif err=$(GH_TOKEN="$SEOULRISING_DISPATCH_TOKEN" gh workflow run pipeline.yml --repo taejunoh/seoulrising --ref main 2>&1); then
+              echo "dispatched pipeline at $(date -u +%H:%M:%SZ)"
+            else
+              echo "::warning::pipeline dispatch failed at $(date -u +%H:%M:%SZ): ${err%%$'\n'*} (check the token and its expiry)"
+            fi
+            elapsed=$(( $(date +%s) - start ))
+            if [ $(( elapsed + INTERVAL_SECONDS )) -ge "$CHAIN_AFTER_SECONDS" ]; then
+              break
+            fi
+            sleep "$INTERVAL_SECONDS"
+          done
+          # Wait out the rest of the interval so the next ticker's first dispatch stays ~30 min apart.
+          remaining=$(( INTERVAL_SECONDS - ( ( $(date +%s) - start ) % INTERVAL_SECONDS ) ))
+          [ "$remaining" -lt "$INTERVAL_SECONDS" ] && sleep "$remaining" || true
+
+      - name: Hand off to the next ticker
+        if: ${{ !cancelled() }} # a ticker cancelled by its replacement must not spawn another
+        run: gh workflow run ticker.yml --ref "${GITHUB_REF_NAME}"
