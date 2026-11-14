@@ -1,0 +1,1120 @@
+{
+  "schema_version": 1,
+  "generated_at": "2026-11-14T15:57:53Z",
+  "next_update_hint": "2026-11-14T16:27:53Z",
+  "rank_change_basis_at": "2026-11-14T09:48:55Z",
+  "cold_start": false,
+  "items": [
+    {
+      "id": "ateez",
+      "rank": 1,
+      "prev_rank": 1,
+      "change": "same",
+      "change_amount": 0,
+      "name": "ATEEZ",
+      "name_ko": "에이티즈",
+      "score": 67.7,
+      "korea_first": false,
+      "why": "New MV \"UP\" at 703K views/hr",
+      "why_source": "template",
+      "image_url": "https://i.ytimg.com/vi/SGovymtCzvA/hqdefault.jpg",
+      "metrics": {
+        "yt_views_per_hour": 703033,
+        "yt_views_per_hour_estimated": false,
+        "yt_accel": 3.22,
+        "wiki_day": "2026-11-13",
+        "wiki_ko_views": 626,
+        "wiki_ko_ratio": 2.87,
+        "wiki_en_views": 1660,
+        "wiki_en_ratio": 1.3,
+        "headlines_24h": 1,
+        "headlines_ko_24h": 0
+      },
+      "signals": {
+        "youtube": 1.0,
+        "accel": 0.845,
+        "new_release": 0.272,
+        "wiki": 0.447,
+        "news": 0.0,
+        "search": 0.704
+      },
+      "top_video": {
+        "video_id": "SGovymtCzvA",
+        "title": "ATEEZ(에이티즈) - 'UP' Official MV",
+        "url": "https://www.youtube.com/watch?v=SGovymtCzvA",
+        "kind": "mv",
+        "published_at": "2026-11-13T05:00:03Z",
+        "views": 16719545,
+        "channel_name": "KQ ENTERTAINMENT"
+      },
+      "headlines": [
+        {
+          "title": "ATEEZ Member’s Outfit Sparks Ridicule And Racist Accusations",
+          "url": "https://www.koreaboo.com/stories/ateez-member-outfit-sparks-ridicule-racist-accusations/",
+          "source_id": "koreaboo",
+          "source_name": "Koreaboo",
+          "lang": "en",
+          "published_at": "2026-11-14T01:21:02Z"
+        },
+        {
+          "title": "Watch: TWS Takes 1st Win For “Call My Name” On “Music Bank”; Performances By Jisoo, ATEEZ, And More",
+          "url": "https://www.soompi.com/article/1886823wpp/watch-tws-takes-1st-win-for-call-my-name-on-music-bank-performances-by-jisoo-ateez-and-more",
+          "source_id": "soompi",
+          "source_name": "Soompi",
+          "lang": "en",
+          "published_at": "2026-11-13T11:38:18Z"
+        }
+      ],
+      "links": {
+        "youtube_channel": "https://www.youtube.com/channel/UC2e4Ukj5Pfr7cb3KpJAFBdQ",
+        "wikipedia_en": "https://en.wikipedia.org/wiki/Ateez",
+        "wikipedia_ko": "https://ko.wikipedia.org/wiki/%EC%97%90%EC%9D%B4%ED%8B%B0%EC%A6%88"
+      }
+    },
+    {
+      "id": "enhypen",
+      "rank": 2,
+      "prev_rank": 2,
+      "change": "same",
+      "change_amount": 0,
+      "name": "ENHYPEN",
+      "name_ko": "엔하이픈",
+      "score": 53.7,
+      "korea_first": false,
+      "why": "New MV \"I Want You\" at 647K views/hr",
+      "why_source": "template",
+      "image_url": "https://i.ytimg.com/vi/dE_Ro8Sac2M/hqdefault.jpg",
+      "metrics": {
+        "yt_views_per_hour": 647205,
+        "yt_views_per_hour_estimated": false,
+        "yt_accel": 2.73,
+        "wiki_day": "2026-11-13",
+        "wiki_ko_views": 46,
+        "wiki_ko_ratio": 1.22,
+        "wiki_en_views": 939,
+        "wiki_en_ratio": 1.0,
+        "headlines_24h": 0,
+        "headlines_ko_24h": 0
+      },
+      "signals": {
+        "youtube": 1.0,
+        "accel": 0.725,
+        "new_release": 0.479,
+        "wiki": 0.013,
+        "news": 0.0,
+        "search": 0.038
+      },
+      "top_video": {
+        "video_id": "dE_Ro8Sac2M",
+        "title": "ENHYPEN (엔하이픈) 'I Want You' Official MV",
+        "url": "https://www.youtube.com/watch?v=dE_Ro8Sac2M",
+        "kind": "mv",
+        "published_at": "2026-11-13T14:57:11Z",
+        "views": 11900392,
+        "channel_name": "HYBE LABELS"
+      },
+      "headlines": [],
+      "links": {
+        "youtube_channel": null,
+        "wikipedia_en": "https://en.wikipedia.org/wiki/Enhypen",
+        "wikipedia_ko": "https://ko.wikipedia.org/wiki/ENHYPEN"
+      }
+    },
+    {
+      "id": "plave",
+      "rank": 3,
+      "prev_rank": 3,
+      "change": "same",
+      "change_amount": 0,
+      "name": "PLAVE",
+      "name_ko": "플레이브",
+      "score": 47.7,
+      "korea_first": false,
+      "why": "\"Star Trace\" views up 4.0x vs. normal decay",
+      "why_source": "template",
+      "image_url": "https://i.ytimg.com/vi/YXCYFujG2iU/hqdefault.jpg",
+      "metrics": {
+        "yt_views_per_hour": 52930,
+        "yt_views_per_hour_estimated": false,
+        "yt_accel": 4.0,
+        "wiki_day": "2026-11-13",
+        "wiki_ko_views": 52,
+        "wiki_ko_ratio": 0.96,
+        "wiki_en_views": 153,
+        "wiki_en_ratio": 0.77,
+        "headlines_24h": 0,
+        "headlines_ko_24h": 0
+      },
+      "signals": {
+        "youtube": 0.934,
+        "accel": 1.0,
+        "new_release": 0.0,
+        "wiki": 0.0,
+        "news": 0.0,
+        "search": 0.0
+      },
+      "top_video": {
+        "video_id": "YXCYFujG2iU",
+        "title": "PLAVE 'Star Trace' M/V (Performance Ver.)",
+        "url": "https://www.youtube.com/watch?v=YXCYFujG2iU",
+        "kind": "mv",
+        "published_at": "2026-11-08T10:00:02Z",
+        "views": 4686672,
+        "channel_name": "PLAVE 플레이브"
+      },
+      "headlines": [],
+      "links": {
+        "youtube_channel": "https://www.youtube.com/channel/UCPZIPuQPrfrUG9Xe_okEmQA",
+        "wikipedia_en": "https://en.wikipedia.org/wiki/Plave",
+        "wikipedia_ko": "https://ko.wikipedia.org/wiki/%ED%94%8C%EB%A0%88%EC%9D%B4%EB%B8%8C"
+      }
+    },
+    {
+      "id": "illit",
+      "rank": 4,
+      "prev_rank": 6,
+      "change": "up",
+      "change_amount": 2,
+      "name": "ILLIT",
+      "name_ko": "아일릿",
+      "score": 46.5,
+      "korea_first": false,
+      "why": "MV views up 2.9x vs. normal decay",
+      "why_source": "template",
+      "image_url": "https://i.ytimg.com/vi/V2V9-9VhYJo/hqdefault.jpg",
+      "metrics": {
+        "yt_views_per_hour": 56962,
+        "yt_views_per_hour_estimated": false,
+        "yt_accel": 2.9,
+        "wiki_day": "2026-11-13",
+        "wiki_ko_views": 108,
+        "wiki_ko_ratio": 0.9,
+        "wiki_en_views": 2018,
+        "wiki_en_ratio": 1.0,
+        "headlines_24h": 0,
+        "headlines_ko_24h": 0
+      },
+      "signals": {
+        "youtube": 1.0,
+        "accel": 0.768,
+        "new_release": 0.0,
+        "wiki": 0.001,
+        "news": 0.0,
+        "search": 0.0
+      },
+      "top_video": {
+        "video_id": "V2V9-9VhYJo",
+        "title": "ILLIT (아일릿) '체포하겠어 (You’re Under Arrest)’ Official MV",
+        "url": "https://www.youtube.com/watch?v=V2V9-9VhYJo",
+        "kind": "mv",
+        "published_at": "2026-10-26T08:58:08Z",
+        "views": 30162646,
+        "channel_name": "HYBE LABELS"
+      },
+      "headlines": [
+        {
+          "title": "ILLIT And LE SSERAFIM’s Agencies Lose Lawsuits Against Min Hee Jin",
+          "url": "https://www.koreaboo.com/news/illit-le-sserafims-agencies-lose-lawsuits-min-hee-jin/",
+          "source_id": "koreaboo",
+          "source_name": "Koreaboo",
+          "lang": "en",
+          "published_at": "2026-11-13T09:59:02Z"
+        },
+        {
+          "title": "빌리프랩, '아일릿이 뉴진스 표절' 주장 민희진 상대 손배소 패소",
+          "url": "https://www.yna.co.kr/view/AKR20261113166600004",
+          "source_id": "yonhap",
+          "source_name": "Yonhap",
+          "lang": "ko",
+          "published_at": "2026-11-13T09:30:01Z"
+        },
+        {
+          "title": "아일릿·앤팀, 日 NHK 연말 음악 방송 '홍백가합전' 출연",
+          "url": "https://www.yna.co.kr/view/AKR20261113101400005",
+          "source_id": "yonhap",
+          "source_name": "Yonhap",
+          "lang": "ko",
+          "published_at": "2026-11-13T05:00:42Z"
+        }
+      ],
+      "links": {
+        "youtube_channel": "https://www.youtube.com/channel/UCEpFoWeCMCo5z3EvWaz6hQQ",
+        "wikipedia_en": "https://en.wikipedia.org/wiki/Illit",
+        "wikipedia_ko": "https://ko.wikipedia.org/wiki/ILLIT"
+      }
+    },
+    {
+      "id": "nct-dream",
+      "rank": 5,
+      "prev_rank": 4,
+      "change": "down",
+      "change_amount": 1,
+      "name": "NCT DREAM",
+      "name_ko": "엔시티 드림",
+      "score": 46.5,
+      "korea_first": false,
+      "why": "\"Boogie Woogie\" views up 2.4x vs. normal decay",
+      "why_source": "template",
+      "image_url": "https://i.ytimg.com/vi/wG7pnZttup8/hqdefault.jpg",
+      "metrics": {
+        "yt_views_per_hour": 139765,
+        "yt_views_per_hour_estimated": false,
+        "yt_accel": 2.38,
+        "wiki_day": "2026-11-13",
+        "wiki_ko_views": 26,
+        "wiki_ko_ratio": 2.07,
+        "wiki_en_views": 412,
+        "wiki_en_ratio": 1.22,
+        "headlines_24h": 0,
+        "headlines_ko_24h": 0
+      },
+      "signals": {
+        "youtube": 1.0,
+        "accel": 0.625,
+        "new_release": 0.0,
+        "wiki": 0.028,
+        "news": 0.0,
+        "search": 0.158
+      },
+      "top_video": {
+        "video_id": "wG7pnZttup8",
+        "title": "NCT DREAM 엔시티 드림 'Boogie Woogie' MV",
+        "url": "https://www.youtube.com/watch?v=wG7pnZttup8",
+        "kind": "mv",
+        "published_at": "2026-11-09T09:00:20Z",
+        "views": 21050986,
+        "channel_name": "SMTOWN"
+      },
+      "headlines": [],
+      "links": {
+        "youtube_channel": "https://www.youtube.com/channel/UCXURHJRGr4-EB3l87kcbElw",
+        "wikipedia_en": "https://en.wikipedia.org/wiki/NCT_Dream",
+        "wikipedia_ko": "https://ko.wikipedia.org/wiki/NCT_DREAM"
+      }
+    },
+    {
+      "id": "jisoo",
+      "rank": 6,
+      "prev_rank": 7,
+      "change": "up",
+      "change_amount": 1,
+      "name": "JISOO",
+      "name_ko": "지수",
+      "score": 41.1,
+      "korea_first": false,
+      "why": "\"ADDICTED\" views up 1.6x vs. normal decay",
+      "why_source": "template",
+      "image_url": "https://i.ytimg.com/vi/Pksr9T8m_aA/hqdefault.jpg",
+      "metrics": {
+        "yt_views_per_hour": 38337,
+        "yt_views_per_hour_estimated": false,
+        "yt_accel": 1.63,
+        "wiki_day": "2026-11-13",
+        "wiki_ko_views": 609,
+        "wiki_ko_ratio": 0.8,
+        "wiki_en_views": 2261,
+        "wiki_en_ratio": 0.96,
+        "headlines_24h": 0,
+        "headlines_ko_24h": 0
+      },
+      "signals": {
+        "youtube": 1.0,
+        "accel": 0.351,
+        "new_release": 0.0,
+        "wiki": 0.0,
+        "news": 0.0,
+        "search": 0.083
+      },
+      "top_video": {
+        "video_id": "Pksr9T8m_aA",
+        "title": "JISOO - ADDICTED (Official MV)",
+        "url": "https://www.youtube.com/watch?v=Pksr9T8m_aA",
+        "kind": "mv",
+        "published_at": "2026-10-29T23:00:09Z",
+        "views": 28852021,
+        "channel_name": "JISOO"
+      },
+      "headlines": [
+        {
+          "title": "Watch: TWS Takes 1st Win For “Call My Name” On “Music Bank”; Performances By Jisoo, ATEEZ, And More",
+          "url": "https://www.soompi.com/article/1886823wpp/watch-tws-takes-1st-win-for-call-my-name-on-music-bank-performances-by-jisoo-ateez-and-more",
+          "source_id": "soompi",
+          "source_name": "Soompi",
+          "lang": "en",
+          "published_at": "2026-11-13T11:38:18Z"
+        }
+      ],
+      "links": {
+        "youtube_channel": "https://www.youtube.com/channel/UCRE-097LGtx_Zo7LrHvkycA",
+        "wikipedia_en": "https://en.wikipedia.org/wiki/Jisoo",
+        "wikipedia_ko": "https://ko.wikipedia.org/wiki/%EC%A7%80%EC%88%98_(%EA%B0%80%EC%88%98)"
+      }
+    },
+    {
+      "id": "txt",
+      "rank": 7,
+      "prev_rank": 8,
+      "change": "up",
+      "change_amount": 1,
+      "name": "TOMORROW X TOGETHER",
+      "name_ko": "투모로우바이투게더",
+      "score": 40.2,
+      "korea_first": false,
+      "why": "\"Angel Bite\" views up 3.0x vs. normal decay",
+      "why_source": "template",
+      "image_url": "https://i.ytimg.com/vi/JCCE6Mds2C8/hqdefault.jpg",
+      "metrics": {
+        "yt_views_per_hour": 48218,
+        "yt_views_per_hour_estimated": false,
+        "yt_accel": 2.98,
+        "wiki_day": "2026-11-13",
+        "wiki_ko_views": 57,
+        "wiki_ko_ratio": 1.7,
+        "wiki_en_views": 836,
+        "wiki_en_ratio": 1.28,
+        "headlines_24h": 0,
+        "headlines_ko_24h": 0
+      },
+      "signals": {
+        "youtube": 0.584,
+        "accel": 0.787,
+        "new_release": 0.128,
+        "wiki": 0.106,
+        "news": 0.0,
+        "search": 0.394
+      },
+      "top_video": {
+        "video_id": "JCCE6Mds2C8",
+        "title": "TXT (투모로우바이투게더) 'Angel Bite' Official Teaser 1",
+        "url": "https://www.youtube.com/watch?v=JCCE6Mds2C8",
+        "kind": "teaser",
+        "published_at": "2026-11-12T15:00:02Z",
+        "views": 1881402,
+        "channel_name": "HYBE LABELS"
+      },
+      "headlines": [],
+      "links": {
+        "youtube_channel": "https://www.youtube.com/channel/UCtiObj3CsEAdNU6ZPWDsddQ",
+        "wikipedia_en": "https://en.wikipedia.org/wiki/Tomorrow_X_Together",
+        "wikipedia_ko": "https://ko.wikipedia.org/wiki/%ED%88%AC%EB%AA%A8%EB%A1%9C%EC%9A%B0%EB%B0%94%EC%9D%B4%ED%88%AC%EA%B2%8C%EB%8D%94"
+      }
+    },
+    {
+      "id": "mamamoo",
+      "rank": 8,
+      "prev_rank": 9,
+      "change": "up",
+      "change_amount": 1,
+      "name": "MAMAMOO",
+      "name_ko": "마마무",
+      "score": 35.7,
+      "korea_first": false,
+      "why": "\"나의 20대에게 (Harmonica. 하림)\" views up 3.5x vs. normal decay",
+      "why_source": "template",
+      "image_url": "https://i.ytimg.com/vi/3hcrgkXfrI8/hqdefault.jpg",
+      "metrics": {
+        "yt_views_per_hour": 15596,
+        "yt_views_per_hour_estimated": false,
+        "yt_accel": 3.51,
+        "wiki_day": "2026-11-13",
+        "wiki_ko_views": 22,
+        "wiki_ko_ratio": 0.66,
+        "wiki_en_views": 259,
+        "wiki_en_ratio": 0.95,
+        "headlines_24h": 0,
+        "headlines_ko_24h": 0
+      },
+      "signals": {
+        "youtube": 0.58,
+        "accel": 0.905,
+        "new_release": 0.0,
+        "wiki": 0.0,
+        "news": 0.0,
+        "search": 0.185
+      },
+      "top_video": {
+        "video_id": "3hcrgkXfrI8",
+        "title": "솔라 (Solar) Single '나의 20대에게 (Harmonica. 하림)' MV",
+        "url": "https://www.youtube.com/watch?v=3hcrgkXfrI8",
+        "kind": "mv",
+        "published_at": "2026-11-12T09:00:16Z",
+        "views": 593708,
+        "channel_name": "MAMAMOO"
+      },
+      "headlines": [],
+      "links": {
+        "youtube_channel": "https://www.youtube.com/channel/UCuhAUMLzJxlP1W7mEk0_6lA",
+        "wikipedia_en": "https://en.wikipedia.org/wiki/Mamamoo",
+        "wikipedia_ko": "https://ko.wikipedia.org/wiki/%EB%A7%88%EB%A7%88%EB%AC%B4"
+      }
+    },
+    {
+      "id": "treasure",
+      "rank": 9,
+      "prev_rank": 5,
+      "change": "down",
+      "change_amount": 4,
+      "name": "TREASURE",
+      "name_ko": "트레저",
+      "score": 34.2,
+      "korea_first": false,
+      "why": "\"SHOCK\" steady at 102K views/hr",
+      "why_source": "template",
+      "image_url": "https://i.ytimg.com/vi/u_hpZueWI9g/hqdefault.jpg",
+      "metrics": {
+        "yt_views_per_hour": 101610,
+        "yt_views_per_hour_estimated": false,
+        "yt_accel": 0.93,
+        "wiki_day": "2026-11-13",
+        "wiki_ko_views": 24,
+        "wiki_ko_ratio": 0.71,
+        "wiki_en_views": 261,
+        "wiki_en_ratio": 0.75,
+        "headlines_24h": 0,
+        "headlines_ko_24h": 0
+      },
+      "signals": {
+        "youtube": 1.0,
+        "accel": -0.051,
+        "new_release": 0.0,
+        "wiki": 0.0,
+        "news": 0.0,
+        "search": 0.0
+      },
+      "top_video": {
+        "video_id": "u_hpZueWI9g",
+        "title": "TREASURE - ‘SHOCK’ M/V",
+        "url": "https://www.youtube.com/watch?v=u_hpZueWI9g",
+        "kind": "mv",
+        "published_at": "2026-11-02T09:10:03Z",
+        "views": 101582205,
+        "channel_name": "TREASURE (트레저)"
+      },
+      "headlines": [],
+      "links": {
+        "youtube_channel": "https://www.youtube.com/channel/UCx9hXYOCvUYwrprEqe4ZQHA",
+        "wikipedia_en": "https://en.wikipedia.org/wiki/Treasure_(band)",
+        "wikipedia_ko": "https://ko.wikipedia.org/wiki/%ED%8A%B8%EB%A0%88%EC%A0%80_(%EC%9D%8C%EC%95%85_%EA%B7%B8%EB%A3%B9)"
+      }
+    },
+    {
+      "id": "i-dle",
+      "rank": 10,
+      "prev_rank": 10,
+      "change": "same",
+      "change_amount": 0,
+      "name": "i-dle",
+      "name_ko": "아이들",
+      "score": 32.4,
+      "korea_first": true,
+      "why": "Korean searches 2.7x normal, EN quiet",
+      "why_source": "template",
+      "image_url": "https://i.ytimg.com/vi/FkEiAKgAF2c/hqdefault.jpg",
+      "metrics": {
+        "yt_views_per_hour": 1078,
+        "yt_views_per_hour_estimated": false,
+        "yt_accel": 0.88,
+        "wiki_day": "2026-11-13",
+        "wiki_ko_views": 65,
+        "wiki_ko_ratio": 2.69,
+        "wiki_en_views": 939,
+        "wiki_en_ratio": 1.2,
+        "headlines_24h": 0,
+        "headlines_ko_24h": 0
+      },
+      "signals": {
+        "youtube": 0.437,
+        "accel": -0.095,
+        "new_release": 0.0,
+        "wiki": 0.126,
+        "news": 0.0,
+        "search": 1.0
+      },
+      "top_video": {
+        "video_id": "FkEiAKgAF2c",
+        "title": "MINNIE 'to the moon :)' Official Music Video",
+        "url": "https://www.youtube.com/watch?v=FkEiAKgAF2c",
+        "kind": "mv",
+        "published_at": "2026-10-23T03:00:08Z",
+        "views": 2241392,
+        "channel_name": "i-dle (아이들)"
+      },
+      "headlines": [],
+      "links": {
+        "youtube_channel": "https://www.youtube.com/channel/UCritGVo7pLJLUS8wEu32vow",
+        "wikipedia_en": "https://en.wikipedia.org/wiki/I-dle",
+        "wikipedia_ko": "https://ko.wikipedia.org/wiki/I-dle"
+      }
+    },
+    {
+      "id": "bts",
+      "rank": 11,
+      "prev_rank": 13,
+      "change": "up",
+      "change_amount": 2,
+      "name": "BTS",
+      "name_ko": "방탄소년단",
+      "score": 29.7,
+      "korea_first": false,
+      "why": "\"SWIM\" views up 2.6x vs. normal decay",
+      "why_source": "template",
+      "image_url": "https://i.ytimg.com/vi/D8MKy5Aax6U/hqdefault.jpg",
+      "metrics": {
+        "yt_views_per_hour": 7173,
+        "yt_views_per_hour_estimated": false,
+        "yt_accel": 2.56,
+        "wiki_day": "2026-11-13",
+        "wiki_ko_views": 100,
+        "wiki_ko_ratio": 0.95,
+        "wiki_en_views": 4065,
+        "wiki_en_ratio": 0.94,
+        "headlines_24h": 0,
+        "headlines_ko_24h": 0
+      },
+      "signals": {
+        "youtube": 0.548,
+        "accel": 0.678,
+        "new_release": 0.0,
+        "wiki": 0.0,
+        "news": 0.0,
+        "search": 0.034
+      },
+      "top_video": {
+        "video_id": "D8MKy5Aax6U",
+        "title": "BTS (방탄소년단) 'SWIM' Stage CAM @ iHeartRadio Music Festival 2026",
+        "url": "https://www.youtube.com/watch?v=D8MKy5Aax6U",
+        "kind": "perf",
+        "published_at": "2026-11-06T10:00:00Z",
+        "views": 1667114,
+        "channel_name": "BANGTANTV"
+      },
+      "headlines": [],
+      "links": {
+        "youtube_channel": "https://www.youtube.com/channel/UCLkAepWjdylmXSltofFvsYQ",
+        "wikipedia_en": "https://en.wikipedia.org/wiki/BTS",
+        "wikipedia_ko": "https://ko.wikipedia.org/wiki/%EB%B0%A9%ED%83%84%EC%86%8C%EB%85%84%EB%8B%A8"
+      }
+    },
+    {
+      "id": "ive",
+      "rank": 12,
+      "prev_rank": 11,
+      "change": "down",
+      "change_amount": 1,
+      "name": "IVE",
+      "name_ko": "아이브",
+      "score": 29.4,
+      "korea_first": false,
+      "why": "\"Looks Can Kill\" views up 2.0x vs. normal decay",
+      "why_source": "template",
+      "image_url": "https://i.ytimg.com/vi/vL4y-ZuKzZs/hqdefault.jpg",
+      "metrics": {
+        "yt_views_per_hour": 3410,
+        "yt_views_per_hour_estimated": false,
+        "yt_accel": 1.96,
+        "wiki_day": "2026-11-13",
+        "wiki_ko_views": 87,
+        "wiki_ko_ratio": 0.8,
+        "wiki_en_views": 861,
+        "wiki_en_ratio": 0.93,
+        "headlines_24h": 0,
+        "headlines_ko_24h": 0
+      },
+      "signals": {
+        "youtube": 0.632,
+        "accel": 0.486,
+        "new_release": 0.0,
+        "wiki": 0.0,
+        "news": 0.0,
+        "search": 0.0
+      },
+      "top_video": {
+        "video_id": "vL4y-ZuKzZs",
+        "title": "IVE 아이브 'Looks Can Kill' PERFORMANCE VIDEO",
+        "url": "https://www.youtube.com/watch?v=vL4y-ZuKzZs",
+        "kind": "perf",
+        "published_at": "2026-10-21T09:00:21Z",
+        "views": 3439888,
+        "channel_name": "IVE"
+      },
+      "headlines": [],
+      "links": {
+        "youtube_channel": "https://www.youtube.com/channel/UC-Fnix71vRP64WXeo0ikd0Q",
+        "wikipedia_en": "https://en.wikipedia.org/wiki/Ive_(group)",
+        "wikipedia_ko": "https://ko.wikipedia.org/wiki/IVE"
+      }
+    },
+    {
+      "id": "cortis",
+      "rank": 13,
+      "prev_rank": 14,
+      "change": "up",
+      "change_amount": 1,
+      "name": "CORTIS",
+      "name_ko": "코르티스",
+      "score": 27.5,
+      "korea_first": false,
+      "why": "\"MONEYMONEYMONEY | M COU…\" views up 4.0x vs. normal decay",
+      "why_source": "template",
+      "image_url": "https://i.ytimg.com/vi/QJAe0tYxTeY/hqdefault.jpg",
+      "metrics": {
+        "yt_views_per_hour": 3064,
+        "yt_views_per_hour_estimated": false,
+        "yt_accel": 4.0,
+        "wiki_day": "2026-11-13",
+        "wiki_ko_views": 79,
+        "wiki_ko_ratio": 0.96,
+        "wiki_en_views": 999,
+        "wiki_en_ratio": 0.95,
+        "headlines_24h": 0,
+        "headlines_ko_24h": 0
+      },
+      "signals": {
+        "youtube": 0.366,
+        "accel": 1.0,
+        "new_release": 0.0,
+        "wiki": 0.0,
+        "news": 0.0,
+        "search": 0.093
+      },
+      "top_video": {
+        "video_id": "QJAe0tYxTeY",
+        "title": "CORTIS - MONEYMONEYMONEY | M COUNTDOWN : PLAY FESTA #엠카운트다운 EP.951 | Mnet 261028 방송",
+        "url": "https://www.youtube.com/watch?v=QJAe0tYxTeY",
+        "kind": "show",
+        "published_at": "2026-10-28T10:11:59Z",
+        "views": 950409,
+        "channel_name": "Mnet K-POP"
+      },
+      "headlines": [],
+      "links": {
+        "youtube_channel": null,
+        "wikipedia_en": "https://en.wikipedia.org/wiki/Cortis",
+        "wikipedia_ko": "https://ko.wikipedia.org/wiki/CORTIS"
+      }
+    },
+    {
+      "id": "babymonster",
+      "rank": 14,
+      "prev_rank": 12,
+      "change": "down",
+      "change_amount": 2,
+      "name": "BABYMONSTER",
+      "name_ko": "베이비몬스터",
+      "score": 27.4,
+      "korea_first": false,
+      "why": "\"DESERVE\" still pulling 25K views/hr",
+      "why_source": "template",
+      "image_url": "https://i.ytimg.com/vi/oC6brLXQe4I/hqdefault.jpg",
+      "metrics": {
+        "yt_views_per_hour": 24920,
+        "yt_views_per_hour_estimated": false,
+        "yt_accel": 0.38,
+        "wiki_day": "2026-11-13",
+        "wiki_ko_views": 66,
+        "wiki_ko_ratio": 1.07,
+        "wiki_en_views": 1248,
+        "wiki_en_ratio": 1.1,
+        "headlines_24h": 0,
+        "headlines_ko_24h": 0
+      },
+      "signals": {
+        "youtube": 0.983,
+        "accel": -0.5,
+        "new_release": 0.0,
+        "wiki": 0.025,
+        "news": 0.0,
+        "search": 0.0
+      },
+      "top_video": {
+        "video_id": "oC6brLXQe4I",
+        "title": "BABYMONSTER - 'DESERVE' M/V",
+        "url": "https://www.youtube.com/watch?v=oC6brLXQe4I",
+        "kind": "mv",
+        "published_at": "2026-10-23T04:00:09Z",
+        "views": 119398774,
+        "channel_name": "BABYMONSTER"
+      },
+      "headlines": [],
+      "links": {
+        "youtube_channel": "https://www.youtube.com/channel/UCqwUnggBBct-AY2lAdI88jQ",
+        "wikipedia_en": "https://en.wikipedia.org/wiki/Babymonster",
+        "wikipedia_ko": "https://ko.wikipedia.org/wiki/%EB%B2%A0%EC%9D%B4%EB%B9%84%EB%AA%AC%EC%8A%A4%ED%84%B0"
+      }
+    },
+    {
+      "id": "lim-young-woong",
+      "rank": 15,
+      "prev_rank": 19,
+      "change": "up",
+      "change_amount": 4,
+      "name": "Lim Young-woong",
+      "name_ko": "임영웅",
+      "score": 26.6,
+      "korea_first": false,
+      "why": "\"Please Be Happy\" views up 3.2x vs. normal decay",
+      "why_source": "template",
+      "image_url": "https://i.ytimg.com/vi/eoEfcTVy6-s/hqdefault.jpg",
+      "metrics": {
+        "yt_views_per_hour": 797,
+        "yt_views_per_hour_estimated": false,
+        "yt_accel": 3.21,
+        "wiki_day": "2026-11-13",
+        "wiki_ko_views": 77,
+        "wiki_ko_ratio": 0.85,
+        "wiki_en_views": 60,
+        "wiki_en_ratio": 0.91,
+        "headlines_24h": 0,
+        "headlines_ko_24h": 0
+      },
+      "signals": {
+        "youtube": 0.399,
+        "accel": 0.842,
+        "new_release": 0.0,
+        "wiki": 0.0,
+        "news": 0.003,
+        "search": 0.0
+      },
+      "top_video": {
+        "video_id": "eoEfcTVy6-s",
+        "title": "[MV] Lim Young Woong(임영웅) _ Please Be Happy(부디 행복해질 것)",
+        "url": "https://www.youtube.com/watch?v=eoEfcTVy6-s",
+        "kind": "mv",
+        "published_at": "2026-10-20T08:00:29Z",
+        "views": 513755,
+        "channel_name": "1theK (원더케이)"
+      },
+      "headlines": [
+        {
+          "title": "[주말극장가] '치이카와' 선두 유지…예매율 1위는 임영웅 공연실황",
+          "url": "https://www.yna.co.kr/view/AKR20261113039800005",
+          "source_id": "yonhap",
+          "source_name": "Yonhap",
+          "lang": "ko",
+          "published_at": "2026-11-13T00:20:25Z"
+        }
+      ],
+      "links": {
+        "youtube_channel": null,
+        "wikipedia_en": "https://en.wikipedia.org/wiki/Lim_Young-woong",
+        "wikipedia_ko": "https://ko.wikipedia.org/wiki/%EC%9E%84%EC%98%81%EC%9B%85"
+      }
+    },
+    {
+      "id": "hearts2hearts",
+      "rank": 16,
+      "prev_rank": 15,
+      "change": "down",
+      "change_amount": 1,
+      "name": "Hearts2Hearts",
+      "name_ko": "하츠투하츠",
+      "score": 23.0,
+      "korea_first": false,
+      "why": "\"ICONIC HEART (Korean Ve…\" views up 1.8x vs. normal decay",
+      "why_source": "template",
+      "image_url": "https://i.ytimg.com/vi/DK_dr_n2rM4/hqdefault.jpg",
+      "metrics": {
+        "yt_views_per_hour": 920,
+        "yt_views_per_hour_estimated": false,
+        "yt_accel": 1.77,
+        "wiki_day": "2026-11-13",
+        "wiki_ko_views": 36,
+        "wiki_ko_ratio": 0.63,
+        "wiki_en_views": 599,
+        "wiki_en_ratio": 0.87,
+        "headlines_24h": 0,
+        "headlines_ko_24h": 0
+      },
+      "signals": {
+        "youtube": 0.481,
+        "accel": 0.413,
+        "new_release": 0.0,
+        "wiki": 0.0,
+        "news": 0.0,
+        "search": 0.0
+      },
+      "top_video": {
+        "video_id": "DK_dr_n2rM4",
+        "title": "Hearts2Hearts 하츠투하츠 'ICONIC HEART (Korean Ver.)' MV",
+        "url": "https://www.youtube.com/watch?v=DK_dr_n2rM4",
+        "kind": "mv",
+        "published_at": "2026-10-18T15:00:26Z",
+        "views": 1154039,
+        "channel_name": "SMTOWN"
+      },
+      "headlines": [],
+      "links": {
+        "youtube_channel": null,
+        "wikipedia_en": "https://en.wikipedia.org/wiki/Hearts2Hearts",
+        "wikipedia_ko": "https://ko.wikipedia.org/wiki/Hearts2Hearts"
+      }
+    },
+    {
+      "id": "the-boyz",
+      "rank": 17,
+      "prev_rank": 16,
+      "change": "down",
+      "change_amount": 1,
+      "name": "THE BOYZ",
+      "name_ko": "더보이즈",
+      "score": 21.1,
+      "korea_first": true,
+      "why": "1 Korean headline, no English coverage yet",
+      "why_source": "template",
+      "image_url": null,
+      "metrics": {
+        "yt_views_per_hour": null,
+        "yt_views_per_hour_estimated": false,
+        "yt_accel": null,
+        "wiki_day": "2026-11-13",
+        "wiki_ko_views": null,
+        "wiki_ko_ratio": null,
+        "wiki_en_views": 216,
+        "wiki_en_ratio": 1.54,
+        "headlines_24h": 1,
+        "headlines_ko_24h": 1
+      },
+      "signals": {
+        "youtube": 0.0,
+        "accel": 0.0,
+        "new_release": 0.0,
+        "wiki": 0.107,
+        "news": 0.2,
+        "search": 1.0
+      },
+      "top_video": null,
+      "headlines": [
+        {
+          "title": "[가요소식] 더보이즈 에릭, 단독 팬미팅 '꽃보다 손영재'",
+          "url": "https://www.yna.co.kr/view/AKR20261114033600005",
+          "source_id": "yonhap",
+          "source_name": "Yonhap",
+          "lang": "ko",
+          "published_at": "2026-11-14T05:15:48Z"
+        },
+        {
+          "title": "더보이즈, 연말 서울 KSPO돔서 4일간 단독 콘서트",
+          "url": "https://www.yna.co.kr/view/AKR20261113172100005",
+          "source_id": "yonhap",
+          "source_name": "Yonhap",
+          "lang": "ko",
+          "published_at": "2026-11-13T10:20:35Z"
+        }
+      ],
+      "links": {
+        "youtube_channel": null,
+        "wikipedia_en": "https://en.wikipedia.org/wiki/The_Boyz_(South_Korean_band)",
+        "wikipedia_ko": null
+      }
+    },
+    {
+      "id": "itzy",
+      "rank": 18,
+      "prev_rank": 18,
+      "change": "same",
+      "change_amount": 0,
+      "name": "ITZY",
+      "name_ko": "있지",
+      "score": 19.8,
+      "korea_first": false,
+      "why": "\"Lovesick\" steady at 8K views/hr",
+      "why_source": "template",
+      "image_url": "https://i.ytimg.com/vi/XvISxn5u8jk/hqdefault.jpg",
+      "metrics": {
+        "yt_views_per_hour": 8010,
+        "yt_views_per_hour_estimated": false,
+        "yt_accel": 1.36,
+        "wiki_day": "2026-11-13",
+        "wiki_ko_views": null,
+        "wiki_ko_ratio": null,
+        "wiki_en_views": 455,
+        "wiki_en_ratio": 1.06,
+        "headlines_24h": 0,
+        "headlines_ko_24h": 0
+      },
+      "signals": {
+        "youtube": 0.439,
+        "accel": 0.224,
+        "new_release": 0.0,
+        "wiki": 0.013,
+        "news": 0.023,
+        "search": 0.043
+      },
+      "top_video": {
+        "video_id": "XvISxn5u8jk",
+        "title": "CHAERYEONG \"Lovesick\" Performance Video (4K)",
+        "url": "https://www.youtube.com/watch?v=XvISxn5u8jk",
+        "kind": "perf",
+        "published_at": "2026-11-11T14:59:57Z",
+        "views": 1100711,
+        "channel_name": "ITZY"
+      },
+      "headlines": [
+        {
+          "title": "ITZY’s Chaeryoung Sparks Attention For Responding To Viral “Rumors” All Members Of Top Group “Confessed” To Her",
+          "url": "https://www.koreaboo.com/news/itzys-chaeryoung-responds-viral-rumors-top-boy-group-confessed/",
+          "source_id": "koreaboo",
+          "source_name": "Koreaboo",
+          "lang": "en",
+          "published_at": "2026-11-13T10:20:13Z"
+        }
+      ],
+      "links": {
+        "youtube_channel": "https://www.youtube.com/channel/UCDhM2k2Cua-JdobAh5moMFg",
+        "wikipedia_en": "https://en.wikipedia.org/wiki/Itzy",
+        "wikipedia_ko": null
+      }
+    },
+    {
+      "id": "xdinary-heroes",
+      "rank": 19,
+      "prev_rank": null,
+      "change": "new",
+      "change_amount": 0,
+      "name": "Xdinary Heroes",
+      "name_ko": "엑스디너리 히어로즈",
+      "score": 16.7,
+      "korea_first": true,
+      "why": "Korean searches 2.5x normal, EN quiet",
+      "why_source": "template",
+      "image_url": "https://i.ytimg.com/vi/Dc2q2epEhZE/hqdefault.jpg",
+      "metrics": {
+        "yt_views_per_hour": 125,
+        "yt_views_per_hour_estimated": false,
+        "yt_accel": 1.09,
+        "wiki_day": "2026-11-13",
+        "wiki_ko_views": 41,
+        "wiki_ko_ratio": 1.61,
+        "wiki_en_views": 151,
+        "wiki_en_ratio": 0.88,
+        "headlines_24h": 0,
+        "headlines_ko_24h": 0
+      },
+      "signals": {
+        "youtube": 0.044,
+        "accel": 0.064,
+        "new_release": 0.0,
+        "wiki": 0.014,
+        "news": 0.0,
+        "search": 0.879
+      },
+      "top_video": {
+        "video_id": "Dc2q2epEhZE",
+        "title": "Xdinary Heroes \"Love in dystopia\" LIVE CLIP",
+        "url": "https://www.youtube.com/watch?v=Dc2q2epEhZE",
+        "kind": "perf",
+        "published_at": "2026-10-26T09:00:04Z",
+        "views": 175113,
+        "channel_name": "Xdinary Heroes"
+      },
+      "headlines": [],
+      "links": {
+        "youtube_channel": "https://www.youtube.com/channel/UCO9GhtdQcCRf67GIdSQ0HNQ",
+        "wikipedia_en": "https://en.wikipedia.org/wiki/Xdinary_Heroes",
+        "wikipedia_ko": "https://ko.wikipedia.org/wiki/%EC%97%91%EC%8A%A4%EB%94%94%EB%84%88%EB%A6%AC_%ED%9E%88%EC%96%B4%EB%A1%9C%EC%A6%88"
+      }
+    },
+    {
+      "id": "riize",
+      "rank": 20,
+      "prev_rank": null,
+      "change": "new",
+      "change_amount": 0,
+      "name": "RIIZE",
+      "name_ko": "라이즈",
+      "score": 16.1,
+      "korea_first": false,
+      "why": "\"Insomnia\" still pulling 2.7K views/hr",
+      "why_source": "template",
+      "image_url": "https://i.ytimg.com/vi/RgkoXU4BlOE/hqdefault.jpg",
+      "metrics": {
+        "yt_views_per_hour": 2699,
+        "yt_views_per_hour_estimated": false,
+        "yt_accel": 0.29,
+        "wiki_day": "2026-11-13",
+        "wiki_ko_views": 18,
+        "wiki_ko_ratio": 0.9,
+        "wiki_en_views": 355,
+        "wiki_en_ratio": 1.03,
+        "headlines_24h": 1,
+        "headlines_ko_24h": 0
+      },
+      "signals": {
+        "youtube": 0.579,
+        "accel": -0.5,
+        "new_release": 0.0,
+        "wiki": 0.006,
+        "news": 0.144,
+        "search": 0.108
+      },
+      "top_video": {
+        "video_id": "RgkoXU4BlOE",
+        "title": "RIIZE 라이즈 'Insomnia' MV",
+        "url": "https://www.youtube.com/watch?v=RgkoXU4BlOE",
+        "kind": "mv",
+        "published_at": "2026-10-25T15:00:04Z",
+        "views": 14801471,
+        "channel_name": "SMTOWN"
+      },
+      "headlines": [
+        {
+          "title": "RIIZE And EJAE To Perform At 100th Macy’s Thanksgiving Day Parade In New York",
+          "url": "https://www.soompi.com/article/1886905wpp/riize-and-ejae-to-perform-at-100th-macys-thanksgiving-day-parade-in-new-york",
+          "source_id": "soompi",
+          "source_name": "Soompi",
+          "lang": "en",
+          "published_at": "2026-11-14T06:44:32Z"
+        }
+      ],
+      "links": {
+        "youtube_channel": "https://www.youtube.com/channel/UCdVD0MsYecQaIE5Ru-pOIQQ",
+        "wikipedia_en": "https://en.wikipedia.org/wiki/Riize",
+        "wikipedia_ko": "https://ko.wikipedia.org/wiki/RIIZE"
+      }
+    }
+  ],
+  "sources": [
+    {
+      "id": "youtube",
+      "name": "YouTube",
+      "status": "ok",
+      "last_success_at": "2026-11-14T15:58:40Z",
+      "detail": "RSS 77/77 channels · API 39 units (595/9000 today)"
+    },
+    {
+      "id": "wikipedia",
+      "name": "Wikipedia",
+      "status": "ok",
+      "last_success_at": "2026-11-14T15:57:53Z",
+      "detail": "146/146 articles current (day 2026-11-13)"
+    },
+    {
+      "id": "yonhap",
+      "name": "Yonhap",
+      "status": "ok",
+      "last_success_at": "2026-11-14T15:57:54Z",
+      "detail": "120 items, 0 new"
+    },
+    {
+      "id": "soompi",
+      "name": "Soompi",
+      "status": "ok",
+      "last_success_at": "2026-11-14T15:57:53Z",
+      "detail": "not modified (304), 0 new"
+    },
+    {
+      "id": "koreaboo",
+      "name": "Koreaboo",
+      "status": "ok",
+      "last_success_at": "2026-11-14T15:57:53Z",
+      "detail": "10 items, 1 new"
+    },
+    {
+      "id": "naver",
+      "name": "Naver DataLab",
+      "status": "ok",
+      "last_success_at": "2026-11-14T15:57:53Z",
+      "detail": "0/82 current · day 2026-11-13 · 0 calls (17/300 today)"
+    }
+  ]
+}
