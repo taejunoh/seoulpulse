@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="dark">
+<meta name="theme-color" content="#0a0a12">
+<title>Privacy Policy | Seoul Rising</title>
+<meta name="description" content="Seoul Rising privacy policy for released and planned iOS app versions, including local favorites and the schedule service.">
+<link rel="canonical" href="https://taejunoh.com/seoulpulse/privacy/">
+<style>
+:root{--ink:#0a0a12;--surface:#15151f;--surface2:#1e1e2c;--hair:#2a2a3a;--t1:#f5f5fa;--t2:#a1a1b5;--t3:#6b6b80;--pink:#ff2e88;--violet:#7c5cff;--grad:linear-gradient(135deg,#ff2e88,#7c5cff)}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--ink);color:var(--t1);font:16px/1.6 -apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI",Roboto,Helvetica,Arial,sans-serif}
+main{max-width:720px;margin:0 auto;padding:32px 16px 64px}
+header.top{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:28px}
+.brand{font-weight:800;font-size:1.15rem;letter-spacing:.2px;text-decoration:none;background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
+nav.links{display:flex;flex-wrap:wrap;gap:4px 16px;font-size:.9rem}
+a{color:#ff6fae;text-underline-offset:3px}
+a:hover{color:#b8a4ff}
+a:focus-visible{outline:2px solid var(--violet);outline-offset:2px;border-radius:4px}
+h1{font-size:2rem;line-height:1.2;margin:0 0 6px}
+h1 .accent{background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
+h2{font-size:1.15rem;margin:32px 0 8px;padding-top:4px}
+p,li{color:var(--t2)}
+p{margin:0 0 12px}
+ul{padding-left:20px;margin:0 0 12px}
+li{margin-bottom:6px}
+strong{color:var(--t1)}
+.meta{color:var(--t3);font-size:.9rem;margin:0 0 24px}
+.lede{font-size:1.1rem;color:var(--t2)}
+.card{background:var(--surface);border:1px solid var(--hair);border-radius:16px;padding:16px 18px;margin:16px 0}
+.card p:last-child,.card ul:last-child{margin-bottom:0}
+.btns{display:flex;flex-wrap:wrap;gap:10px;margin:20px 0}
+.btn{display:inline-block;padding:10px 18px;border-radius:999px;background:var(--surface2);border:1px solid var(--hair);color:var(--t1);text-decoration:none;font-weight:600;font-size:.95rem}
+.btn.primary{background:var(--grad);border-color:transparent;color:#fff}
+.btn:hover{color:#fff;filter:brightness(1.12)}
+details{background:var(--surface);border:1px solid var(--hair);border-radius:14px;padding:0 16px;margin:10px 0}
+summary{cursor:pointer;padding:14px 0;font-weight:600;color:var(--t1);list-style:none}
+summary::-webkit-details-marker{display:none}
+summary::after{content:"+";float:right;color:var(--pink);font-weight:700}
+details[open] summary::after{content:"\2212"}
+details[open]{padding-bottom:6px}
+code{background:var(--surface2);border-radius:6px;padding:1px 6px;font-size:.88em;color:var(--t1);word-break:break-all}
+footer{margin-top:48px;padding-top:16px;border-top:1px solid var(--hair);color:var(--t3);font-size:.85rem}
+@media (max-width:480px){h1{font-size:1.65rem}main{padding-top:24px}}
+</style>
+</head>
+<body>
+<main>
+<header class="top">
+<a class="brand" href="/seoulpulse/">Seoul Rising</a>
+<nav class="links" aria-label="Site">
+<a href="/seoulpulse/privacy/">Privacy</a>
+<a href="/seoulpulse/support/">Support</a>
+</nav>
+</header>
+
+<h1>Privacy <span class="accent">Policy</span></h1>
+<p class="meta">Last updated: 2026-11-19 · This policy covers Seoul Rising for iOS through version 1.0.5.</p>
+<p class="lede">The app has no accounts, analytics, advertising or tracking. Favorites are stored on your device. Versions 1.0.4 and 1.0.5 request a public schedule from a Cloudflare API. If you enable release reminders in version 1.0.5, the app also sends a notification token, an installation identifier and the one artist you select to our service. Cloudflare may process technical request information such as your IP address.</p>
+
+<h2>What the app does</h2>
+<p>The released Seoul Rising iOS app and its home screen widget download the public trends JSON file and display its K-pop ranking. By default, version 1.0.1 uses <code>https://seoulrising.com/trends.json</code>. The seoulrising.com domain is served by a Cloudflare Worker, which forwards that trends request to GitHub Pages at taejunoh.com. By default, version 1.0.0 requests <code>https://taejunoh.com/seoulpulse/trends.json</code> directly from GitHub Pages.</p>
+
+<p>Version 1.0.2 adds artist search, version 1.0.3 adds device-local favorites, and version 1.0.4 adds the release schedule. Schedule-enabled versions request the public schedule snapshot as described below. The trends feed and schedule API are separate requests.</p>
+
+<h2>Information we ask you to provide</h2>
+<p>The app has no sign-in or account system and does not ask for your name, email, location, contacts, photos or other personal details. It contains no analytics, advertising, crash-reporting or tracking SDKs, and it does not use the advertising identifier. Apple's privacy manifest declares no tracking and no collected data types for version 1.0.3.</p>
+
+<h2>Data stored on your device</h2>
+<ul>
+<li>A cached copy of the most recent feed, so the app and widget can show content when you are offline.</li>
+<li>Optionally, a custom feed URL, only if you enter one in Settings (intended for developers).</li>
+<li>In version 1.0.3 and later builds with artist favorites, your full favorites list is stored locally on your device. If you enable release reminders in a supported build, the one artist selected for reminders is sent to our service as described below.</li>
+<li>In schedule-enabled versions, a cached copy of the public schedule may be stored locally so it can be displayed when the service is unavailable.</li>
+</ul>
+<p>These settings and caches stay on your device and are not uploaded by the app. Feed and schedule caches are stored in the app's shared container for the app and widget. Favorites are stored in the app's local preferences.</p>
+
+<h2>Network requests and server logs</h2>
+<p>By default, version 1.0.1 makes a standard HTTPS request to <code>seoulrising.com</code>. Cloudflare operates the Worker for that domain, and the Worker forwards the request to taejunoh.com, hosted on <strong>GitHub Pages</strong>. By default, version 1.0.0 requests the GitHub Pages URL directly. Cloudflare and GitHub may process technical information such as IP addresses and request details to provide their services; each provider's privacy policy explains its practices: <a href="https://www.cloudflare.com/privacypolicy/">Cloudflare Privacy Policy</a> and <a href="https://docs.github.com/en/site-policy/privacy-policies/github-general-privacy-statement">GitHub Privacy Statement</a>.</p>
+<p>Schedule-enabled versions make a separate HTTPS request to <code>https://api.seoulrising.com/v1/schedules</code>. This request goes to a Cloudflare Worker and does not pass through the trends domain or GitHub Pages. The endpoint returns the same public schedule snapshot to all users; the app does not send your selected or favorite artists as a query. Cloudflare may process the request's IP address and technical request information to provide the service. We have not confirmed specific request logging or retention practices for this endpoint. See the <a href="https://www.cloudflare.com/privacypolicy/">Cloudflare Privacy Policy</a> for Cloudflare's practices.</p>
+<h2>Optional release notifications</h2>
+<p>If you enable release reminders in version 1.0.5, the app sends an Apple push notification device token, an installation identifier and the one artist you select to our Cloudflare service. The service uses this information to send release, schedule-change and cancellation notifications through Apple. Your full favorites list is not sent for this feature. Turning reminders off asks the service to stop notifications; an internet connection is needed to update that setting. Once the service receives the request, it removes the device token and selected artist; a minimal record remains temporarily to prevent older requests from reactivating the setting. Notification delivery is not guaranteed. Apple and Cloudflare process information as described in their respective privacy policies.</p>
+<p>For this service, active registrations that have not been refreshed for 365 days are removed. After a successful opt-out, the remaining installation record is scheduled for deletion after 30 days. Database backups may have a separate retention period. To request help or deletion, contact <a href="mailto:seoulrising.app@gmail.com">seoulrising.app@gmail.com</a>; we may need information from the app to identify the registration.</p>
+<p>The app also loads video thumbnail images directly from YouTube's image servers (<code>i.ytimg.com</code>) for the videos shown in an act's detail view. That request goes from your device to Google and is subject to Google's privacy policy.</p>
+
+<h2>External links</h2>
+<p>Tapping a video, headline, Wikipedia article, official schedule announcement or other link opens it in your browser or the relevant app. Those sites are independent and governed by their own privacy policies. When you visit one, that provider may receive technical information from your device; Seoul Rising does not control the provider's processing.</p>
+
+<h2>Third parties</h2>
+<p>Seoul Rising does not sell personal data. Cloudflare handles the version 1.0.1 trends request, the separate schedule API request in schedule-enabled versions, and optional reminder registrations in version 1.0.5. GitHub Pages hosts the trends JSON requested directly by version 1.0.0 and by the version 1.0.1 Worker. Google serves video thumbnails. The providers' privacy policies describe their handling of technical request information; this policy does not make a claim about specific server logs or retention periods.</p>
+
+<h2>Children</h2>
+<p>The app has no accounts or direct messaging. It does not ask users, including children, to submit personal details. Network providers may process technical request information as described above.</p>
+
+<h2>Not affiliated</h2>
+<p>Seoul Rising is a fan-made project. It is not affiliated with any artist, label, or outlet. Headlines are shown as published and link to their original sources.</p>
+
+<h2>Changes to this policy</h2>
+<p>If this policy changes, the updated version will be posted on this page with a new effective date.</p>
+
+<h2>Contact</h2>
+<p>Questions about privacy? Email <a href="mailto:seoulrising.app@gmail.com">seoulrising.app@gmail.com</a>. If you write to us, your email address and message are received only so we can reply.</p>
+
+<footer>
+<p>Seoul Rising is a fan-made project. Not affiliated with any artist, label, or outlet; headlines link to their original sources.</p>
+</footer>
+</main>
+</body>
+</html>
