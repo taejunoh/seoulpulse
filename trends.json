@@ -1,0 +1,1171 @@
+{
+  "schema_version": 1,
+  "generated_at": "2026-11-28T18:45:54Z",
+  "next_update_hint": "2026-11-28T19:15:54Z",
+  "rank_change_basis_at": "2026-11-28T12:16:26Z",
+  "cold_start": false,
+  "items": [
+    {
+      "id": "jisoo",
+      "rank": 1,
+      "prev_rank": 1,
+      "change": "same",
+      "change_amount": 0,
+      "name": "JISOO",
+      "name_ko": "지수",
+      "score": 54.5,
+      "korea_first": true,
+      "why": "Korean Wikipedia views 3.6x normal, EN quiet",
+      "why_source": "template",
+      "image_url": "https://i.ytimg.com/vi/Pksr9T8m_aA/hqdefault.jpg",
+      "metrics": {
+        "yt_views_per_hour": 27789,
+        "yt_views_per_hour_estimated": false,
+        "yt_accel": 1.82,
+        "wiki_day": "2026-11-27",
+        "wiki_ko_views": 2060,
+        "wiki_ko_ratio": 3.63,
+        "wiki_en_views": 1728,
+        "wiki_en_ratio": 0.75,
+        "headlines_24h": 0,
+        "headlines_ko_24h": 0
+      },
+      "signals": {
+        "youtube": 1.0,
+        "accel": 0.432,
+        "new_release": 0.0,
+        "wiki": 0.307,
+        "news": 0.0,
+        "search": 0.086
+      },
+      "top_video": {
+        "video_id": "Pksr9T8m_aA",
+        "title": "JISOO - ADDICTED (Official MV)",
+        "url": "https://www.youtube.com/watch?v=Pksr9T8m_aA",
+        "kind": "mv",
+        "published_at": "2026-10-29T23:00:09Z",
+        "views": 37748767,
+        "channel_name": "JISOO"
+      },
+      "headlines": [],
+      "links": {
+        "youtube_channel": "https://www.youtube.com/channel/UCRE-097LGtx_Zo7LrHvkycA",
+        "wikipedia_en": "https://en.wikipedia.org/wiki/Jisoo",
+        "wikipedia_ko": "https://ko.wikipedia.org/wiki/%EC%A7%80%EC%88%98_(%EA%B0%80%EC%88%98)"
+      }
+    },
+    {
+      "id": "kiss-of-life",
+      "rank": 2,
+      "prev_rank": 5,
+      "change": "up",
+      "change_amount": 3,
+      "name": "KISS OF LIFE",
+      "name_ko": "키스오브라이프",
+      "score": 49.1,
+      "korea_first": false,
+      "why": "\"Greedy\" views up 3.7x vs. normal decay",
+      "why_source": "template",
+      "image_url": "https://i.ytimg.com/vi/9AzCkUyVmdE/hqdefault.jpg",
+      "metrics": {
+        "yt_views_per_hour": 141916,
+        "yt_views_per_hour_estimated": false,
+        "yt_accel": 3.68,
+        "wiki_day": "2026-11-27",
+        "wiki_ko_views": null,
+        "wiki_ko_ratio": null,
+        "wiki_en_views": 225,
+        "wiki_en_ratio": 0.88,
+        "headlines_24h": 0,
+        "headlines_ko_24h": 0
+      },
+      "signals": {
+        "youtube": 1.0,
+        "accel": 0.94,
+        "new_release": 0.0,
+        "wiki": 0.0,
+        "news": 0.0,
+        "search": 0.0
+      },
+      "top_video": {
+        "video_id": "9AzCkUyVmdE",
+        "title": "KISS OF LIFE (키스오브라이프) 'Greedy' Official Music Video",
+        "url": "https://www.youtube.com/watch?v=9AzCkUyVmdE",
+        "kind": "mv",
+        "published_at": "2026-11-25T09:00:10Z",
+        "views": 8248873,
+        "channel_name": "KISS OF LIFE"
+      },
+      "headlines": [],
+      "links": {
+        "youtube_channel": "https://www.youtube.com/channel/UCvEEeBssb4XxIfWWIB8IjMw",
+        "wikipedia_en": "https://en.wikipedia.org/wiki/Kiss_of_Life_(group)",
+        "wikipedia_ko": null
+      }
+    },
+    {
+      "id": "izna",
+      "rank": 3,
+      "prev_rank": 3,
+      "change": "same",
+      "change_amount": 0,
+      "name": "izna",
+      "name_ko": "이즈나",
+      "score": 43.4,
+      "korea_first": false,
+      "why": "\"IWALY (사랑으로 남길)\" views up 2.9x vs. normal decay",
+      "why_source": "template",
+      "image_url": "https://i.ytimg.com/vi/PyrLjTPJ19k/hqdefault.jpg",
+      "metrics": {
+        "yt_views_per_hour": 38888,
+        "yt_views_per_hour_estimated": false,
+        "yt_accel": 2.86,
+        "wiki_day": "2026-11-27",
+        "wiki_ko_views": 58,
+        "wiki_ko_ratio": 2.08,
+        "wiki_en_views": 708,
+        "wiki_en_ratio": 1.81,
+        "headlines_24h": 0,
+        "headlines_ko_24h": 0
+      },
+      "signals": {
+        "youtube": 0.717,
+        "accel": 0.759,
+        "new_release": 0.0,
+        "wiki": 0.168,
+        "news": 0.0,
+        "search": 0.359
+      },
+      "top_video": {
+        "video_id": "PyrLjTPJ19k",
+        "title": "izna 'IWALY (사랑으로 남길)'ㅣSpecial Performance Video",
+        "url": "https://www.youtube.com/watch?v=PyrLjTPJ19k",
+        "kind": "perf",
+        "published_at": "2026-11-25T09:00:01Z",
+        "views": 2907569,
+        "channel_name": "izna (이즈나)"
+      },
+      "headlines": [],
+      "links": {
+        "youtube_channel": "https://www.youtube.com/channel/UCfbYNlxgLuKJXQZEhkMmaCQ",
+        "wikipedia_en": "https://en.wikipedia.org/wiki/Izna",
+        "wikipedia_ko": "https://ko.wikipedia.org/wiki/Izna"
+      }
+    },
+    {
+      "id": "illit",
+      "rank": 4,
+      "prev_rank": 2,
+      "change": "down",
+      "change_amount": 2,
+      "name": "ILLIT",
+      "name_ko": "아일릿",
+      "score": 42.7,
+      "korea_first": false,
+      "why": "\"체포하겠어\" views up 4.0x vs. normal decay",
+      "why_source": "template",
+      "image_url": "https://i.ytimg.com/vi/Tj0TGHLW0QE/hqdefault.jpg",
+      "metrics": {
+        "yt_views_per_hour": 23506,
+        "yt_views_per_hour_estimated": false,
+        "yt_accel": 4.0,
+        "wiki_day": "2026-11-27",
+        "wiki_ko_views": 119,
+        "wiki_ko_ratio": 0.84,
+        "wiki_en_views": 2289,
+        "wiki_en_ratio": 0.94,
+        "headlines_24h": 1,
+        "headlines_ko_24h": 0
+      },
+      "signals": {
+        "youtube": 0.786,
+        "accel": 1.0,
+        "new_release": 0.0,
+        "wiki": 0.0,
+        "news": 0.0,
+        "search": 0.018
+      },
+      "top_video": {
+        "video_id": "Tj0TGHLW0QE",
+        "title": "[뮤뱅 원테이크 4K HDR] 아일릿 (ILLIT) '체포하겠어' 4K Bonus Ver. @뮤직뱅크 (Music Bank) 261030",
+        "url": "https://www.youtube.com/watch?v=Tj0TGHLW0QE",
+        "kind": "show",
+        "published_at": "2026-10-30T11:30:23Z",
+        "views": 12272861,
+        "channel_name": "KBS Kpop"
+      },
+      "headlines": [
+        {
+          "title": "BELIFT LAB Shares Update On ILLIT’s Moka’s Return To Activities",
+          "url": "https://www.soompi.com/article/1891535wpp/belift-lab-shares-update-on-illits-mokas-return-to-activities",
+          "source_id": "soompi",
+          "source_name": "Soompi",
+          "lang": "en",
+          "published_at": "2026-11-28T07:34:46Z"
+        },
+        {
+          "title": "아일릿 모카, 5개월 만에 활동 재개…\"이날만 기다렸다\"",
+          "url": "https://www.yna.co.kr/view/AKR20261127147300005",
+          "source_id": "yonhap",
+          "source_name": "Yonhap",
+          "lang": "ko",
+          "published_at": "2026-11-27T08:31:35Z"
+        },
+        {
+          "title": "ILLIT’s Moka Personally Shares Plans To Gradually Resume Activities",
+          "url": "https://www.soompi.com/article/1891294wpp/illits-moka-personally-shares-plans-to-gradually-resume-activities",
+          "source_id": "soompi",
+          "source_name": "Soompi",
+          "lang": "en",
+          "published_at": "2026-11-27T04:00:18Z"
+        }
+      ],
+      "links": {
+        "youtube_channel": "https://www.youtube.com/channel/UCEpFoWeCMCo5z3EvWaz6hQQ",
+        "wikipedia_en": "https://en.wikipedia.org/wiki/Illit",
+        "wikipedia_ko": "https://ko.wikipedia.org/wiki/ILLIT"
+      }
+    },
+    {
+      "id": "zerobaseone",
+      "rank": 5,
+      "prev_rank": 8,
+      "change": "up",
+      "change_amount": 3,
+      "name": "ZEROBASEONE",
+      "name_ko": "제로베이스원",
+      "score": 41.3,
+      "korea_first": false,
+      "why": "\"RUN (with 다이나믹 듀오) + UN…\" views up 4.0x vs. normal decay",
+      "why_source": "template",
+      "image_url": "https://i.ytimg.com/vi/Rf0sUnTXr34/hqdefault.jpg",
+      "metrics": {
+        "yt_views_per_hour": 10532,
+        "yt_views_per_hour_estimated": false,
+        "yt_accel": 4.0,
+        "wiki_day": "2026-11-27",
+        "wiki_ko_views": 17,
+        "wiki_ko_ratio": 1.08,
+        "wiki_en_views": 2293,
+        "wiki_en_ratio": 5.28,
+        "headlines_24h": 0,
+        "headlines_ko_24h": 0
+      },
+      "signals": {
+        "youtube": 0.483,
+        "accel": 1.0,
+        "new_release": 0.0,
+        "wiki": 0.469,
+        "news": 0.0,
+        "search": 0.0
+      },
+      "top_video": {
+        "video_id": "Rf0sUnTXr34",
+        "title": "[#2026MAMA] ZEROBASEONE (제로베이스원) - RUN (with 다이나믹 듀오) + UNDEAD + The Next Course | Mnet 261121 방송",
+        "url": "https://www.youtube.com/watch?v=Rf0sUnTXr34",
+        "kind": "show",
+        "published_at": "2026-11-21T08:20:25Z",
+        "views": 265645,
+        "channel_name": "Mnet K-POP"
+      },
+      "headlines": [],
+      "links": {
+        "youtube_channel": "https://www.youtube.com/channel/UCSAp0Yl9S0Zq5uDqE6im_XQ",
+        "wikipedia_en": "https://en.wikipedia.org/wiki/Zerobaseone",
+        "wikipedia_ko": "https://ko.wikipedia.org/wiki/ZEROBASEONE"
+      }
+    },
+    {
+      "id": "ateez",
+      "rank": 6,
+      "prev_rank": 6,
+      "change": "same",
+      "change_amount": 0,
+      "name": "ATEEZ",
+      "name_ko": "에이티즈",
+      "score": 29.6,
+      "korea_first": true,
+      "why": "1 Korean headline, no English coverage yet",
+      "why_source": "template",
+      "image_url": "https://i.ytimg.com/vi/SGovymtCzvA/hqdefault.jpg",
+      "metrics": {
+        "yt_views_per_hour": 8588,
+        "yt_views_per_hour_estimated": false,
+        "yt_accel": 0.29,
+        "wiki_day": "2026-11-27",
+        "wiki_ko_views": 135,
+        "wiki_ko_ratio": 0.37,
+        "wiki_en_views": 3128,
+        "wiki_en_ratio": 1.96,
+        "headlines_24h": 1,
+        "headlines_ko_24h": 1
+      },
+      "signals": {
+        "youtube": 0.777,
+        "accel": -0.5,
+        "new_release": 0.0,
+        "wiki": 0.193,
+        "news": 0.0,
+        "search": 0.0
+      },
+      "top_video": {
+        "video_id": "SGovymtCzvA",
+        "title": "ATEEZ(에이티즈) - 'UP' Official MV",
+        "url": "https://www.youtube.com/watch?v=SGovymtCzvA",
+        "kind": "mv",
+        "published_at": "2026-11-13T05:00:03Z",
+        "views": 35750372,
+        "channel_name": "KQ ENTERTAINMENT"
+      },
+      "headlines": [
+        {
+          "title": "에이티즈, 내년 3월 런던서 '제로 투 올' 유럽 투어 출발",
+          "url": "https://www.yna.co.kr/view/AKR20261128033900005",
+          "source_id": "yonhap",
+          "source_name": "Yonhap",
+          "lang": "ko",
+          "published_at": "2026-11-28T05:49:45Z"
+        }
+      ],
+      "links": {
+        "youtube_channel": "https://www.youtube.com/channel/UC2e4Ukj5Pfr7cb3KpJAFBdQ",
+        "wikipedia_en": "https://en.wikipedia.org/wiki/Ateez",
+        "wikipedia_ko": "https://ko.wikipedia.org/wiki/%EC%97%90%EC%9D%B4%ED%8B%B0%EC%A6%88"
+      }
+    },
+    {
+      "id": "jeon-somi",
+      "rank": 7,
+      "prev_rank": 17,
+      "change": "up",
+      "change_amount": 10,
+      "name": "JEON SOMI",
+      "name_ko": "전소미",
+      "score": 28.1,
+      "korea_first": false,
+      "why": "\"갑자기 | Mnet 261121 방송\" views up 3.9x vs. normal decay",
+      "why_source": "template",
+      "image_url": "https://i.ytimg.com/vi/ZIgbTMs1eX0/hqdefault.jpg",
+      "metrics": {
+        "yt_views_per_hour": 8192,
+        "yt_views_per_hour_estimated": false,
+        "yt_accel": 3.89,
+        "wiki_day": "2026-11-27",
+        "wiki_ko_views": 54,
+        "wiki_ko_ratio": 0.95,
+        "wiki_en_views": 435,
+        "wiki_en_ratio": 0.71,
+        "headlines_24h": 0,
+        "headlines_ko_24h": 0
+      },
+      "signals": {
+        "youtube": 0.392,
+        "accel": 0.981,
+        "new_release": 0.0,
+        "wiki": 0.0,
+        "news": 0.0,
+        "search": 0.0
+      },
+      "top_video": {
+        "video_id": "ZIgbTMs1eX0",
+        "title": "[#2026MAMA] 아이오아이 (나영, 유정, 전소미) X izna X KiiiKiii - 갑자기 | Mnet 261121 방송",
+        "url": "https://www.youtube.com/watch?v=ZIgbTMs1eX0",
+        "kind": "show",
+        "published_at": "2026-11-21T07:29:52Z",
+        "views": 1117464,
+        "channel_name": "Mnet K-POP"
+      },
+      "headlines": [],
+      "links": {
+        "youtube_channel": null,
+        "wikipedia_en": "https://en.wikipedia.org/wiki/Jeon_Somi",
+        "wikipedia_ko": "https://ko.wikipedia.org/wiki/%EC%A0%84%EC%86%8C%EB%AF%B8"
+      }
+    },
+    {
+      "id": "monsta-x",
+      "rank": 8,
+      "prev_rank": 7,
+      "change": "down",
+      "change_amount": 1,
+      "name": "MONSTA X",
+      "name_ko": "몬스타엑스",
+      "score": 27.2,
+      "korea_first": true,
+      "why": "Korean Wikipedia views 6.6x normal, EN quiet",
+      "why_source": "template",
+      "image_url": "https://i.ytimg.com/vi/_lfUi8XBS2I/hqdefault.jpg",
+      "metrics": {
+        "yt_views_per_hour": 43,
+        "yt_views_per_hour_estimated": false,
+        "yt_accel": 0.77,
+        "wiki_day": "2026-11-27",
+        "wiki_ko_views": 149,
+        "wiki_ko_ratio": 6.6,
+        "wiki_en_views": 311,
+        "wiki_en_ratio": 0.92,
+        "headlines_24h": 0,
+        "headlines_ko_24h": 0
+      },
+      "signals": {
+        "youtube": 0.0,
+        "accel": -0.191,
+        "new_release": 0.0,
+        "wiki": 0.559,
+        "news": 0.0,
+        "search": 1.0
+      },
+      "top_video": {
+        "video_id": "_lfUi8XBS2I",
+        "title": "MONSTA X 몬스타엑스 '2027 SEASON’S GREETINGS' Teaser",
+        "url": "https://www.youtube.com/watch?v=_lfUi8XBS2I",
+        "kind": "teaser",
+        "published_at": "2026-11-23T02:00:38Z",
+        "views": 21796,
+        "channel_name": "MONSTA X"
+      },
+      "headlines": [],
+      "links": {
+        "youtube_channel": "https://www.youtube.com/channel/UCZvCP6sWj75MwpUP4LVtpNw",
+        "wikipedia_en": "https://en.wikipedia.org/wiki/Monsta_X",
+        "wikipedia_ko": "https://ko.wikipedia.org/wiki/%EB%AA%AC%EC%8A%A4%ED%83%80%EC%97%91%EC%8A%A4"
+      }
+    },
+    {
+      "id": "babymonster",
+      "rank": 9,
+      "prev_rank": 9,
+      "change": "same",
+      "change_amount": 0,
+      "name": "BABYMONSTER",
+      "name_ko": "베이비몬스터",
+      "score": 25.6,
+      "korea_first": false,
+      "why": "\"INTRO + DESERVE + 춤(CHO…\" views up 1.6x vs. normal decay",
+      "why_source": "template",
+      "image_url": "https://i.ytimg.com/vi/iIaw6HvS09Y/hqdefault.jpg",
+      "metrics": {
+        "yt_views_per_hour": 20180,
+        "yt_views_per_hour_estimated": false,
+        "yt_accel": 1.63,
+        "wiki_day": "2026-11-27",
+        "wiki_ko_views": 73,
+        "wiki_ko_ratio": 0.93,
+        "wiki_en_views": 1068,
+        "wiki_en_ratio": 0.84,
+        "headlines_24h": 0,
+        "headlines_ko_24h": 0
+      },
+      "signals": {
+        "youtube": 0.581,
+        "accel": 0.352,
+        "new_release": 0.0,
+        "wiki": 0.0,
+        "news": 0.0,
+        "search": 0.0
+      },
+      "top_video": {
+        "video_id": "iIaw6HvS09Y",
+        "title": "[#2026MAMA] BABYMONSTER - INTRO + DESERVE + 춤(CHOOM) (MAMA Ver.) | Mnet 261120 방송",
+        "url": "https://www.youtube.com/watch?v=iIaw6HvS09Y",
+        "kind": "show",
+        "published_at": "2026-11-20T10:26:38Z",
+        "views": 7469293,
+        "channel_name": "Mnet K-POP"
+      },
+      "headlines": [],
+      "links": {
+        "youtube_channel": "https://www.youtube.com/channel/UCqwUnggBBct-AY2lAdI88jQ",
+        "wikipedia_en": "https://en.wikipedia.org/wiki/Babymonster",
+        "wikipedia_ko": "https://ko.wikipedia.org/wiki/%EB%B2%A0%EC%9D%B4%EB%B9%84%EB%AA%AC%EC%8A%A4%ED%84%B0"
+      }
+    },
+    {
+      "id": "aespa",
+      "rank": 10,
+      "prev_rank": 18,
+      "change": "up",
+      "change_amount": 8,
+      "name": "aespa",
+      "name_ko": "에스파",
+      "score": 24.7,
+      "korea_first": false,
+      "why": "\"Love Riot\" views up 2.0x vs. normal decay",
+      "why_source": "template",
+      "image_url": "https://i.ytimg.com/vi/cU8BEe99RzM/hqdefault.jpg",
+      "metrics": {
+        "yt_views_per_hour": 981,
+        "yt_views_per_hour_estimated": false,
+        "yt_accel": 1.98,
+        "wiki_day": "2026-11-27",
+        "wiki_ko_views": 57,
+        "wiki_ko_ratio": 0.55,
+        "wiki_en_views": 1116,
+        "wiki_en_ratio": 0.91,
+        "headlines_24h": 0,
+        "headlines_ko_24h": 0
+      },
+      "signals": {
+        "youtube": 0.495,
+        "accel": 0.493,
+        "new_release": 0.0,
+        "wiki": 0.0,
+        "news": 0.0,
+        "search": 0.0
+      },
+      "top_video": {
+        "video_id": "cU8BEe99RzM",
+        "title": "aespa GISELLE 에스파 지젤 'Love Riot' MV",
+        "url": "https://www.youtube.com/watch?v=cU8BEe99RzM",
+        "kind": "mv",
+        "published_at": "2026-10-30T13:00:24Z",
+        "views": 1199186,
+        "channel_name": "aespa"
+      },
+      "headlines": [
+        {
+          "title": "aespa’s Giselle Unexpectedly Bashed Online After Sending A Photo",
+          "url": "https://www.koreaboo.com/news/aespa-giselle-bashed-online-after-sending-photo-bubble/",
+          "source_id": "koreaboo",
+          "source_name": "Koreaboo",
+          "lang": "en",
+          "published_at": "2026-11-27T05:51:09Z"
+        }
+      ],
+      "links": {
+        "youtube_channel": "https://www.youtube.com/channel/UC9GtSLeksfK4yuJ_g1lgQbg",
+        "wikipedia_en": "https://en.wikipedia.org/wiki/Aespa",
+        "wikipedia_ko": "https://ko.wikipedia.org/wiki/Aespa"
+      }
+    },
+    {
+      "id": "itzy",
+      "rank": 11,
+      "prev_rank": 10,
+      "change": "down",
+      "change_amount": 1,
+      "name": "ITZY",
+      "name_ko": "있지",
+      "score": 23.2,
+      "korea_first": false,
+      "why": "\"Lovesick\" views up 1.5x vs. normal decay",
+      "why_source": "template",
+      "image_url": "https://i.ytimg.com/vi/XvISxn5u8jk/hqdefault.jpg",
+      "metrics": {
+        "yt_views_per_hour": 2690,
+        "yt_views_per_hour_estimated": false,
+        "yt_accel": 1.54,
+        "wiki_day": "2026-11-27",
+        "wiki_ko_views": null,
+        "wiki_ko_ratio": null,
+        "wiki_en_views": 437,
+        "wiki_en_ratio": 0.94,
+        "headlines_24h": 1,
+        "headlines_ko_24h": 0
+      },
+      "signals": {
+        "youtube": 0.483,
+        "accel": 0.311,
+        "new_release": 0.0,
+        "wiki": 0.0,
+        "news": 0.108,
+        "search": 0.0
+      },
+      "top_video": {
+        "video_id": "XvISxn5u8jk",
+        "title": "CHAERYEONG \"Lovesick\" Performance Video (4K)",
+        "url": "https://www.youtube.com/watch?v=XvISxn5u8jk",
+        "kind": "perf",
+        "published_at": "2026-11-11T14:59:57Z",
+        "views": 2358871,
+        "channel_name": "ITZY"
+      },
+      "headlines": [
+        {
+          "title": "ITZY’s Chaeryeong Postpones Schedule After Falling Ill",
+          "url": "https://www.soompi.com/article/1891512wpp/itzys-chaeryeong-postpones-schedule-after-falling-ill",
+          "source_id": "soompi",
+          "source_name": "Soompi",
+          "lang": "en",
+          "published_at": "2026-11-28T04:49:10Z"
+        }
+      ],
+      "links": {
+        "youtube_channel": "https://www.youtube.com/channel/UCDhM2k2Cua-JdobAh5moMFg",
+        "wikipedia_en": "https://en.wikipedia.org/wiki/Itzy",
+        "wikipedia_ko": null
+      }
+    },
+    {
+      "id": "blackpink",
+      "rank": 12,
+      "prev_rank": 14,
+      "change": "up",
+      "change_amount": 2,
+      "name": "BLACKPINK",
+      "name_ko": "블랙핑크",
+      "score": 22.1,
+      "korea_first": true,
+      "why": "Korean Wikipedia views 4.2x normal, EN quiet",
+      "why_source": "template",
+      "image_url": null,
+      "metrics": {
+        "yt_views_per_hour": null,
+        "yt_views_per_hour_estimated": false,
+        "yt_accel": null,
+        "wiki_day": "2026-11-27",
+        "wiki_ko_views": 454,
+        "wiki_ko_ratio": 4.21,
+        "wiki_en_views": 2761,
+        "wiki_en_ratio": 0.81,
+        "headlines_24h": 2,
+        "headlines_ko_24h": 0
+      },
+      "signals": {
+        "youtube": 0.0,
+        "accel": 0.0,
+        "new_release": 0.0,
+        "wiki": 0.533,
+        "news": 0.227,
+        "search": 0.208
+      },
+      "top_video": null,
+      "headlines": [
+        {
+          "title": "BLACKPINK’s Lisa Receives Brutal Backlash After Being “Begged” To Sing Live",
+          "url": "https://www.koreaboo.com/news/blackpink-lisa-brutal-backlash-after-begged-sing-live/",
+          "source_id": "koreaboo",
+          "source_name": "Koreaboo",
+          "lang": "en",
+          "published_at": "2026-11-28T15:47:57Z"
+        },
+        {
+          "title": "BLACKPINK Lisa’s Sexy And Revealing Outfit At Recent Vegas Show Incites Hugely Divided Reactions",
+          "url": "https://www.koreaboo.com/news/blackpink-lisa-revealing-outfit-sexy-vegas-mixed-reactions/",
+          "source_id": "koreaboo",
+          "source_name": "Koreaboo",
+          "lang": "en",
+          "published_at": "2026-11-28T15:35:08Z"
+        }
+      ],
+      "links": {
+        "youtube_channel": "https://www.youtube.com/channel/UCOmHUn--16B90oW2L6FRR3A",
+        "wikipedia_en": "https://en.wikipedia.org/wiki/Blackpink",
+        "wikipedia_ko": "https://ko.wikipedia.org/wiki/BLACKPINK"
+      }
+    },
+    {
+      "id": "nct-wish",
+      "rank": 13,
+      "prev_rank": null,
+      "change": "new",
+      "change_amount": 0,
+      "name": "NCT WISH",
+      "name_ko": "엔시티 위시",
+      "score": 21.6,
+      "korea_first": false,
+      "why": "\"I SPY (MAMA Ver.) | Mne…\" views up 4.0x vs. normal decay",
+      "why_source": "template",
+      "image_url": "https://i.ytimg.com/vi/NwgEZfm9VFs/hqdefault.jpg",
+      "metrics": {
+        "yt_views_per_hour": 3361,
+        "yt_views_per_hour_estimated": false,
+        "yt_accel": 4.0,
+        "wiki_day": "2026-11-27",
+        "wiki_ko_views": 36,
+        "wiki_ko_ratio": 0.81,
+        "wiki_en_views": 176,
+        "wiki_en_ratio": 0.5,
+        "headlines_24h": 0,
+        "headlines_ko_24h": 0
+      },
+      "signals": {
+        "youtube": 0.284,
+        "accel": 1.0,
+        "new_release": 0.0,
+        "wiki": 0.0,
+        "news": 0.0,
+        "search": 0.102
+      },
+      "top_video": {
+        "video_id": "NwgEZfm9VFs",
+        "title": "[#2026MAMA] NCT WISH - I SPY (MAMA Ver.) | Mnet 261120 방송",
+        "url": "https://www.youtube.com/watch?v=NwgEZfm9VFs",
+        "kind": "show",
+        "published_at": "2026-11-20T12:12:32Z",
+        "views": 261848,
+        "channel_name": "Mnet K-POP"
+      },
+      "headlines": [],
+      "links": {
+        "youtube_channel": "https://www.youtube.com/channel/UCiZqWVAeChfqlom5ZPR3ZJA",
+        "wikipedia_en": "https://en.wikipedia.org/wiki/NCT_Wish",
+        "wikipedia_ko": "https://ko.wikipedia.org/wiki/NCT_WISH"
+      }
+    },
+    {
+      "id": "enhypen",
+      "rank": 14,
+      "prev_rank": 11,
+      "change": "down",
+      "change_amount": 3,
+      "name": "ENHYPEN",
+      "name_ko": "엔하이픈",
+      "score": 21.5,
+      "korea_first": false,
+      "why": "\"I Want You\" still pulling 8.6K views/hr",
+      "why_source": "template",
+      "image_url": "https://i.ytimg.com/vi/dE_Ro8Sac2M/hqdefault.jpg",
+      "metrics": {
+        "yt_views_per_hour": 8622,
+        "yt_views_per_hour_estimated": false,
+        "yt_accel": 0.42,
+        "wiki_day": "2026-11-27",
+        "wiki_ko_views": 78,
+        "wiki_ko_ratio": 0.62,
+        "wiki_en_views": 1037,
+        "wiki_en_ratio": 0.83,
+        "headlines_24h": 1,
+        "headlines_ko_24h": 1
+      },
+      "signals": {
+        "youtube": 0.75,
+        "accel": -0.5,
+        "new_release": 0.0,
+        "wiki": 0.0,
+        "news": 0.186,
+        "search": 0.0
+      },
+      "top_video": {
+        "video_id": "dE_Ro8Sac2M",
+        "title": "ENHYPEN (엔하이픈) 'I Want You' Official MV",
+        "url": "https://www.youtube.com/watch?v=dE_Ro8Sac2M",
+        "kind": "mv",
+        "published_at": "2026-11-13T14:57:11Z",
+        "views": 24091294,
+        "channel_name": "HYBE LABELS"
+      },
+      "headlines": [
+        {
+          "title": "[가요소식] 엔하이픈, 스페인 음악 축제 '매드 쿨' 헤드라이너",
+          "url": "https://www.yna.co.kr/view/AKR20261128032300005",
+          "source_id": "yonhap",
+          "source_name": "Yonhap",
+          "lang": "ko",
+          "published_at": "2026-11-28T05:59:15Z"
+        },
+        {
+          "title": "Watch: TXT Takes 2nd Win For “Angel Bite” On “Music Bank”; Performances By Nayeon, ENHYPEN, And More",
+          "url": "https://www.soompi.com/article/1891451wpp/watch-txt-takes-2nd-win-for-angel-bite-on-music-bank-performances-by-nayeon-enhypen-and-more",
+          "source_id": "soompi",
+          "source_name": "Soompi",
+          "lang": "en",
+          "published_at": "2026-11-27T11:13:06Z"
+        },
+        {
+          "title": "ENHYPEN To Headline Mad Cool 2027 In Madrid",
+          "url": "https://www.soompi.com/article/1891101wpp/enhypen-to-headline-mad-cool-2027-in-madrid",
+          "source_id": "soompi",
+          "source_name": "Soompi",
+          "lang": "en",
+          "published_at": "2026-11-27T00:16:08Z"
+        }
+      ],
+      "links": {
+        "youtube_channel": null,
+        "wikipedia_en": "https://en.wikipedia.org/wiki/Enhypen",
+        "wikipedia_ko": "https://ko.wikipedia.org/wiki/ENHYPEN"
+      }
+    },
+    {
+      "id": "ive",
+      "rank": 15,
+      "prev_rank": 12,
+      "change": "down",
+      "change_amount": 3,
+      "name": "IVE",
+      "name_ko": "아이브",
+      "score": 20.7,
+      "korea_first": false,
+      "why": "\"SNAKESKIN + BLACKHOLE +…\" steady at 10K views/hr",
+      "why_source": "template",
+      "image_url": "https://i.ytimg.com/vi/oRA3eTWh5Jk/hqdefault.jpg",
+      "metrics": {
+        "yt_views_per_hour": 10321,
+        "yt_views_per_hour_estimated": false,
+        "yt_accel": 1.44,
+        "wiki_day": "2026-11-27",
+        "wiki_ko_views": 55,
+        "wiki_ko_ratio": 0.56,
+        "wiki_en_views": 1019,
+        "wiki_en_ratio": 0.66,
+        "headlines_24h": 0,
+        "headlines_ko_24h": 0
+      },
+      "signals": {
+        "youtube": 0.48,
+        "accel": 0.261,
+        "new_release": 0.0,
+        "wiki": 0.0,
+        "news": 0.0,
+        "search": 0.0
+      },
+      "top_video": {
+        "video_id": "oRA3eTWh5Jk",
+        "title": "[#2026MAMA] IVE - SNAKESKIN + BLACKHOLE + BANG BANG | Mnet 261121 방송",
+        "url": "https://www.youtube.com/watch?v=oRA3eTWh5Jk",
+        "kind": "show",
+        "published_at": "2026-11-21T08:50:30Z",
+        "views": 3787853,
+        "channel_name": "Mnet K-POP"
+      },
+      "headlines": [
+        {
+          "title": "Boy Group Member Wants To Be IVE’s Jang Wonyoung In His Next Life For The Most Unexpected Reason",
+          "url": "https://www.koreaboo.com/news/boy-group-member-ive-jang-wonyoung-next-life-unexpected-reason/",
+          "source_id": "koreaboo",
+          "source_name": "Koreaboo",
+          "lang": "en",
+          "published_at": "2026-11-27T17:26:40Z"
+        }
+      ],
+      "links": {
+        "youtube_channel": "https://www.youtube.com/channel/UC-Fnix71vRP64WXeo0ikd0Q",
+        "wikipedia_en": "https://en.wikipedia.org/wiki/Ive_(group)",
+        "wikipedia_ko": "https://ko.wikipedia.org/wiki/IVE"
+      }
+    },
+    {
+      "id": "seventeen",
+      "rank": 16,
+      "prev_rank": 15,
+      "change": "down",
+      "change_amount": 1,
+      "name": "SEVENTEEN",
+      "name_ko": "세븐틴",
+      "score": 19.9,
+      "korea_first": false,
+      "why": "English Wikipedia views 3.4x the 2-week avg",
+      "why_source": "template",
+      "image_url": "https://i.ytimg.com/vi/qCzFO7JUMO4/hqdefault.jpg",
+      "metrics": {
+        "yt_views_per_hour": 1950,
+        "yt_views_per_hour_estimated": false,
+        "yt_accel": 1.44,
+        "wiki_day": "2026-11-27",
+        "wiki_ko_views": 38,
+        "wiki_ko_ratio": 1.06,
+        "wiki_en_views": 2506,
+        "wiki_en_ratio": 3.42,
+        "headlines_24h": 0,
+        "headlines_ko_24h": 0
+      },
+      "signals": {
+        "youtube": 0.225,
+        "accel": 0.265,
+        "new_release": 0.0,
+        "wiki": 0.488,
+        "news": 0.0,
+        "search": 0.0
+      },
+      "top_video": {
+        "video_id": "qCzFO7JUMO4",
+        "title": "[GOING SEVENTEEN] EP.166 도둑 #1 (THIEF #1)",
+        "url": "https://www.youtube.com/watch?v=qCzFO7JUMO4",
+        "kind": "other",
+        "published_at": "2026-11-11T11:58:06Z",
+        "views": 1836430,
+        "channel_name": "SEVENTEEN"
+      },
+      "headlines": [],
+      "links": {
+        "youtube_channel": "https://www.youtube.com/channel/UCfkXDY7vwkcJ8ddFGz8KusA",
+        "wikipedia_en": "https://en.wikipedia.org/wiki/Seventeen_(South_Korean_band)",
+        "wikipedia_ko": "https://ko.wikipedia.org/wiki/%EC%84%B8%EB%B8%90%ED%8B%B4_(%EC%9D%8C%EC%95%85_%EA%B7%B8%EB%A3%B9)"
+      }
+    },
+    {
+      "id": "txt",
+      "rank": 17,
+      "prev_rank": 13,
+      "change": "down",
+      "change_amount": 4,
+      "name": "TOMORROW X TOGETHER",
+      "name_ko": "투모로우바이투게더",
+      "score": 19.7,
+      "korea_first": false,
+      "why": "\"Angel Bite\" still pulling 11K views/hr",
+      "why_source": "template",
+      "image_url": "https://i.ytimg.com/vi/M9G4guYg-i8/hqdefault.jpg",
+      "metrics": {
+        "yt_views_per_hour": 11377,
+        "yt_views_per_hour_estimated": false,
+        "yt_accel": 0.33,
+        "wiki_day": "2026-11-27",
+        "wiki_ko_views": 75,
+        "wiki_ko_ratio": 0.7,
+        "wiki_en_views": 846,
+        "wiki_en_ratio": 0.87,
+        "headlines_24h": 0,
+        "headlines_ko_24h": 0
+      },
+      "signals": {
+        "youtube": 0.778,
+        "accel": -0.5,
+        "new_release": 0.0,
+        "wiki": 0.0,
+        "news": 0.0,
+        "search": 0.0
+      },
+      "top_video": {
+        "video_id": "M9G4guYg-i8",
+        "title": "TXT (투모로우바이투게더) 'Angel Bite' Official MV",
+        "url": "https://www.youtube.com/watch?v=M9G4guYg-i8",
+        "kind": "mv",
+        "published_at": "2026-11-16T08:58:08Z",
+        "views": 32206163,
+        "channel_name": "HYBE LABELS"
+      },
+      "headlines": [
+        {
+          "title": "Watch: TXT Takes 2nd Win For “Angel Bite” On “Music Bank”; Performances By Nayeon, ENHYPEN, And More",
+          "url": "https://www.soompi.com/article/1891451wpp/watch-txt-takes-2nd-win-for-angel-bite-on-music-bank-performances-by-nayeon-enhypen-and-more",
+          "source_id": "soompi",
+          "source_name": "Soompi",
+          "lang": "en",
+          "published_at": "2026-11-27T11:13:06Z"
+        },
+        {
+          "title": "[가요소식] TXT '내일에서 기다릴게', 스포티파이 1억 스트리밍",
+          "url": "https://www.yna.co.kr/view/AKR20261127102400005",
+          "source_id": "yonhap",
+          "source_name": "Yonhap",
+          "lang": "ko",
+          "published_at": "2026-11-27T05:37:43Z"
+        }
+      ],
+      "links": {
+        "youtube_channel": "https://www.youtube.com/channel/UCtiObj3CsEAdNU6ZPWDsddQ",
+        "wikipedia_en": "https://en.wikipedia.org/wiki/Tomorrow_X_Together",
+        "wikipedia_ko": "https://ko.wikipedia.org/wiki/%ED%88%AC%EB%AA%A8%EB%A1%9C%EC%9A%B0%EB%B0%94%EC%9D%B4%ED%88%AC%EA%B2%8C%EB%8D%94"
+      }
+    },
+    {
+      "id": "akmu",
+      "rank": 18,
+      "prev_rank": 20,
+      "change": "up",
+      "change_amount": 2,
+      "name": "AKMU",
+      "name_ko": "악뮤",
+      "score": 19.2,
+      "korea_first": false,
+      "why": "New teaser \"손님 (The Guest)\": comeback incoming",
+      "why_source": "template",
+      "image_url": "https://i.ytimg.com/vi/bsggAZ58KBs/hqdefault.jpg",
+      "metrics": {
+        "yt_views_per_hour": 11262,
+        "yt_views_per_hour_estimated": false,
+        "yt_accel": 1.94,
+        "wiki_day": "2026-11-27",
+        "wiki_ko_views": 32,
+        "wiki_ko_ratio": 0.64,
+        "wiki_en_views": 231,
+        "wiki_en_ratio": 1.04,
+        "headlines_24h": 0,
+        "headlines_ko_24h": 0
+      },
+      "signals": {
+        "youtube": 0.331,
+        "accel": 0.478,
+        "new_release": 0.112,
+        "wiki": 0.005,
+        "news": 0.0,
+        "search": 0.0
+      },
+      "top_video": {
+        "video_id": "bsggAZ58KBs",
+        "title": "AKMU - '손님 (The Guest)' M/V TEASER",
+        "url": "https://www.youtube.com/watch?v=bsggAZ58KBs",
+        "kind": "teaser",
+        "published_at": "2026-11-26T15:00:13Z",
+        "views": 719341,
+        "channel_name": "AKMU"
+      },
+      "headlines": [],
+      "links": {
+        "youtube_channel": "https://www.youtube.com/channel/UCIcXK1CI8URMIqNO_1cehiQ",
+        "wikipedia_en": "https://en.wikipedia.org/wiki/AKMU",
+        "wikipedia_ko": "https://ko.wikipedia.org/wiki/AKMU"
+      }
+    },
+    {
+      "id": "twice",
+      "rank": 19,
+      "prev_rank": 4,
+      "change": "down",
+      "change_amount": 15,
+      "name": "TWICE",
+      "name_ko": "트와이스",
+      "score": 19.1,
+      "korea_first": true,
+      "why": "Korean searches 1.6x normal, EN quiet",
+      "why_source": "template",
+      "image_url": "https://i.ytimg.com/vi/XlDMWVqYfqg/hqdefault.jpg",
+      "metrics": {
+        "yt_views_per_hour": 3864,
+        "yt_views_per_hour_estimated": false,
+        "yt_accel": 0.65,
+        "wiki_day": "2026-11-27",
+        "wiki_ko_views": 76,
+        "wiki_ko_ratio": 1.33,
+        "wiki_en_views": 1137,
+        "wiki_en_ratio": 0.96,
+        "headlines_24h": 0,
+        "headlines_ko_24h": 0
+      },
+      "signals": {
+        "youtube": 0.354,
+        "accel": -0.31,
+        "new_release": 0.0,
+        "wiki": 0.038,
+        "news": 0.0,
+        "search": 0.406
+      },
+      "top_video": {
+        "video_id": "XlDMWVqYfqg",
+        "title": "[#2026MAMA] 나연 (TWICE) - POP! (Intro) + BABY ANGEL + ABCD (MAMA Ver.) | Mnet 261121 방송",
+        "url": "https://www.youtube.com/watch?v=XlDMWVqYfqg",
+        "kind": "show",
+        "published_at": "2026-11-21T08:04:50Z",
+        "views": 3141704,
+        "channel_name": "Mnet K-POP"
+      },
+      "headlines": [
+        {
+          "title": "TWICE Momo’s Revealing “Underwear” Outfit Hit With Major Backlash",
+          "url": "https://www.koreaboo.com/news/twice-momos-revealing-underwear-outfit-hit-major-backlash/",
+          "source_id": "koreaboo",
+          "source_name": "Koreaboo",
+          "lang": "en",
+          "published_at": "2026-11-27T12:12:43Z"
+        },
+        {
+          "title": "TWICE’s Dahyun Gracefully Silences Haters",
+          "url": "https://www.koreaboo.com/news/twice-dahyun-gracefully-silences-haters/",
+          "source_id": "koreaboo",
+          "source_name": "Koreaboo",
+          "lang": "en",
+          "published_at": "2026-11-26T18:57:40Z"
+        }
+      ],
+      "links": {
+        "youtube_channel": "https://www.youtube.com/channel/UCzgxx_DM2Dcb9Y1spb9mUJA",
+        "wikipedia_en": "https://en.wikipedia.org/wiki/Twice",
+        "wikipedia_ko": "https://ko.wikipedia.org/wiki/%ED%8A%B8%EC%99%80%EC%9D%B4%EC%8A%A4"
+      }
+    },
+    {
+      "id": "le-sserafim",
+      "rank": 20,
+      "prev_rank": null,
+      "change": "new",
+      "change_amount": 0,
+      "name": "LE SSERAFIM",
+      "name_ko": "르세라핌",
+      "score": 19.0,
+      "korea_first": false,
+      "why": "Steady YouTube pull: 3.2K views/hr",
+      "why_source": "template",
+      "image_url": "https://i.ytimg.com/vi/CW_vTiGrfM4/hqdefault.jpg",
+      "metrics": {
+        "yt_views_per_hour": 3239,
+        "yt_views_per_hour_estimated": false,
+        "yt_accel": 1.37,
+        "wiki_day": "2026-11-27",
+        "wiki_ko_views": 36,
+        "wiki_ko_ratio": 0.82,
+        "wiki_en_views": 1751,
+        "wiki_en_ratio": 1.0,
+        "headlines_24h": 0,
+        "headlines_ko_24h": 0
+      },
+      "signals": {
+        "youtube": 0.446,
+        "accel": 0.228,
+        "new_release": 0.0,
+        "wiki": 0.0,
+        "news": 0.0,
+        "search": 0.0
+      },
+      "top_video": {
+        "video_id": "CW_vTiGrfM4",
+        "title": "LE SSERAFIM (르세라핌) 2026 MAMA AWARDS Dance Practice",
+        "url": "https://www.youtube.com/watch?v=CW_vTiGrfM4",
+        "kind": "perf",
+        "published_at": "2026-11-22T10:59:59Z",
+        "views": 1036912,
+        "channel_name": "LE SSERAFIM"
+      },
+      "headlines": [
+        {
+          "title": "LE SSERAFIM Sakura’s Sexy Photos Amid “2026 MAMAs” Outfit Controversy Spark Huge Reactions",
+          "url": "https://www.koreaboo.com/news/le-sserafim-sakura-ig-post-amid-mama-outfit-controversy/",
+          "source_id": "koreaboo",
+          "source_name": "Koreaboo",
+          "lang": "en",
+          "published_at": "2026-11-27T09:20:19Z"
+        }
+      ],
+      "links": {
+        "youtube_channel": "https://www.youtube.com/channel/UCs-QBT4qkj_YiQw1ZntDO3g",
+        "wikipedia_en": "https://en.wikipedia.org/wiki/Le_Sserafim",
+        "wikipedia_ko": "https://ko.wikipedia.org/wiki/LE_SSERAFIM"
+      }
+    }
+  ],
+  "sources": [
+    {
+      "id": "youtube",
+      "name": "YouTube",
+      "status": "ok",
+      "last_success_at": "2026-11-28T18:46:37Z",
+      "detail": "RSS 77/77 channels · API 27 units (710/9000 today)"
+    },
+    {
+      "id": "wikipedia",
+      "name": "Wikipedia",
+      "status": "ok",
+      "last_success_at": "2026-11-28T18:45:54Z",
+      "detail": "146/146 articles current (day 2026-11-27)"
+    },
+    {
+      "id": "yonhap",
+      "name": "Yonhap",
+      "status": "ok",
+      "last_success_at": "2026-11-28T18:45:55Z",
+      "detail": "120 items, 0 new"
+    },
+    {
+      "id": "soompi",
+      "name": "Soompi",
+      "status": "ok",
+      "last_success_at": "2026-11-28T18:45:54Z",
+      "detail": "not modified (304), 0 new"
+    },
+    {
+      "id": "koreaboo",
+      "name": "Koreaboo",
+      "status": "ok",
+      "last_success_at": "2026-11-28T18:45:54Z",
+      "detail": "10 items, 0 new"
+    },
+    {
+      "id": "naver",
+      "name": "Naver DataLab",
+      "status": "ok",
+      "last_success_at": "2026-11-28T18:45:54Z",
+      "detail": "0/82 current · day 2026-11-27 · 0 calls (34/300 today)"
+    }
+  ]
+}
